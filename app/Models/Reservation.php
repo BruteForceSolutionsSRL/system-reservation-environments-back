@@ -14,9 +14,9 @@ class Reservation extends Model
         return $this->hasMany(Log::class);
     }
 
-    public function timeSlots()
+    public function timeSlotReservations()
     {
-        return $this->hasMany(TimeSlot::class);
+        return $this->hasMany(TimeSlotReservation::class);
     }
 
     public function reservationStatus()
