@@ -16,12 +16,6 @@ class CreateTimeSlotsTable extends Migration
         Schema::create('time_slots', function (Blueprint $table) {
             $table->id();
             $table->time('time');
-            $table->unsignedBigInteger('reservation_id');
-
-            $table->foreign('reservation_id')
-                    ->references('id')
-                    ->on('reservations')
-                    ->cascadeOnDelete();
         });
     }
 
