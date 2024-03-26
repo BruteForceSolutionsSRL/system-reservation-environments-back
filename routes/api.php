@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -17,3 +18,9 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+//Route::middleware('auth:api')->get('/classroom/{id}', 'ClasroomControler@index');
+//Route::middleware('auth:api')->post('/classroom', 'ClassroomController@store');
+//Route::middleware('auth:api')->update('/classroom/{id}', 'ClassroomController@update'); 
+//Route::middleware('auth:api')->delete('/classroom/{id}', 'ClassroomController@destroy'); 
+//Route::middleware('auth:api')->get('/classroom', 'ClassroomController@list'); 
