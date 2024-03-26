@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Teacher extends Model
+class Notification extends Model
 {
     use HasFactory;
 
@@ -14,8 +14,8 @@ class Teacher extends Model
         return $this->belongsTo(Person::class);
     }
 
-    public function teacherSubjects()
+    public function notificationType()
     {
-        return $this->hasMany(TeacherSubject::class);
+        return $this->belongsTo(NotificationType::class);
     }
 }

@@ -5,12 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Block extends Model
+class NotificationType extends Model
 {
     use HasFactory;
 
-    public function classrooms()
+    public function notifications()
     {
-        return $this->hasMany(Classroom::class);
+        return $this->hasMany(Notification::class);
     }
 }

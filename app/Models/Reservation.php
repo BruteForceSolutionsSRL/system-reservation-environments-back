@@ -9,19 +9,29 @@ class Reservation extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'number_of_students', 
-        'start_time', 
-        'end_time', 
-        'created_at',    
-    ];
-    
-    protected $casts = [
-        'date' => 'datetime', 
-    ]; 
 
-    public function classrooms()
+    public function logs()
     {
-        return $this->belongsToMany(Classroom::class, 'detail__classrooms', 'reservation_id', 'classroom_id');
+        return $this->hasMany(Log::class);
+    }
+
+    public function timeSlotReservations()
+    {
+        return $this->hasMany(TimeSlotReservation::class);
+    }
+
+    public function reservationStatus()
+    {
+        return $this->belongsTo(ReservationStatus::class);
+    }
+
+    public function reservationTeacherSubjects()
+    {
+        return $this->hasMany(ReservationTeacherSubject::class);
+    }
+
+    public function reservationClassrooms()
+    {
+        return $this->hasMany(ReservationClassroom::class);
     }
 }

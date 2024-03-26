@@ -9,18 +9,18 @@ class Classroom extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'name', 
-        'capacity', 
-        'floor', 
-        'block_id', 
-        'classroom_type_id',
-    ]; 
-
-    public function reservations() 
+    public function block()
     {
-        return $this->belongstoMany(Reservation::class, 'detail__classrooms', 'classroom_id', 'reservation_id');
+        return $this->belongsTo(Block::class);
+    }
+
+    public function classroomType()
+    {
+        return $this->belongsTo(ClassroomType::class);
+    }
+
+    public function reservationClassrooms()
+    {
+        return $this->hasMany(ReservationClassroom::class);
     }
 }
-
-

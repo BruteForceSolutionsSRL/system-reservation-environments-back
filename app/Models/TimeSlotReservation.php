@@ -5,13 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Log extends Model
+class TimeSlotReservation extends Model
 {
     use HasFactory;
 
-    public function administrator()
+    public function timeSlot()
     {
-        return $this->belongsTo(Administrator::class);
+        return $this->belongsTo(TimeSlot::class);
     }
 
     public function reservation()
