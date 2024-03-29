@@ -8,8 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class UniversitySubject extends Model
 {
     use HasFactory;
-<<<<<<< HEAD
-=======
 
     public function teacherSubjects()
     {
@@ -20,5 +18,4 @@ class UniversitySubject extends Model
     {
         return $this->belongsTo(Career::class);
     }
->>>>>>> develop
 }
