@@ -15,6 +15,7 @@ class CreateTimeSlotReservationsTable extends Migration
     {
         Schema::create('time_slot_reservations', function (Blueprint $table) {
             $table->id();
+            $table->dateTime('updated_at');
             $table->unsignedBigInteger('time_slot_id');
             $table->unsignedBigInteger('reservation_id');
 
