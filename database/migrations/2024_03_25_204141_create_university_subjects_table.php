@@ -17,6 +17,7 @@ class CreateUniversitySubjectsTable extends Migration
             $table->id();
             $table->string('name');
             $table->char('grade');
+            $table->dateTime('updated_at');
             $table->unsignedBigInteger('career_id');
 
             $table->foreign('career_id')

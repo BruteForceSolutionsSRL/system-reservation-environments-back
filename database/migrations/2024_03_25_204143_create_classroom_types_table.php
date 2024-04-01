@@ -16,6 +16,7 @@ class CreateClassroomTypesTable extends Migration
         Schema::create('classroom_types', function (Blueprint $table) {
             $table->id();
             $table->string('description');
+            $table->dateTime('updated_at');
         });
     }
 
