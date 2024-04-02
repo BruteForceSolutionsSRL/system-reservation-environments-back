@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use Exception;
 use Illuminate\Http\Request;
 
-use app\Models\Classroom; 
+use App\Models\Classroom; 
+use App\Models\Block; 
+use App\Models\ClassroomType;
 
 class ClassroomController extends Controller
 {
@@ -27,57 +29,62 @@ class ClassroomController extends Controller
      */
     public function index() 
     {
-        $statusCode = 200; 
-        $data = ['Hello']; 
     }
 
     /**
      * @param
      * Request (body): 
      * {
-     * 'environment': 'id', 
-     * 'quantity': 'number', 
-     * 'date': Date, 
-     * 'initial period': 'id', 
-     * 'final period': 'id'
+     * 'name': str, 
+     * 'capacity': 'number', 
+     * 'classroomTypeID': int, 
+     * 'blockID': int
+     * 'floor': int
      * }
      */
     public function store(Request $request) 
     {
-        $dataToJSON = null;
-        $statusCode = null; 
-
         try {
-            $environmentId = $request->input(('environment'));
-            $quantity = $request->input(('quantity'));
-            $date = strtotime($request->input(('date'))); 
-            $initialPeriod = $request->input(('initial period'));
-            $finalPeriod = $request->input(('final period'));
+            $name = strtolower($request->input('name')); 
+            $capacity = $request->input('capacity');
+            $classroomTypeID = $request->input('classroomTypeID'); 
+            $blockID = $request->input('blockID');
+            $floor = $request->input('floor');
 
-            $environment = null; // this have to be connected with database or ORM to consult it to database
+            $classroom = Classroom::where('name', '=', $name)
+                            ->get()
+                            ->pop();
 
-
-            $ok = 1; 
-            // consult to database if its ok : 
-
-            if ($ok!=0) {
-                $dataToJSON = ['assigned' => '0']; 
-            } else {
-                // in this part we just add to the db
-
-
-                $dataToJSON = ['assigned' => '1']; 
+            if ($classroom!=null) {
+                return response()->json(['message'=>'name already registed'], 208); 
             }
+            $block = Block::find($blockID); 
+            if ($block==null) {
+                return response()->json(['message'=>'block does not exists'], 404); 
+            }
+            $classroomType = ClassroomType::find($classroomTypeID);
+            if ($classroomType==null) {
+                return response()->json(['message'=>'classroom type does not exist'], 404);
+            }
+
+            \DB::transaction(
+                function() 
+                use ($name, $capacity, $floor, $blockID, $classroomTypeID) 
+                {
+                $classroom = new Classroom();
+                $classroom->name = $name; 
+                $classroom->capacity = $capacity;
+                $classroom->floor = $floor; 
+                $classroom->block_id = $blockID; 
+                $classroom->classroom_type_id = $classroomTypeID; 
+    
+                $classroom->save();    
+            });
+            return response()->json(['message'=>'classroom registered'], 200);
         } catch (Exception $e) {
-            $statusCode = 500; 
-            $dataToJSON = ['error' => 'Internal Server Error']; 
+            return response()->json(['error'=>$e->getMessage()], 500); 
         }
-
-        // I'm using response with macros, for return JSON objects, and status 
-
-        return response()->json($dataToJSON, $statusCode);
     }
-
     /**
      * @covers
      * To cancel assigned types. 

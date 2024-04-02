@@ -19,6 +19,7 @@ class CreateClassroomsTable extends Migration
             $table->integer('capacity');
             $table->integer('floor');
             $table->dateTime('updated_at');
+            $table->dateTime('created_at');
             $table->unsignedBigInteger('block_id');
             $table->unsignedBigInteger('classroom_type_id');
 

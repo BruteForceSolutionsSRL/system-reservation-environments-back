@@ -17,6 +17,7 @@ class CreateReservationStatusesTable extends Migration
             $table->id();
             $table->string('status');
             $table->dateTime('updated_at');
+            $table->dateTime('created_at');
         });
     }
 

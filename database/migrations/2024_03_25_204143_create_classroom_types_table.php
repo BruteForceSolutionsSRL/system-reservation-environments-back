@@ -17,6 +17,7 @@ class CreateClassroomTypesTable extends Migration
             $table->id();
             $table->string('description');
             $table->dateTime('updated_at');
+            $table->dateTime('created_at');
         });
     }
 

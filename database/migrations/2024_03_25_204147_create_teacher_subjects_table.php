@@ -17,6 +17,7 @@ class CreateTeacherSubjectsTable extends Migration
             $table->id();
             $table->integer('group_number');
             $table->dateTime('updated_at');
+            $table->dateTime('created_at');
             $table->unsignedBigInteger('teacher_id');
             $table->unsignedBigInteger('university_subject_id');
 

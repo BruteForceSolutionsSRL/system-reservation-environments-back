@@ -17,6 +17,7 @@ class CreateTimeSlotsTable extends Migration
             $table->id();
             $table->time('time');
             $table->dateTime('updated_at');
+            $table->dateTime('created_at');
         });
     }
 

@@ -17,6 +17,7 @@ class CreateCareersTable extends Migration
             $table->id();
             $table->string('name');
             $table->dateTime('updated_at');
+            $table->dateTime('created_at');
         });
     }
 
