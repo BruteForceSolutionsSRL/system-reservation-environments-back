@@ -15,6 +15,8 @@ class CreateTeachersTable extends Migration
     {
         Schema::create('teachers', function (Blueprint $table) {
             $table->id();
+            $table->dateTime('updated_at');
+            $table->dateTime('created_at');
             $table->unsignedBigInteger('person_id');
 
             $table->foreign('person_id')

@@ -20,6 +20,7 @@ class CreateReservationsTable extends Migration
             $table->integer('repeat');
             $table->date('date');
             $table->string('reason');
+            $table->dateTime('updated_at');
             $table->unsignedBigInteger('reservation_status_id');
 
             $table->foreign('reservation_status_id')
