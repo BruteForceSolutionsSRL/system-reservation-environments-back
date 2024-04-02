@@ -22,5 +22,5 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 //Route::middleware('api:cors')->group(function() {
     Route::post('reservation/assign', 'App\Http\Controllers\ReservationController@assign');
     Route::middleware('sanitize:api')->post('/classroom', 'App\Http\Controllers\ClassroomController@store');
-
+    Route::get('/classroomtypes', 'App\Http\Controllers\ClassroomTypeController@list');
 //});
