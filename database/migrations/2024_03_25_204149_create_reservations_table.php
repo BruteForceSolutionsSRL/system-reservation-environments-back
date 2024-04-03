@@ -16,12 +16,11 @@ class CreateReservationsTable extends Migration
         Schema::create('reservations', function (Blueprint $table) {
             $table->id();
             $table->integer('number_of_students');
-            $table->timestamp('created_at');
             $table->integer('repeat');
             $table->date('date');
             $table->string('reason');
-            $table->dateTime('updated_at');
             $table->unsignedBigInteger('reservation_status_id');
+            $table->timestamps();
 
             $table->foreign('reservation_status_id')
                     ->references('id')

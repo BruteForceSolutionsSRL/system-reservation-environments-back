@@ -17,11 +17,10 @@ class CreateNotificationsTable extends Migration
             $table->id();
             $table->string('title');
             $table->string('description');
-            $table->timestamp('created_at');
             $table->boolean('readed');
-            $table->dateTime('updated_at');
             $table->unsignedBigInteger('person_id');
             $table->unsignedBigInteger('notification_type_id');
+            $table->timestamps();
 
             $table->foreign('person_id')
                     ->references('id')

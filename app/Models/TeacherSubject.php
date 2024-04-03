@@ -23,4 +23,9 @@ class TeacherSubject extends Model
     {
         return $this->hasMany(ReservationTeacherSubject::class);
     }
+
+    public function reservations()
+    {
+        return $this->belongsToMany(Reservation::class);
+    }
 }
