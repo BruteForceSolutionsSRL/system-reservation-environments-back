@@ -19,8 +19,13 @@ class Classroom extends Model
         return $this->belongsTo(ClassroomType::class);
     }
 
-    public function reservationClassrooms()
+    public function classroomReservations()
     {
-        return $this->hasMany(ReservationClassroom::class);
+        return $this->hasMany(ClassroomReservation::class);
+    }
+
+    public function reservations()
+    {
+        return $this->belongsToMany(Reservation::class);
     }
 }

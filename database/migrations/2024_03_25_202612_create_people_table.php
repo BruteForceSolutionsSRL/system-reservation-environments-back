@@ -21,8 +21,7 @@ class CreatePeopleTable extends Migration
             $table->string('email')->unique();
             $table->string('nationality');
             $table->string('phone_number');
-            $table->dateTime('updated_at');
-            $table->dateTime('created_at');
+            $table->timestamps();
         });
     }
 

@@ -17,8 +17,7 @@ class CreateNotificationTypesTable extends Migration
             $table->id();
             $table->string('description');
             $table->string('color');
-            $table->dateTime('updated_at');
-            $table->dateTime('created_at');
+            $table->timestamps();
         });
     }
 
