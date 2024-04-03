@@ -9,8 +9,13 @@ class TimeSlot extends Model
 {
     use HasFactory;
 
-    public function timeSlotReservations()
+    public function reservationTimeSlots()
     {
-        return $this->hasMany(TimeSlotReservation::class);
+        return $this->hasMany(ReservationTimeSlot::class);
+    }
+
+    public function reservations()
+    {
+        return $this->belongsToMany(Reservation::class);
     }
 }

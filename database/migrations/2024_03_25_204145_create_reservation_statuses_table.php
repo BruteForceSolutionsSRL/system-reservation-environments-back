@@ -16,7 +16,7 @@ class CreateReservationStatusesTable extends Migration
         Schema::create('reservation_statuses', function (Blueprint $table) {
             $table->id();
             $table->string('status');
-            $table->dateTime('updated_at');
+            $table->timestamps();
         });
     }
 

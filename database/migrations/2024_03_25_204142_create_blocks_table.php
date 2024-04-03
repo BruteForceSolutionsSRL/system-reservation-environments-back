@@ -16,7 +16,7 @@ class CreateBlocksTable extends Migration
         Schema::create('blocks', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->dateTime('updated_at');
+            $table->timestamps();
         });
     }
 

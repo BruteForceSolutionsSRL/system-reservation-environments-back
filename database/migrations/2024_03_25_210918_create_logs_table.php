@@ -16,9 +16,9 @@ class CreateLogsTable extends Migration
         Schema::create('logs', function (Blueprint $table) {
             $table->id();
             $table->string('description');
-            $table->dateTime('updated_at');
             $table->unsignedBigInteger('administrator_id');
             $table->unsignedBigInteger('reservation_id');
+            $table->timestamps();
 
             $table->foreign('administrator_id')
                     ->references('id')
