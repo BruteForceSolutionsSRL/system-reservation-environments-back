@@ -31,6 +31,19 @@ class ClassroomController extends Controller
     {
     }
 
+    public function classroomsByBlock($id)
+    {
+        try {
+            $classrooms = Classroom::select('id', 'name', 'capacity', 'floor')
+                ->where('block_id', $id)
+                ->get();
+
+            return response()->json($classrooms, 200);
+        } catch (Exception $e) {
+            return response()->json(['error'=>$e->getMessage()], 500); 
+        }    
+    }
+
     /**
      * @param
      * Request (body): 

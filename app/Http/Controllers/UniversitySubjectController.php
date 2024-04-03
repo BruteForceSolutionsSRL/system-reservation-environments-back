@@ -18,7 +18,8 @@ class UniversitySubjectController extends Controller
     public function index()
     {
         try {
-            $universitySubjects = UniversitySubject::pluck('id','name');
+            $universitySubjects = UniversitySubject::select('id','name')
+                ->get();
             return response()->json($universitySubjects,200);
         } catch (Exeption $e) {
             return response()->json(['error' => $e -> getMessage()],500);
@@ -30,12 +31,17 @@ class UniversitySubjectController extends Controller
      * Obtaining subjects, 
      * through a teacher id.
      */
-    public function getSubjectsByTeacher($id)
+    public function subjectsCommonTeachers($id)
     {
         try {
-            $teacherSubjects = TeacherSubject::where('teacher_id', $id)->get();
-            $subjects = $teacherSubjects->pluck('university_subject_id');
-            $universitySubjects = UniversitySubject::whereIn('id',$subjects)->pluck('id','name');
+            $universitySubjects = UniversitySubject::select('id', 'name')
+                ->whereIn('id', function ($query) use ($id){
+                    $query->select('university_subject_id')
+                        ->from('teacher_subjects')
+                        ->where('teacher_id', $id);
+                })
+                ->get();
+
             return response()->json($universitySubjects, 200);
         } catch (Exeption $e) {
             return response()->json(['error' => $e -> getMessage()],500);

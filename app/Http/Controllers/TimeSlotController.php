@@ -4,11 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-use App\Models\Teacher;
-use App\Models\Person;
-use App\Models\TeacherSubject;
+use App\Models\TimeSlot;
 
-class TeacherController extends Controller
+class TimeSlotController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -17,28 +15,13 @@ class TeacherController extends Controller
      */
     public function index()
     {
-        //     
-    }
-
-    public function teachersCommonSubjects($subjectID){
         try {
-            $teacherSubjects = TeacherSubject::with('teacher.person')
-                ->where('university_subject_id', $subjectID)
-                ->select('teacher_id', 'group_number')
+            $timeSlots = TimeSlot::select('time', 'id')
                 ->get();
-   
-            $teachersInfo = $teacherSubjects->map(function ($teacherSubject){
-                return [
-                    'teacher_id' => $teacherSubject->teacher->id,
-                    'teacher_name' => $teacherSubject->teacher->person->name,
-                    'teacher_last_name' => $teacherSubject->teacher->person->last_name,
-                    'group_number' => $teacherSubject->group_number,
-                ];
-            });
-            return response()->json($teachersInfo, 200);
-        } catch (Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
+            return response()->json($timeSlots, 200);
+        } catch (Exeption $e) {
+            return response()->json(['error' => $e -> getMessage()],500);
+        }            
     }
 
     /**
