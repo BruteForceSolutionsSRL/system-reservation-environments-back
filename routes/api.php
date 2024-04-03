@@ -17,3 +17,9 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::get('reservations', 'App\Http\Controllers\ReservationController@index');
+Route::get('reservation/{id}', 'App\Http\Controllers\ReservationController@show');
+Route::put('reservation/reject/{id}', 'App\Http\Controllers\ReservationController@rejectReservation');
+
+Route::post('notification', 'App\Http\Controllers\NotificationController@store');
