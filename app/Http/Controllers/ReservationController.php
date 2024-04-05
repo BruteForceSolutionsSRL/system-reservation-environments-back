@@ -9,8 +9,12 @@ use Illuminate\Http\Request;
 
 use App\Models\Reservation; 
 use App\Models\ReservationStatus;
-use App\Models\TimeSlot; 
-use App\Models\Classroom; 
+use App\Models\TimeSlot;
+use App\Models\ReservationTimeSlot; 
+use App\Models\Classroom;
+use App\Models\ClassroomReservation;
+use App\Models\TeacherSubject;
+use App\Models\ReservationTeacherSubject;
 
 class ReservationController extends Controller
 {
@@ -23,7 +27,64 @@ class ReservationController extends Controller
     }
     public function store(Request $request) 
     {
-        return response()->json([], 200); 
+        try {
+            $data = $this->validateReservationData($request);
+
+            $reservation = Reservation::create([
+                'number_of_students' => $data['number_of_students'],
+                'repeat' => 0,
+                'date' => $data['date'],
+                'reason' => $data['reason'],
+                'reservation_status_id' => 3,
+            ]);
+
+            $reservationId = $reservation->id;
+
+            ReservationTeacherSubject::create([
+                'reservation_id' => $reservationId,
+                'teacher_subject_id' => $data['teacher_subject_id'],
+            ]);
+
+            ClassroomReservation::create([
+                'reservation_id' => $reservationId,
+                'classroom_id' => $data['classroom_id'],
+            ]);
+
+            ReservationTimeSlot::create([
+                'reservation_id' => $reservationId,
+                'time_slot_id' => $data['one_time_slot_id'],
+            ]);
+
+            ReservationTimeSlot::create([
+                'reservation_id' => $reservationId,
+                'time_slot_id' => $data['two_time_slot_id'],
+            ]);
+
+            return response()->json(['message' => '¡Reservación enviada exitosamente!'], 201);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        } 
+    }
+
+    private function validateReservationData(Request $request)
+    {
+        return $request->validate([
+            'number_of_students' => 'required|integer',
+            'date' => 'required|date',
+            'reason' => 'required|string',
+            'teacher_subject_id' => 'required|exists:teacher_subjects,id',
+            'classroom_id' => 'required|exists:classrooms,id',
+            'one_time_slot_id' => 'required|exists:time_slots,id',
+            'two_time_slot_id' => [
+                'required',
+                'exists:time_slots,id',
+                function ($attribute, $value, $fail) use ($request) {
+                    if ($value <= $request->input('one_time_slot_id')) {
+                        $fail('Los periodos seleccionados para la reserva no son válidos.');
+                    }
+                },
+            ],
+        ]);
     }
 
     /**

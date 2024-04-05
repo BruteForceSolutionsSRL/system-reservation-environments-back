@@ -24,7 +24,7 @@ class TeacherController extends Controller
         try {
             $teacherSubjects = TeacherSubject::with('teacher.person')
                 ->where('university_subject_id', $subjectID)
-                ->select('teacher_id', 'group_number')
+                ->select('id','teacher_id', 'group_number')
                 ->get();
    
             $teachersInfo = $teacherSubjects->map(function ($teacherSubject){
@@ -33,6 +33,7 @@ class TeacherController extends Controller
                     'teacher_name' => $teacherSubject->teacher->person->name,
                     'teacher_last_name' => $teacherSubject->teacher->person->last_name,
                     'group_number' => $teacherSubject->group_number,
+                    'teacher_subject_id' => $teacherSubject->id,
                 ];
             });
             return response()->json($teachersInfo, 200);

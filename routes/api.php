@@ -8,6 +8,7 @@ use App\Http\Controllers\UniversitySubjectController;
 use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\TimeSlotController;
 use App\Http\Controllers\BlockController;
+use App\Http\Controllers\ReservationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -28,7 +29,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     Route::post('reservation/assign', 'App\Http\Controllers\ReservationController@assign');
     Route::middleware('sanitize:api')->post('/classroom', 'App\Http\Controllers\ClassroomController@store');
     Route::get('/classroomtypes', 'App\Http\Controllers\ClassroomTypeController@list');
-    Route::get('/classrooms/{id}','App\Http\Controllers\ClassroomController@classroomsByBlock');
+    Route::get('/classrooms/{blockId}','App\Http\Controllers\ClassroomController@classroomsByBlock');
 //});
 
 Route::get('/subjects', [UniversitySubjectController::class, 'index']);
@@ -36,3 +37,4 @@ Route::get('/subjects/teacher/{id}', [UniversitySubjectController::class, 'subje
 Route::get('/teachers/{subjectID}', [TeacherController::class, 'teachersCommonSubjects']);
 Route::get('/periods', [TimeSlotController::class, 'index']);
 Route::get('/blocks', [BlockController::class, 'index']);
+Route::post('/reservation', [ReservationController::class, 'store']);

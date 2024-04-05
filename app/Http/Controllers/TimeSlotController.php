@@ -17,7 +17,13 @@ class TimeSlotController extends Controller
     {
         try {
             $timeSlots = TimeSlot::select('time', 'id')
-                ->get();
+                ->get()
+                ->map(function ($timeSlot) {
+                    return [
+                        'time_slot_id' => $timeSlot->id,
+                        'time' => $timeSlot->time,
+                    ];
+                });
             return response()->json($timeSlots, 200);
         } catch (Exeption $e) {
             return response()->json(['error' => $e -> getMessage()],500);

@@ -21,4 +21,5 @@ Previamente copiar el ".env.example" y dejar la copia solo con el nombre ".env"
 Debe esta configurado el .env para conectarse a la base de datos
 ```bash
 1. php artisan migrate
+2. php artisan migrate:fresh
 ```

@@ -9,6 +9,8 @@ class ReservationTeacherSubject extends Model
 {
     use HasFactory;
 
+    protected $table = 'reservation_teacher_subject';
+
     public function reservation()
     {
         return $this->belongsTo(Reservation::class);

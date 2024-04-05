@@ -31,12 +31,20 @@ class ClassroomController extends Controller
     {
     }
 
-    public function classroomsByBlock($id)
+    public function classroomsByBlock($blockId)
     {
         try {
             $classrooms = Classroom::select('id', 'name', 'capacity', 'floor')
-                ->where('block_id', $id)
-                ->get();
+                ->where('block_id', $blockId)
+                ->get()
+                ->map(function ($classroom){
+                    return [
+                        'classroom_id' => $classroom->id,
+                        'name' => $classroom->name,
+                        'capacity' => $classroom->capacity,
+                        'floor' => $classroom->floor,
+                    ];
+                });
 
             return response()->json($classrooms, 200);
         } catch (Exception $e) {
