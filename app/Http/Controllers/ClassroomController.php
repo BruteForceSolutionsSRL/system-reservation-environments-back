@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 use App\Models\Classroom; 
 use App\Models\Block; 
@@ -88,7 +89,7 @@ class ClassroomController extends Controller
                 return response()->json(['message'=>'classroom type does not exist'], 404);
             }
 
-            \DB::transaction(
+            DB::transaction(
                 function() 
                 use ($name, $capacity, $floor, $blockID, $classroomTypeID) 
                 {

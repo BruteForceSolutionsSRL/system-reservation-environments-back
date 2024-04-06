@@ -2,19 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ReservationClassroom;
 use DateTime;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 use App\Models\Reservation; 
 use App\Models\ReservationStatus;
-use App\Models\TimeSlot;
-use App\Models\ReservationTimeSlot; 
-use App\Models\Classroom;
-use App\Models\ClassroomReservation;
-use App\Models\TeacherSubject;
-use App\Models\ReservationTeacherSubject;
 
 class ReservationController extends Controller
 {
@@ -28,8 +23,16 @@ class ReservationController extends Controller
     public function store(Request $request) 
     {
         try {
-            $data = $this->validateReservationData($request);
+            DB::beginTransaction();
+            $validator = $this->validateReservationData($request);
 
+            if ($validator->fails()) {
+                return response()->json(['errors' => $validator->errors()], 422);
+            }
+
+            $data = $validator->validated();
+
+            // Creacion de la reserva.
             $reservation = Reservation::create([
                 'number_of_students' => $data['number_of_students'],
                 'repeat' => 0,
@@ -38,52 +41,58 @@ class ReservationController extends Controller
                 'reservation_status_id' => 3,
             ]);
 
-            $reservationId = $reservation->id;
+            // Tabla intermediaria 'reservation_teacher_subject'.
+            $reservation->teacherSubjects()->attach($data['teacher_subject_ids'], ['created_at' => now(), 'updated_at' => now()]);
+            
+            //Tabla intermediaria 'classroom_reservation'.
+            $reservation->classrooms()->attach($data['classroom_ids'], ['created_at' => now(), 'updated_at' => now()]);
+            
+            //Tabla intermediaria 'reservation_time_slot'.
+            $reservation->timeSlots()->attach($data['time_slot_ids'], ['created_at' => now(), 'updated_at' => now()]);
 
-            ReservationTeacherSubject::create([
-                'reservation_id' => $reservationId,
-                'teacher_subject_id' => $data['teacher_subject_id'],
-            ]);
-
-            ClassroomReservation::create([
-                'reservation_id' => $reservationId,
-                'classroom_id' => $data['classroom_id'],
-            ]);
-
-            ReservationTimeSlot::create([
-                'reservation_id' => $reservationId,
-                'time_slot_id' => $data['one_time_slot_id'],
-            ]);
-
-            ReservationTimeSlot::create([
-                'reservation_id' => $reservationId,
-                'time_slot_id' => $data['two_time_slot_id'],
-            ]);
-
-            return response()->json(['message' => '¡Reservación enviada exitosamente!'], 201);
+            DB::commit();
+            return response()->json(['message' => '¡Reservación creada exitosamente!'], 201);
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json(['error' => $e->getMessage()], 500);
         } 
     }
 
     private function validateReservationData(Request $request)
     {
-        return $request->validate([
+        return Validator::make($request->all(), [
             'number_of_students' => 'required|integer',
             'date' => 'required|date',
             'reason' => 'required|string',
-            'teacher_subject_id' => 'required|exists:teacher_subjects,id',
-            'classroom_id' => 'required|exists:classrooms,id',
-            'one_time_slot_id' => 'required|exists:time_slots,id',
-            'two_time_slot_id' => [
+            'teacher_subject_ids.*' => 'required|exists:teacher_subjects,id',
+            'classroom_ids.*' => 'required|exists:classrooms,id',
+            'time_slot_ids.*' => 'required|exists:time_slots,id',
+            'time_slot_ids' => [
                 'required',
-                'exists:time_slots,id',
-                function ($attribute, $value, $fail) use ($request) {
-                    if ($value <= $request->input('one_time_slot_id')) {
-                        $fail('Los periodos seleccionados para la reserva no son válidos.');
+                'array',
+                function ($attribute, $value, $fail) {
+                    if (count($value) !== 2) {
+                        $fail('Debe seleccionar exactamente dos periodos de tiempo.');
+                    }else if ($value[1] <= $value[0]) {
+                        $fail('El segundo periodo debe ser mayor que el primero.');
                     }
-                },
+                }
             ],
+        ], [
+            'number_of_students.required' => 'El número de estudiantes es obligatorio.',
+            'number_of_students.integer' => 'El número de estudiantes debe ser un valor entero.',
+            'date.required' => 'La fecha es obligatoria.',
+            'date.date' => 'La fecha debe ser un formato válido.',
+            'reason.required' => 'El motivo de la reserva es obligatorio.',
+            'reason.string' => 'El motivo de la reserva debe ser un texto.',
+            'teacher_subject_ids.*.required' => 'Se requiere al menos una asignatura de profesor.',
+            'teacher_subject_ids.*.exists' => 'Una de las asignaturas de profesor seleccionadas no es válida.',
+            'classroom_ids.*.required' => 'Se requiere al menos una aula.',
+            'classroom_ids.*.exists' => 'Una de las aulas seleccionadas no es válida.',
+            'time_slot_ids.*.required' => 'Se requieren los periodos de tiempo.',
+            'time_slot_ids.*.exists' => 'Uno de los periodos de tiempo seleccionados no es válido.',
+            'time_slot_ids.required' => 'Se requieren dos periodos de tiempo.',
+            'time_slot_ids.array' => 'Los periodos de tiempo deben ser un arreglo.',
         ]);
     }
 

@@ -8,13 +8,19 @@ use App\Models\Block;
 
 class BlockController extends Controller
 {
-    public function index()
+    public function list()
     {
         try {
             $blocks = Block::select('id', 'name')
-                ->get();
+                ->get()
+                ->map(function ($block){
+                    return [
+                        'block_id' => $block->id,
+                        'name' => $block->name,
+                    ];
+                });
             return response()->json($blocks, 200);
-        } catch (Exeption $e) {
+        } catch (\Exception $e) {
             return response()->json(['error'=>$e->getMessage()],500);
         }
     }

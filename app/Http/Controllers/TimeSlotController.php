@@ -15,6 +15,11 @@ class TimeSlotController extends Controller
      */
     public function index()
     {
+        //
+    }
+
+    public function list()
+    {
         try {
             $timeSlots = TimeSlot::select('time', 'id')
                 ->get()
@@ -25,9 +30,9 @@ class TimeSlotController extends Controller
                     ];
                 });
             return response()->json($timeSlots, 200);
-        } catch (Exeption $e) {
+        } catch (\Exception $e) {
             return response()->json(['error' => $e -> getMessage()],500);
-        }            
+        }  
     }
 
     /**
