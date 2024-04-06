@@ -18,6 +18,7 @@ class CreateLogsTable extends Migration
             $table->string('description');
             $table->unsignedBigInteger('administrator_id');
             $table->unsignedBigInteger('reservation_id');
+            $table->timestamps();
 
             $table->foreign('administrator_id')
                     ->references('id')

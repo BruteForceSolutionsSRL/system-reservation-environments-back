@@ -20,6 +20,7 @@ class CreateClassroomsTable extends Migration
             $table->integer('floor');
             $table->unsignedBigInteger('block_id');
             $table->unsignedBigInteger('classroom_type_id');
+            $table->timestamps();
 
             $table->foreign('block_id')
                     ->references('id')

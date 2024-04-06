@@ -18,6 +18,7 @@ class CreateTeacherSubjectsTable extends Migration
             $table->integer('group_number');
             $table->unsignedBigInteger('teacher_id');
             $table->unsignedBigInteger('university_subject_id');
+            $table->timestamps();
 
             $table->foreign('teacher_id')
                     ->references('id')

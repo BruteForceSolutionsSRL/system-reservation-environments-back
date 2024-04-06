@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateTimeSlotReservationsTable extends Migration
+class CreateReservationTeacherSubjectTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,18 +13,19 @@ class CreateTimeSlotReservationsTable extends Migration
      */
     public function up()
     {
-        Schema::create('time_slot_reservations', function (Blueprint $table) {
+        Schema::create('reservation_teacher_subject', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('time_slot_id');
             $table->unsignedBigInteger('reservation_id');
+            $table->unsignedBigInteger('teacher_subject_id');
+            $table->timestamps();
 
-            $table->foreign('time_slot_id')
-                    ->references('id')
-                    ->on('time_slots')
-                    ->cascadeOnDelete();
             $table->foreign('reservation_id')
                     ->references('id')
                     ->on('reservations')
+                    ->cascadeOnDelete();
+            $table->foreign('teacher_subject_id')
+                    ->references('id')
+                    ->on('teacher_subjects')
                     ->cascadeOnDelete();
         });
     }
@@ -36,6 +37,6 @@ class CreateTimeSlotReservationsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('time_slot_reservations');
+        Schema::dropIfExists('reservation_teacher_subjects');
     }
 }

@@ -17,6 +17,7 @@ class CreateNotificationTypesTable extends Migration
             $table->id();
             $table->string('description');
             $table->string('color');
+            $table->timestamps();
         });
     }
 

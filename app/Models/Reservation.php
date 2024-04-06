@@ -9,14 +9,22 @@ class Reservation extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'number_of_students',
+        'repeat',
+        'date',
+        'reason',
+        'reservation_status_id'
+    ];
+
     public function logs()
     {
         return $this->hasMany(Log::class);
     }
 
-    public function timeSlotReservations()
+    public function reservationTimeSlots()
     {
-        return $this->hasMany(TimeSlotReservation::class);
+        return $this->hasMany(ReservationTimeSlot::class);
     }
 
     public function reservationStatus()
@@ -29,8 +37,23 @@ class Reservation extends Model
         return $this->hasMany(ReservationTeacherSubject::class);
     }
 
-    public function reservationClassrooms()
+    public function classroomReservations()
     {
-        return $this->hasMany(ReservationClassroom::class);
+        return $this->hasMany(ClassroomReservation::class);
+    }
+
+    public function classrooms()
+    {
+        return $this->belongsToMany(Classroom::class);
+    }
+
+    public function teacherSubjects()
+    {
+        return $this->belongsToMany(TeacherSubject::class);
+    }
+
+    public function timeSlots()
+    {
+        return $this->belongsToMany(TimeSlot::class);
     }
 }
