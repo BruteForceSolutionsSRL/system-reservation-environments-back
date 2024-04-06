@@ -173,13 +173,13 @@ class ReservationController extends Controller
     {
         try {
             //DB::statement('LOCK TABLE reservations IN SHARE MODE'); 
-            $classrooms = $reservation->reservationClassrooms;
-            $timeSlots = $reservation->timeSlotReservations; 
+            $classrooms = $reservation->classrooms;
+            $timeSlots = $reservation->timeSlots; 
             $init = -1; 
             $end = -1;
             foreach ($timeSlots as $iterable) {
-                if ($init==-1) $init = $iterable->timeSlot->id;
-                else $end = $iterable->timeSlot->id;
+                if ($init==-1) $init = $iterable->id;
+                else $end = $iterable->id;
             }
             if ($init>$end) {
                 $temp = $init; 
@@ -188,8 +188,7 @@ class ReservationController extends Controller
             }
             $date = $reservation->date; 
             
-            foreach ($classrooms as $iterable) {
-                $classroom = $iterable->classroom;
+            foreach ($classrooms as $classroom) {
                 $reservations = $this->findAcceptedReservationsByClassroomAndDate(
                     $classroom->id, 
                     $date
@@ -199,10 +198,10 @@ class ReservationController extends Controller
                 foreach($reservations as $reservation) {
                     $left = -1; 
                     $right = -1;
-                    $timeSlotReservations = $reservation->timeSlotReservations;
+                    $timeSlotReservations = $reservation->timeSlots;
                     foreach ($timeSlotReservations as $timeSlotIterable) {
-                        if ($left==-1) $left = $timeSlotIterable->timeSlot->id; 
-                        else $right  = $timeSlotIterable->timeSlot->id;
+                        if ($left==-1) $left = $timeSlotIterable->id; 
+                        else $right  = $timeSlotIterable->id;
                     } 
                     if ($left>$right) {
                         $temp = $left; 
@@ -234,8 +233,8 @@ class ReservationController extends Controller
                                 ->pop()
                                 ->id; 
 
-        $reservationSet = Reservation::with('reservationClassrooms')
-                        ->whereHas('reservationClassrooms', 
+        $reservationSet = Reservation::
+                        whereHas('classrooms', 
                             function ($query) use ($classroomId) {
                                 $query -> where ('classroom_id', '=', $classroomId);
                             })
