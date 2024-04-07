@@ -33,10 +33,10 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 //});
 
 Route::get('reservations', 'App\Http\Controllers\ReservationController@index');
-Route::get('reservation/{id}', 'App\Http\Controllers\ReservationController@show');
-Route::put('reservation/reject/{id}', 'App\Http\Controllers\ReservationController@rejectReservation');
+Route::get('reservation/{reservationId}', 'App\Http\Controllers\ReservationController@show');
+Route::middleware('sanitize:api')->put('reservation/reject/{reservationId}', 'App\Http\Controllers\ReservationController@rejectReservation');
 
-Route::post('notification', 'App\Http\Controllers\NotificationController@store');
+Route::middleware('sanitize:api')->post('notification', 'App\Http\Controllers\NotificationController@store');
 
 Route::get('/subjects/teacher/{teacherId}', [TeacherSubjectController::class, 'subjectsByTeacher']);
 Route::get('/teachers/subject/{universitySubjectID}', [TeacherSubjectController::class, 'teachersBySubject']);

@@ -77,7 +77,7 @@ class ReservationController extends Controller
         ];
     }
 
-    public function show($id)
+    public function show($reservationId)
     {
         $reservation = Reservation::with([
             'reservationStatus:id,status',
@@ -89,7 +89,7 @@ class ReservationController extends Controller
             'classrooms:id,name,capacity,floor,block_id,classroom_type_id',
             'classrooms.block:id,name',
             'classrooms.classroomType:id,description'
-        ])->findOrFail($id);
+        ])->findOrFail($reservationId);
 
         if ($reservation == null) {
             return response()->json(['error'
@@ -99,9 +99,9 @@ class ReservationController extends Controller
         return ReservationController::formatOutput($reservation);
     }
 
-    public function rejectReservation($id)
+    public function rejectReservation($reservationId)
     {
-        $reservation = Reservation::findOrFail($id);
+        $reservation = Reservation::findOrFail($reservationId);
 
         if ($reservation == null) {
             return response()->json(['error'

@@ -43,7 +43,7 @@ class NotificationController extends Controller
 
         if ($person == null) {
             return response()->json(['error'
-                    => 'There is no person with this ID'], 400);
+                    => 'There is no person with this ID'], 404);
         }
 
         $notificationType = NotificationType::findOrFail(
@@ -51,7 +51,7 @@ class NotificationController extends Controller
 
         if ($notificationType == null) {
             return response()->json(['error'
-                    => 'Use a correct notification type'], 400);
+                    => 'Use a correct notification type'], 500);
         }
 
         $notification = new Notification(); 
@@ -70,9 +70,15 @@ class NotificationController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show($notificationId)
     {
-        $notification = Notification::find($id);
+        $notification = Notification::find($notificationId);
+
+        if ($notification == null) {
+            return response()->json(['error'
+                    => 'There is no notification with this ID'], 404);
+        }
+
         return $notification;
     }
 
