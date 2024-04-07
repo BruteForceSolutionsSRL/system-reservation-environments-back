@@ -53,7 +53,7 @@ class ReservationController extends Controller
                     'time' => $timeSlot->time
                 ];
             }),
-            'asignament' => $reservation->teacherSubjects->map(function ($teacherSubject) {
+            'assignment' => $reservation->teacherSubjects->map(function ($teacherSubject) {
                 return [
                     'id' => $teacherSubject->id,
                     'groupNumber' => $teacherSubject->group_number,

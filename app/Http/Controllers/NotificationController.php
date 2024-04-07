@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Notification;
 use App\Models\NotificationType;
 use App\Models\Person;
+use Exception;
 use Illuminate\Http\Request;
 
 class NotificationController extends Controller
@@ -54,14 +55,25 @@ class NotificationController extends Controller
                     => 'Use a correct notification type'], 500);
         }
 
-        $notification = new Notification(); 
-        $notification->title = $request->title;
-        $notification->description = $request->description;
-        $notification->created_at = date('Y-m-d H:i:s');
-        $notification->readed = 0;
-        $notification->person_id = $request->person_id;
-        $notification->notification_type_id = $request->notification_type_id;
-        $notification->save();
+        try {
+            DB::beginTransaction();
+
+            $notification = Notification::create([
+                'title' => $request->title,
+                'description' => $request->description,
+                'created_at' => now(),
+                'readed' => 0,
+                'person_id' => $request->person_id,
+                'notification_type_id' => $request->notification_type_id
+            ]);
+
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+
+        return response()->json($notification, 201);
     }
 
     /**
