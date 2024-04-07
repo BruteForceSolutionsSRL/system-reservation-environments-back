@@ -9,6 +9,8 @@ class ReservationTimeSlot extends Model
 {
     use HasFactory;
 
+    protected $table = 'reservation_time_slot';
+
     public function timeSlot()
     {
         return $this->belongsTo(TimeSlot::class);

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 use App\Models\Classroom; 
 use App\Models\Block; 
@@ -29,6 +30,27 @@ class ClassroomController extends Controller
      */
     public function index() 
     {
+    }
+
+    public function classroomsByBlock($blockId)
+    {
+        try {
+            $classrooms = Classroom::select('id', 'name', 'capacity', 'floor')
+                ->where('block_id', $blockId)
+                ->get()
+                ->map(function ($classroom){
+                    return [
+                        'classroom_id' => $classroom->id,
+                        'name' => $classroom->name,
+                        'capacity' => $classroom->capacity,
+                        'floor' => $classroom->floor,
+                    ];
+                });
+
+            return response()->json($classrooms, 200);
+        } catch (Exception $e) {
+            return response()->json(['error'=>$e->getMessage()], 500); 
+        }    
     }
 
     /**
@@ -67,7 +89,7 @@ class ClassroomController extends Controller
                 return response()->json(['message'=>'classroom type does not exist'], 404);
             }
 
-            \DB::transaction(
+            DB::transaction(
                 function() 
                 use ($name, $capacity, $floor, $blockID, $classroomTypeID) 
                 {

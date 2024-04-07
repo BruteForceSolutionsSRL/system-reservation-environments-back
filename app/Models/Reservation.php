@@ -9,6 +9,14 @@ class Reservation extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'number_of_students',
+        'repeat',
+        'date',
+        'reason',
+        'reservation_status_id'
+    ];
+
     public function logs()
     {
         return $this->hasMany(Log::class);
