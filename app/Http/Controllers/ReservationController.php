@@ -18,8 +18,108 @@ class ReservationController extends Controller
      */
     public function index() 
     {
-        return response()->json([]); 
+        $reservations = Reservation::with([
+            'reservationStatus:id,status',
+            'timeSlots:id,time',
+            'teacherSubjects:id,group_number,teacher_id,university_subject_id',
+            'teacherSubjects.teacher:id,person_id',
+            'teacherSubjects.teacher.person:id,name,last_name,email,phone_number',
+            'teacherSubjects.universitySubject:id,name',
+            'classrooms:id,name,capacity,floor,block_id,classroom_type_id',
+            'classrooms.block:id,name',
+            'classrooms.classroomType:id,description'
+        ])->get();
+
+        $formattedReservations = $reservations->map(function ($reservation) {
+            return ReservationController::formatOutput($reservation);
+        });
+
+        return response()->json($formattedReservations, 200);
     }
+
+    private function formatOutput($reservation)
+    {
+        return [
+            'id' => $reservation->id,
+            'numberOfStudents' => $reservation->number_of_students,
+            'date' => $reservation->date,
+            'reason' => $reservation->reason,
+            'createdAt' => $reservation->created_at,
+            'updatedAt' => $reservation->updated_at,
+            'reservationStatus' => $reservation->reservationStatus,
+            'schedule' => $reservation->timeSlots->map(function ($timeSlot) {
+                return [
+                    'id' => $timeSlot->id,
+                    'time' => $timeSlot->time
+                ];
+            }),
+            'assignment' => $reservation->teacherSubjects->map(function ($teacherSubject) {
+                return [
+                    'id' => $teacherSubject->id,
+                    'groupNumber' => $teacherSubject->group_number,
+                    'teacher' => [
+                        'id' => $teacherSubject->teacher->id,
+                        'person' => $teacherSubject->teacher->person
+                    ],
+                    'universitySubject' => $teacherSubject->universitySubject
+                ];
+            }),
+            'classrooms' => $reservation->classrooms->map(function ($classroom) {
+                return [
+                    'id' => $classroom->id,
+                    'name' => $classroom->name,
+                    'capacity' => $classroom->capacity,
+                    'floor' => $classroom->floor,
+                    'block' => $classroom->block,
+                    'classroomType' => $classroom->classroomType
+                ];
+            })
+        ];
+    }
+
+    public function show($reservationId)
+    {
+        $reservation = Reservation::with([
+            'reservationStatus:id,status',
+            'timeSlots:id,time',
+            'teacherSubjects:id,group_number,teacher_id,university_subject_id',
+            'teacherSubjects.teacher:id,person_id',
+            'teacherSubjects.teacher.person:id,name,last_name,email,phone_number',
+            'teacherSubjects.universitySubject:id,name',
+            'classrooms:id,name,capacity,floor,block_id,classroom_type_id',
+            'classrooms.block:id,name',
+            'classrooms.classroomType:id,description'
+        ])->findOrFail($reservationId);
+
+        if ($reservation == null) {
+            return response()->json(['error'
+                    => 'There is no reservation, try it later?'], 404);
+        }
+
+        return ReservationController::formatOutput($reservation);
+    }
+
+    public function rejectReservation($reservationId)
+    {
+        $reservation = Reservation::findOrFail($reservationId);
+
+        if ($reservation == null) {
+            return response()->json(['error'
+                    => 'There is no reservation, try it later?'], 404);
+        }
+
+        if ($reservation->reservation_status_id == 2) {
+            return response()->json(['error'
+                    => 'This request has already been rejected'], 200);
+        }
+
+        $reservation->reservation_status_id = 2;
+        $reservation->save();
+
+        return response()->json(['error'
+                    => 'Request rejected'], 200);
+    }
+
     public function store(Request $request) 
     {
         try {
@@ -143,13 +243,13 @@ class ReservationController extends Controller
     {
         try {
             //DB::statement('LOCK TABLE reservations IN SHARE MODE'); 
-            $classrooms = $reservation->reservationClassrooms;
-            $timeSlots = $reservation->timeSlotReservations; 
+            $classrooms = $reservation->classrooms;
+            $timeSlots = $reservation->timeSlots; 
             $init = -1; 
             $end = -1;
             foreach ($timeSlots as $iterable) {
-                if ($init==-1) $init = $iterable->timeSlot->id;
-                else $end = $iterable->timeSlot->id;
+                if ($init==-1) $init = $iterable->id;
+                else $end = $iterable->id;
             }
             if ($init>$end) {
                 $temp = $init; 
@@ -158,8 +258,7 @@ class ReservationController extends Controller
             }
             $date = $reservation->date; 
             
-            foreach ($classrooms as $iterable) {
-                $classroom = $iterable->classroom;
+            foreach ($classrooms as $classroom) {
                 $reservations = $this->findAcceptedReservationsByClassroomAndDate(
                     $classroom->id, 
                     $date
@@ -169,10 +268,10 @@ class ReservationController extends Controller
                 foreach($reservations as $reservation) {
                     $left = -1; 
                     $right = -1;
-                    $timeSlotReservations = $reservation->timeSlotReservations;
+                    $timeSlotReservations = $reservation->timeSlots;
                     foreach ($timeSlotReservations as $timeSlotIterable) {
-                        if ($left==-1) $left = $timeSlotIterable->timeSlot->id; 
-                        else $right  = $timeSlotIterable->timeSlot->id;
+                        if ($left==-1) $left = $timeSlotIterable->id; 
+                        else $right  = $timeSlotIterable->id;
                     } 
                     if ($left>$right) {
                         $temp = $left; 
@@ -204,8 +303,8 @@ class ReservationController extends Controller
                                 ->pop()
                                 ->id; 
 
-        $reservationSet = Reservation::with('reservationClassrooms')
-                        ->whereHas('reservationClassrooms', 
+        $reservationSet = Reservation::
+                        whereHas('classrooms', 
                             function ($query) use ($classroomId) {
                                 $query -> where ('classroom_id', '=', $classroomId);
                             })
