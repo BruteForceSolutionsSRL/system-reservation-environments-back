@@ -28,7 +28,7 @@ class ReservationController extends Controller
             'classrooms:id,name,capacity,floor,block_id,classroom_type_id',
             'classrooms.block:id,name',
             'classrooms.classroomType:id,description'
-        ])->get();
+        ])->orderBy('created_at', 'desc')->get();
 
         $formattedReservations = $reservations->map(function ($reservation) {
             return ReservationController::formatOutput($reservation);
