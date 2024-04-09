@@ -116,7 +116,7 @@ class ReservationController extends Controller
         $reservation->reservation_status_id = 2;
         $reservation->save();
 
-        return response()->json(['error'
+        return response()->json(['message'
                     => 'Request rejected'], 200);
     }
 
