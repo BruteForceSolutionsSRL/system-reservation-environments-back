@@ -16,7 +16,43 @@ class TeacherSubjectController extends Controller
      */
     public function index()
     {
-        return response()->json([], 200);
+        $list = [
+            ["id"=>1, "group_number"=>1, "teacher_fullname"=>"LETICIA BLANCO COCA"],
+            ["id"=>13, "group_number"=>2, "teacher_fullname"=>"LETICIA BLANCO COCA"],
+            ["id"=>11, "group_number"=>3, "teacher_fullname"=>"LETICIA BLANCO COCA"],
+            ["id"=>5, "group_number"=>4, "teacher_fullname"=>"ROSEMARY TORRICO BASCOPE"],
+            ["id"=>14, "group_number"=>5, "teacher_fullname"=>"ROSEMARY TORRICO BASCOPE"],
+            ["id"=>7, "group_number"=>6, "teacher_fullname"=>"VLADIMIR ABEL COSTAS JAUREGUI"],
+            ["id"=>21, "group_number"=>7, "teacher_fullname"=>"CARLA SALAZAR SERRUDO"]
+        ];
+        $list2 = [
+            ["id"=>15, "group_number"=>1, "teacher_fullname"=>"JORGE WALTER ORELLANA ARAOZ"], 
+            ["id"=>20, "group_number"=>2, "teacher_fullname"=>"JORGE WALTER ORELLANA ARAOZ"],             
+            ["id"=>23, "group_number"=>3, "teacher_fullname"=>"GROVER HUMBERTO CUSSI NICOLAS"],             
+            ["id"=>27, "group_number"=>4, "teacher_fullname"=>"GROVER HUMBERTO CUSSI NICOLAS"],             
+            ["id"=>32, "group_number"=>5, "teacher_fullname"=>"JUAN MARCELO FLORES SOLIZ"]             
+        ];
+        $result = array();
+        $aux = rand(1, 2);
+        if ($aux==1)
+            foreach($list as $group) {
+                $item = [
+                    "group_number"=>$group["group_number"], 
+                    "group_id"=>$group["id"], 
+                    "teacher_fullname"=>$group["teacher_fullname"]
+                ];
+                array_push($result, $item);
+            }
+        else 
+            foreach($list2 as $group) {
+                $item = [
+                    "group_number"=>$group["group_number"], 
+                    "group_id"=>$group["id"], 
+                    "teacher_fullname"=>$group["teacher_fullname"]
+                ];
+                array_push($result, $item);        
+            }
+        return response()->json($result, 200);
     }
 
     /**

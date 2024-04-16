@@ -27,7 +27,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::controller(ReservationController::class)->group(function() {
-    Route::middleware('sanitize:api')->post('/reservation/assign', 'assign');
+    Route::middleware('sanitize:api')->patch('/reservation/assign/{id}', 'assign');
     Route::get('/reservations', 'index');
     Route::get('/reservation/{reservationId}', 'show');
     Route::middleware('sanitize:api')->put('/reservation/reject/{reservationId}', 'rejectReservation');
@@ -43,6 +43,7 @@ Route::controller(ClassroomController::class)->group(function() {
 Route::controller(TeacherSubjectController::class)->group(function() {
     Route::get('/subjects/teacher/{teacherId}', 'subjectsByTeacher');
     Route::get('/teachers/subject/{universitySubjectID}', 'teachersBySubject');
+    Route::get('/groups', 'index');
 });
 
 Route::get('/classroomtypes', [ClassroomTypeController::class, 'list']);

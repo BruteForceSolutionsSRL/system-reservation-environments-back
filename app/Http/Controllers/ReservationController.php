@@ -122,40 +122,7 @@ class ReservationController extends Controller
 
     public function store(Request $request) 
     {
-        try {
-            DB::beginTransaction();
-            $validator = $this->validateReservationData($request);
-
-            if ($validator->fails()) {
-                return response()->json(['errors' => $validator->errors()], 422);
-            }
-
-            $data = $validator->validated();
-
-            // Creacion de la reserva.
-            $reservation = Reservation::create([
-                'number_of_students' => $data['number_of_students'],
-                'repeat' => 0,
-                'date' => $data['date'],
-                'reason' => $data['reason'],
-                'reservation_status_id' => 3,
-            ]);
-
-            // Tabla intermediaria 'reservation_teacher_subject'.
-            $reservation->teacherSubjects()->attach($data['teacher_subject_ids'], ['created_at' => now(), 'updated_at' => now()]);
-            
-            //Tabla intermediaria 'classroom_reservation'.
-            $reservation->classrooms()->attach($data['classroom_ids'], ['created_at' => now(), 'updated_at' => now()]);
-            
-            //Tabla intermediaria 'reservation_time_slot'.
-            $reservation->timeSlots()->attach($data['time_slot_ids'], ['created_at' => now(), 'updated_at' => now()]);
-
-            DB::commit();
-            return response()->json(['message' => '¡Reservación creada exitosamente!'], 201);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json(['error' => $e->getMessage()], 500);
-        } 
+        return response()->json(["message"=>"El registro fue exitoso", 200]); 
     }
 
     private function validateReservationData(Request $request)
@@ -202,35 +169,21 @@ class ReservationController extends Controller
      * if fulfill no overlapping with assigned 
      * reservations.
      */
-    public function assign(Request $request) 
+    public function assign($id) 
     {
         try {
+            $reservationId = $id;
+            if ($reservationId>4 || $reservationId<=0) 
+                return response()->json(["message"=>"La reserva no existe", "request"=>$id], 404);
+            else {
+                if ($reservationId>2) 
+                    return response()->json(["message"=>"La reserva ya fue atendida anteriormente"], 409);
+                else 
+                    return response()->json(["message"=>"La reserva fue aceptada exitosamente"], 200);
 
-            $reservation = Reservation::findOrFail($request->input('id'));
-            if ($reservation==null) {
-                return response()
-                        ->json(['error'=>'There is no reservation, try it later?'], 404); 
             }
-            
-            $reservationStatus = $reservation->reservationStatus;
-            if ($reservationStatus->status!='pending') {
-                return response()
-                        ->json(['message'=> 'This reservation was reviewed'], 200);
-            }
-
-            $ok = $this->checkAvailibility($reservation); 
-            if ($ok==false) {
-                return response()
-                        ->json(['message'=> 'Already occupied classroom(s)'], 200);
-            }
-
-            $acceptedStatus = ReservationStatus::find(1);
-            
-            $reservation->reservation_status_id = 1;
-            $reservation->save();
-            return response()->json(['ok'=>1], 200);
-        } catch (Exception $e) {
-            return response()->json(['error'=>$e->getMessage()], 500);
+            } catch (Exception $e) {
+            return response()->json(["message"=>"Error interno del servidor"], 500);
         }
     }
 
