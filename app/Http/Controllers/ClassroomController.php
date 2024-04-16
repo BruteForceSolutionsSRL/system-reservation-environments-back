@@ -67,44 +67,25 @@ class ClassroomController extends Controller
     public function store(Request $request) 
     {
         try {
-            $name = strtolower($request->input('name')); 
-            $capacity = $request->input('capacity');
-            $classroomTypeID = $request->input('classroomTypeID'); 
-            $blockID = $request->input('blockID');
-            $floor = $request->input('floor');
+            $classroom_name = $request->input('classroom_name'); 
+            $capacity = $request->input('capacity'); 
+            $type_id = $request->input('type_id'); 
+            $block_id = $request->input('block_id'); 
+            $floor_number = $request->input('floor_number'); 
 
-            $classroom = Classroom::where('name', '=', $name)
-                            ->get()
-                            ->pop();
-
-            if ($classroom!=null) {
-                return response()->json(['message'=>'name already registed'], 208); 
-            }
-            $block = Block::find($blockID); 
-            if ($block==null) {
-                return response()->json(['message'=>'block does not exists'], 404); 
-            }
-            $classroomType = ClassroomType::find($classroomTypeID);
-            if ($classroomType==null) {
-                return response()->json(['message'=>'classroom type does not exist'], 404);
-            }
-
-            DB::transaction(
-                function() 
-                use ($name, $capacity, $floor, $blockID, $classroomTypeID) 
-                {
-                $classroom = new Classroom();
-                $classroom->name = $name; 
-                $classroom->capacity = $capacity;
-                $classroom->floor = $floor; 
-                $classroom->block_id = $blockID; 
-                $classroom->classroom_type_id = $classroomTypeID; 
-    
-                $classroom->save();    
-            });
-            return response()->json(['message'=>'classroom registered'], 200);
+            if ($classroom_name==null || $classroom_name=="") 
+                return response()->json(["message"=>"El nombre es nulo o vacio"], 406);
+            if ($capacity<0) 
+                return response()->json(["message"=>"La capacidad es un numero negativo"], 406);
+            if ($type_id>5)
+                return response()->json(["message"=>"El tipo de ambiente no existe"], 404);
+            if ($block_id>7) 
+                return response()->json(["message"=>"El bloque seleccionado no existe"], 404);
+            if ($floor_number>10)
+                return response()->json(["message"=>"El piso es mayor al numero de pisos que tiene el bloque/edificio"], 406);
+            return response()->json(["message"=>"se registro de manera correcta el nuevo ambiente"], 200);
         } catch (Exception $e) {
-            return response()->json(['error'=>$e->getMessage()], 500); 
+            return response()->json(["message"=>"Ocurrio un error del servidor"], 500);
         }
     }
     /**
