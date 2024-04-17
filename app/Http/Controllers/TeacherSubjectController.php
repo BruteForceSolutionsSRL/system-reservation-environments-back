@@ -62,21 +62,43 @@ class TeacherSubjectController extends Controller
      */
     public function subjectsByTeacher($teacherId)
     {
-        try {
-            $universitySubjects = TeacherSubject::with('universitySubject:id,name')
-                ->where('teacher_id', $teacherId)
-                ->get();
+        // try {
+        //     $universitySubjects = TeacherSubject::with('universitySubject:id,name')
+        //         ->where('teacher_id', $teacherId)
+        //         ->get();
 
-            $universitySubjects = $universitySubjects->map(function ($universitySubject){
-                return[
-                    'university_subject_id' => $universitySubject->university_subject_id,
-                    'name' => $universitySubject->universitySubject->name,
-                ];
-            });     
-            return response()->json($universitySubjects, 200);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e -> getMessage()],500);
-        }
+        //     $universitySubjects = $universitySubjects->map(function ($universitySubject){
+        //         return[
+        //             'university_subject_id' => $universitySubject->university_subject_id,
+        //             'name' => $universitySubject->universitySubject->name,
+        //         ];
+        //     });     
+        //     return response()->json($universitySubjects, 200);
+        // } catch (\Exception $e) {
+        //     return response()->json(['error' => $e -> getMessage()],500);
+        // }
+
+        $universitySubjectsCollection = [
+            [
+                ['subject_id' => 11, 'subject_name' => 'INTRODUCCION A LA PROGRAMACION'],
+                ['subject_id' => 12, 'subject_name' => 'ELEMENTOS DE LA PROGRAMACION Y EST. DE DATOS'],
+                ['subject_id' => 13, 'subject_name' => 'ARQUITECTURA DE COMPUTADORAS I'],
+                ['subject_id' => 14, 'subject_name' => 'ALGORITMOS AVANZADOS'],
+                ['subject_id' => 15, 'subject_name' => 'TALLER DE INGENIERIA DE SOFTWARE'],
+            ],
+            [
+                ['subject_id' => 16, 'subject_name' => 'TALLER DE SISTEMAS OPERATIVOS'],
+                ['subject_id' => 17, 'subject_name' => 'REDES DE COMPUTADORAS'],
+                ['subject_id' => 18, 'subject_name' => 'DINAMICA DE SISTEMAS'],
+            ],
+            [
+                ['subject_id' => 19, 'subject_name' => 'INTRODUCCION A LA PROGRAMACION'],
+                ['subject_id' => 20, 'subject_name' => 'PROGRAMACION WEB'],
+                ['subject_id' => 21, 'subject_name' => 'ENTORNOS VIRTUALES DE APRENDIZAJE'],
+            ]
+        ];
+
+        return response()->json($universitySubjectsCollection[rand(0, 2)], 200);
     }
 
     public function teachersBySubject($universitySubjectId)

@@ -20,9 +20,33 @@ class ClassroomController extends Controller
      */
     public function list() 
     {
-        $classrooms = Classroom::all();
-        $status = 200; 
-        return response()->json($classrooms, $status);
+        // $classrooms = Classroom::all();
+        // $status = 200; 
+        // return response()->json($classrooms, $status);
+        $classroomsCollection = [
+            [
+                ['classroom_id' => 1,'classroom_name' => '692A', 'capacity' => 120, 'floor_number' => 2],
+                ['classroom_id' => 2,'classroom_name' => '692B', 'capacity' => 120, 'floor_number' => 2],
+                ['classroom_id' => 3,'classroom_name' => '692C', 'capacity' => 120, 'floor_number' => 2],
+                ['classroom_id' => 4,'classroom_name' => '693D', 'capacity' => 120, 'floor_number' => 3],
+                ['classroom_id' => 5,'classroom_name' => 'Auditorio', 'capacity' => 360, 'floor_number' => 3]
+            ],
+            [
+                ['classroom_id' => 6,'classroom_name' => 'Laboratorio 3', 'capacity' => 30, 'floor_number' => 2],
+                ['classroom_id' => 7,'classroom_name' => 'Laboratorio 4', 'capacity' => 35, 'floor_number' => 2]
+            ],
+            [
+                ['classroom_id' => 9,'classroom_name' => '625C', 'capacity' => 25, 'floor_number' => 2],
+                ['classroom_id' => 10,'classroom_name' => '625D', 'capacity' => 25, 'floor_number' => 2]
+            ],
+            [
+                ['classroom_id' => 11,'classroom_name' => '618', 'capacity' => 20, 'floor_number' => 0],
+                ['classroom_id' => 12,'classroom_name' => '619', 'capacity' => 20, 'floor_number' => 0],
+                ['classroom_id' => 13,'classroom_name' => '619A', 'capacity' => 15, 'floor_number' => 0],
+            ]
+        ];
+
+        return response()->json($classroomsCollection[rand(0, 3)], 200);
     }
     /**
      * @covers: 

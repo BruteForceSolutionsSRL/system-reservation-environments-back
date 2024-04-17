@@ -18,23 +18,112 @@ class ReservationController extends Controller
      */
     public function index() 
     {
-        $reservations = Reservation::with([
-            'reservationStatus:id,status',
-            'timeSlots:id,time',
-            'teacherSubjects:id,group_number,teacher_id,university_subject_id',
-            'teacherSubjects.teacher:id,person_id',
-            'teacherSubjects.teacher.person:id,name,last_name,email,phone_number',
-            'teacherSubjects.universitySubject:id,name',
-            'classrooms:id,name,capacity,floor,block_id,classroom_type_id',
-            'classrooms.block:id,name',
-            'classrooms.classroomType:id,description'
-        ])->get();
+        // $reservations = Reservation::with([
+        //     'reservationStatus:id,status',
+        //     'timeSlots:id,time',
+        //     'teacherSubjects:id,group_number,teacher_id,university_subject_id',
+        //     'teacherSubjects.teacher:id,person_id',
+        //     'teacherSubjects.teacher.person:id,name,last_name,email,phone_number',
+        //     'teacherSubjects.universitySubject:id,name',
+        //     'classrooms:id,name,capacity,floor,block_id,classroom_type_id',
+        //     'classrooms.block:id,name',
+        //     'classrooms.classroomType:id,description'
+        // ])->get();
 
-        $formattedReservations = $reservations->map(function ($reservation) {
-            return ReservationController::formatOutput($reservation);
-        });
+        // $formattedReservations = $reservations->map(function ($reservation) {
+        //     return ReservationController::formatOutput($reservation);
+        // });
 
-        return response()->json($formattedReservations, 200);
+        // return response()->json($formattedReservations, 200);
+
+        $reservations = [
+            [
+                'reservation_id' => 1,
+                'subject_name' => 'ELEMENTOS DE LA PROGRAMACION Y EST. DE DATOS',
+                'quantity' => 120,
+                'reservation_date' => '15/04/2024',
+                'time_slot' => ['06:45', '09:45'],
+                'groups' => [
+                    [
+                        'teacher_fullname' => 'MARIA LETICIA BLANCO COCA',
+                        'group_number' => 1
+                    ],
+                    [
+                        'teacher_fullname' => 'ABEL VLADIMIR COSTAS JAUREGUI',
+                        'group_number' => 3
+                    ],
+                    [
+                        'teacher_fullname' => 'ROSEMARY TORRICO BASCOPE',
+                        'group_number' => 2
+                    ],
+                ],
+                'block_name' => 'EDIFICIO NUEVO',
+                'classrooms' => [
+                    [
+                        'classroom_id' => 1,
+                        'classroom_name' => '690B',
+                        'capacity' => 50
+                    ],
+                    [
+                        'classroom_id' => 2,
+                        'classroom_name' => '690A',
+                        'capacity' => 70
+                    ],
+                ],
+                'priority' => 1
+            ],
+            [
+                'reservation_id' => 2,
+                'subject_name' => 'SISTEMAS DE INFORMACION I',
+                'quantity' => 80,
+                'reservation_date' => '16/04/2024',
+                'time_slot' => ['12:45', '15:45'],
+                'groups' => [
+                    [
+                        'teacher_fullname' => 'CARLA SALAZAR SERRUDO',
+                        'group_number' => 1
+                    ],
+                ],
+                'block_name' => 'EDIFICIO NUEVO',
+                'classrooms' => [
+                    [
+                        'classroom_id' => 5,
+                        'classroom_name' => 'AUDITORIO',
+                        'capacity' => 360
+                    ],
+                ],
+                'priority' => 1
+            ],
+            [
+                'reservation_id' => 0,
+                'subject_name' => 'TALLER DE SISTEMAS OPERATIVOS',
+                'quantity' => 90,
+                'reservation_date' => '16/04/2024',
+                'time_slot' => ['15:45', '17:15'],
+                'groups' => [
+                    [
+                        'teacher_fullname' => 'WALTER JORGE ORELLANA ARAOZ',
+                        'group_number' => 90
+                    ],
+                ],
+                'block_name' => 'EDIFICIO NUEVO',
+                'classrooms' => [
+                    [
+                        'classroom_id' => 5,
+                        'classroom_name' => '692D',
+                        'capacity' => 120
+                    ],
+                    [
+                        'classroom_id' => 6,
+                        'classroom_name' => '692E',
+                        'capacity' => 120
+                    ],
+                ],
+                'priority' => 0
+            ],
+        ];
+
+        return response()->json($reservations, 200);
     }
 
     private function formatOutput($reservation)
@@ -79,24 +168,60 @@ class ReservationController extends Controller
 
     public function show($reservationId)
     {
-        $reservation = Reservation::with([
-            'reservationStatus:id,status',
-            'timeSlots:id,time',
-            'teacherSubjects:id,group_number,teacher_id,university_subject_id',
-            'teacherSubjects.teacher:id,person_id',
-            'teacherSubjects.teacher.person:id,name,last_name,email,phone_number',
-            'teacherSubjects.universitySubject:id,name',
-            'classrooms:id,name,capacity,floor,block_id,classroom_type_id',
-            'classrooms.block:id,name',
-            'classrooms.classroomType:id,description'
-        ])->findOrFail($reservationId);
+        // $reservation = Reservation::with([
+        //     'reservationStatus:id,status',
+        //     'timeSlots:id,time',
+        //     'teacherSubjects:id,group_number,teacher_id,university_subject_id',
+        //     'teacherSubjects.teacher:id,person_id',
+        //     'teacherSubjects.teacher.person:id,name,last_name,email,phone_number',
+        //     'teacherSubjects.universitySubject:id,name',
+        //     'classrooms:id,name,capacity,floor,block_id,classroom_type_id',
+        //     'classrooms.block:id,name',
+        //     'classrooms.classroomType:id,description'
+        // ])->findOrFail($reservationId);
 
-        if ($reservation == null) {
-            return response()->json(['error'
-                    => 'There is no reservation, try it later?'], 404);
-        }
+        // if ($reservation == null) {
+        //     return response()->json(['error'
+        //             => 'There is no reservation, try it later?'], 404);
+        // }
 
-        return ReservationController::formatOutput($reservation);
+        // return ReservationController::formatOutput($reservation);
+
+        $reservation = [
+            'reservation_id' => 1,
+            'subject_name' => 'ELEMENTOS DE LA PROGRAMACION Y EST. DE DATOS',
+            'quantity' => 120,
+            'reservation_date' => '15/04/2024',
+            'time_slot' => ['06:45', '09:45'],
+            'groups' => [
+                [
+                    'teacher_fullname' => 'MARIA LETICIA BLANCO COCA',
+                    'group_number' => 1
+                ],
+                [
+                    'teacher_fullname' => 'ABEL VLADIMIR COSTAS JAUREGUI',
+                    'group_number' => 3
+                ],
+                [
+                    'teacher_fullname' => 'ROSEMARY TORRICO BASCOPE',
+                    'group_number' => 2
+                ],
+            ],
+            'block_name' => 'EDIFICIO NUEVO',
+            'classrooms' => [
+                [
+                    'classroom_name' => '690B',
+                    'capacity' => 50
+                ],
+                [
+                    'classroom_name' => '690A',
+                    'capacity' => 70
+                ],
+            ],
+            'priority' => 1
+        ];
+        
+        return response()->json($reservation, 200);
     }
 
     public function rejectReservation($reservationId)
