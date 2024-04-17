@@ -45,31 +45,30 @@ class ReservationController extends Controller
                 'time_slot' => ['06:45', '09:45'],
                 'groups' => [
                     [
-                        'teacher_fullname' => 'MARIA LETICIA BLANCO COCA',
+                        'teacher_name' => 'MARIA LETICIA BLANCO COCA',
                         'group_number' => 1
                     ],
                     [
-                        'teacher_fullname' => 'ABEL VLADIMIR COSTAS JAUREGUI',
+                        'teacher_name' => 'ABEL VLADIMIR COSTAS JAUREGUI',
                         'group_number' => 3
                     ],
                     [
-                        'teacher_fullname' => 'ROSEMARY TORRICO BASCOPE',
+                        'teacher_name' => 'ROSEMARY TORRICO BASCOPE',
                         'group_number' => 2
                     ],
                 ],
                 'block_name' => 'EDIFICIO NUEVO',
                 'classrooms' => [
                     [
-                        'classroom_id' => 1,
                         'classroom_name' => '690B',
                         'capacity' => 50
                     ],
                     [
-                        'classroom_id' => 2,
                         'classroom_name' => '690A',
                         'capacity' => 70
                     ],
                 ],
+                'reason_name' => 'Examen',
                 'priority' => 1
             ],
             [
@@ -80,45 +79,44 @@ class ReservationController extends Controller
                 'time_slot' => ['12:45', '15:45'],
                 'groups' => [
                     [
-                        'teacher_fullname' => 'CARLA SALAZAR SERRUDO',
+                        'teacher_name' => 'CARLA SALAZAR SERRUDO',
                         'group_number' => 1
                     ],
                 ],
                 'block_name' => 'EDIFICIO NUEVO',
                 'classrooms' => [
                     [
-                        'classroom_id' => 5,
                         'classroom_name' => 'AUDITORIO',
                         'capacity' => 360
                     ],
                 ],
+                'reason_name' => 'Examen',
                 'priority' => 1
             ],
             [
-                'reservation_id' => 0,
+                'reservation_id' => 3,
                 'subject_name' => 'TALLER DE SISTEMAS OPERATIVOS',
                 'quantity' => 90,
                 'reservation_date' => '16/04/2024',
                 'time_slot' => ['15:45', '17:15'],
                 'groups' => [
                     [
-                        'teacher_fullname' => 'WALTER JORGE ORELLANA ARAOZ',
+                        'teacher_name' => 'WALTER JORGE ORELLANA ARAOZ',
                         'group_number' => 90
                     ],
                 ],
                 'block_name' => 'EDIFICIO NUEVO',
                 'classrooms' => [
                     [
-                        'classroom_id' => 5,
                         'classroom_name' => '692D',
                         'capacity' => 120
                     ],
                     [
-                        'classroom_id' => 6,
                         'classroom_name' => '692E',
                         'capacity' => 120
                     ],
                 ],
+                'reason_name' => 'Examen',
                 'priority' => 0
             ],
         ];
@@ -195,15 +193,15 @@ class ReservationController extends Controller
             'time_slot' => ['06:45', '09:45'],
             'groups' => [
                 [
-                    'teacher_fullname' => 'MARIA LETICIA BLANCO COCA',
+                    'teacher_name' => 'MARIA LETICIA BLANCO COCA',
                     'group_number' => 1
                 ],
                 [
-                    'teacher_fullname' => 'ABEL VLADIMIR COSTAS JAUREGUI',
+                    'teacher_name' => 'ABEL VLADIMIR COSTAS JAUREGUI',
                     'group_number' => 3
                 ],
                 [
-                    'teacher_fullname' => 'ROSEMARY TORRICO BASCOPE',
+                    'teacher_name' => 'ROSEMARY TORRICO BASCOPE',
                     'group_number' => 2
                 ],
             ],
@@ -218,6 +216,7 @@ class ReservationController extends Controller
                     'capacity' => 70
                 ],
             ],
+            'reason_name' => 'Examen',
             'priority' => 1
         ];
         
