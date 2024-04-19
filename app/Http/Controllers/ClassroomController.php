@@ -18,7 +18,29 @@ class ClassroomController extends Controller
      */
     public function list() 
     {
-        return response()->json([Classroom::all()], 200);
+        try {
+            $classrooms = Classroom::all()
+            ->map(
+                function ($classroom) 
+                {
+                    return [
+                        'classroom_id' => $classroom->id, 
+                        'classroom_name' => $classroom->name, 
+                        'capacity' => $classroom->capacity, 
+                        'floor_number' => $classroom->floor
+                    ];
+                }
+            );
+            return response()->json($classrooms, 200);
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'message' => 'Error en el servidor', 
+                    'error' => $e->getMessage()
+                ],
+                500
+            );
+        }
     }
     /**
      * @covers: 
@@ -39,9 +61,9 @@ class ClassroomController extends Controller
                     {
                         return [
                             'classroom_id' => $classroom->id,
-                            'name' => $classroom->name,
+                            'classroom_name' => $classroom->name,
                             'capacity' => $classroom->capacity,
-                            'floor' => $classroom->floor,
+                            'floor_number' => $classroom->floor,
                         ];
                     }
                 );
