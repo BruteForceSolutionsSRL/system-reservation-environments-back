@@ -11,15 +11,26 @@ class ClassroomTypeController extends Controller
     // Retrieves all classroom types 
     public function list() 
     {
-        $classroomTypes = ClassroomType::all();
-        $result = array();
-        foreach ($classroomTypes as $classroomType) {
-            $element = [
-                'id'=>$classroomType->id,
-                'value'=>$classroomType->description 
-            ];
-            array_push($result, $element);
+        try {
+            $classroomTypes = ClassroomType::all()
+            ->map(
+                function ($classroomType) 
+                {
+                    return [
+                        'type_id' => $classroomType->id, 
+                        'type_name' => $classroomType->description
+                    ];
+                }
+            );
+            return response()->json($classroomTypes, 200);
+        } catch (\Exception $e) {
+            return response()->json(
+                [
+                    'message' => 'Hubo un error en el servidor', 
+                    'error' => $e->getMessage()
+                ], 
+                500
+            );
         }
-        return response()->json($result, 200);
     }
 }

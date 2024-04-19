@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 use App\Models\Classroom; 
+use App\Models\Block;
 
 class ClassroomController extends Controller
 {
@@ -98,7 +99,7 @@ class ClassroomController extends Controller
             $validator = $this->validateClassroomData($request);
   
             if ($validator->fails()) {
-                $message = ""; 
+                $message = ''; 
                 foreach ($validator->errors()->all() as $value) 
                     $message = $message . $value . '\n';
                 return response()->json(
@@ -108,6 +109,15 @@ class ClassroomController extends Controller
             }
 
             $data = $validator->validated();
+
+            $block = Block::findOrFail($data['block_id']); 
+            if ($block->maxfloor < $data['floor_number']) {
+                return response()->json(
+                    ['messagge' => 
+                       'El numero de piso es mayor a la maximo piso del bloque seleccionado'], 
+                    400
+                );
+            }
 
             DB::transaction(
                 function() use ($data) 
@@ -145,8 +155,10 @@ class ClassroomController extends Controller
     private function validateClassroomData(Request $request) 
     {
         return \Validator::make($request->all(), [
-            'classroom_name' => 'required|string|unique:classrooms,name', 
-            'capacity' => 'required|integer|min:1|max:500', 
+            'classroom_name' => 'required|string|regex:/^[A-Z0-9\-\. ]+$/
+
+            |unique:classrooms,name', 
+            'capacity' => 'required|integer|min:25|max:500', 
             'type_id' => 'required|integer|exists:classroom_types,id', 
             'block_id' => 'required|integer|exists:blocks,id', 
             'floor_number' => 'required|integer|min:0'
@@ -154,10 +166,11 @@ class ClassroomController extends Controller
             'type_id.required' => 'El atributo \'tipo de ambiente\' no debe ser nulo o vacio', 
             'block_id.required' => 'El atributo \'bloque\' no debe ser nulo o vacio', 
             'classroom_name.required' => 'El atributo \'nombre\' no debe ser nulo o vacio', 
+            'classroom_name.regex' => 'El nombre solamente puede tener caracteres alfanumericos y \'-\', \'.\' y \' \'',
             'capacity.required' => 'El atributo \'capacidad\' no debe ser nulo o vacio', 
             'floor_number.required' => 'El atributo \'piso\' no debe ser nulo o vacio', 
             'unique' => 'El nombre ya existe, intente con otro', 
-            'capacity.min' => 'Debe seleccionar una capacidad mayor o igual a 1',
+            'capacity.min' => 'Debe seleccionar una capacidad mayor o igual a 25',
             'capacity.max' => 'Debe seleccionar una capacidad menor o igual a 500',
             'type_id.exists' => 'El \'tipo de ambiente\' debe ser una seleccion valida', 
             'block_id.exists' => 'El \'bloque\' debe ser una seleccion valida', 
