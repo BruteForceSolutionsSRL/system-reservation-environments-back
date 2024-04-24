@@ -57,7 +57,7 @@ class Reservation extends Model
         return $this->belongsToMany(TimeSlot::class);
     }
 
-    public function reason()
+    public function reservationReason()
     {
         return $this->belongsTo(ReservationReason::class);
     }
