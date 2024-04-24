@@ -8,10 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class TeacherSubject extends Model
 {
     use HasFactory;
-
     public function teacher()
     {
-        return $this->belongsTo(Teacher::class);
+        return $this->belongsTo(Person::class);
     }
 
     public function universitySubject()

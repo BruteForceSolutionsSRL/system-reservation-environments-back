@@ -14,13 +14,8 @@ class Person extends Model
         return $this->hasMany(Notification::class);
     }
 
-    public function teacher()
+    public function roles()
     {
-        return $this->hasOne(Teacher::class);
-    }
-
-    public function administrator()
-    {
-        return $this->hasOne(Administrator::class);
+        return $this->belongsToMany(Role::class);
     }
 }

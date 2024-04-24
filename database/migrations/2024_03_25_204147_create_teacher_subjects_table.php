@@ -16,13 +16,13 @@ class CreateTeacherSubjectsTable extends Migration
         Schema::create('teacher_subjects', function (Blueprint $table) {
             $table->id();
             $table->integer('group_number');
-            $table->unsignedBigInteger('teacher_id');
+            $table->unsignedBigInteger('person_id');
             $table->unsignedBigInteger('university_subject_id');
             $table->timestamps();
 
-            $table->foreign('teacher_id')
+            $table->foreign('person_id')
                     ->references('id')
-                    ->on('teachers')
+                    ->on('people')
                     ->cascadeOnDelete();
             $table->foreign('university_subject_id')
                     ->references('id')

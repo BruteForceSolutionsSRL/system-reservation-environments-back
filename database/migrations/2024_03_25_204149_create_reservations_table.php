@@ -20,11 +20,16 @@ class CreateReservationsTable extends Migration
             $table->date('date');
             $table->string('reason');
             $table->unsignedBigInteger('reservation_status_id');
+            $table->unsignedBigInteger('reservation_reason_id');
             $table->timestamps();
 
             $table->foreign('reservation_status_id')
                     ->references('id')
                     ->on('reservation_statuses')
+                    ->cascadeOnDelete();
+            $table->foreign('reservation_reason_id')
+                    ->references('id')
+                    ->on('reservation_reasons')
                     ->cascadeOnDelete();
         });
     }
