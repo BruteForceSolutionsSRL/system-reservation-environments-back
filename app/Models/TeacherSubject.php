@@ -9,6 +9,9 @@ class TeacherSubject extends Model
 {
     use HasFactory;
 
+    /**
+     * @todo eliminar esta funcion
+     */
     public function teacher()
     {
         return $this->belongsTo(Teacher::class);

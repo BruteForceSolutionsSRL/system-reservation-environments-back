@@ -9,6 +9,9 @@ class Log extends Model
 {
     use HasFactory;
 
+    /**
+     * @todo eliminar esta funcion
+     */
     public function administrator()
     {
         return $this->belongsTo(Administrator::class);
