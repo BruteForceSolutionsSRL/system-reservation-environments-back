@@ -120,6 +120,9 @@ class ReservationController extends Controller
                     => 'Request rejected'], 200);
     }
 
+    /**
+     * Store a new Request
+     */
     public function store(Request $request) 
     {
         try {
@@ -133,13 +136,13 @@ class ReservationController extends Controller
             }
 
             $data = $validator->validated();
-            $pendingStatus = ReservationStatus::where('status', 'pending')
+            $pendingStatus = ReservationStatus::where('status', 'PENDING')
                                 ->get()
                                 ->pop(); 
-            $acceptedStatus = ReservationStatus::where('status', 'accepted') 
+            $acceptedStatus = ReservationStatus::where('status', 'ACCEPTED') 
                                 ->get()
                                 ->pop(); 
-            $rejectedStatus = ReservationStatus::where('status', 'rejected') 
+            $rejectedStatus = ReservationStatus::where('status', 'REJECTED') 
                                 ->get()
                                 ->pop();
 
@@ -277,7 +280,7 @@ class ReservationController extends Controller
             }
             
             $reservationStatus = $reservation->reservationStatus;
-            if ($reservationStatus->status!='pending') {
+            if ($reservationStatus->status!='PENDING') {
                 return response()->json(
                         ['message' => 'Esta solicitud ya fue atendida'], 
                         200
@@ -292,15 +295,59 @@ class ReservationController extends Controller
                 );
             }
 
-            $acceptedStatus = ReservationStatus::where('status', '=', 'accepted');
+            $acceptedStatus = ReservationStatus::where('status', 'ACCEPTED')
+                            ->get()
+                            ->pop()
+                            ->id;
+            $rejectedStatus = ReservationStatus::where('status', 'REJECTED')
+                            ->get()
+                            ->pop()
+                            ->id;
+            $pendingStatus = ReservationStatus::where('status', 'PENDING')
+                            ->get()
+                            ->pop()
+                            ->id;
             
             $reservation->reservation_status_id = $acceptedStatus;
             $reservation->save();
+
+            DB::beginTransaction();
+            $date = $reservation->date; 
+            $initialTime = -1; 
+            $endTime = -1; 
+            foreach ($reservation->timeSlots as $timeSlot) {
+                if ($initialTime == -1) $initialTime = $timeSlot->id; 
+                else $endTime = $timeSlot->id; 
+            }
+            if ($initialTime > $endTime) {
+                $temp = $endTime; 
+                $endTime = $initialTime; 
+                $initialTime = $temp;
+            }
+            foreach ($reservation->classrooms as $classroom) {
+                $reservationSet = $this->getActiveReservationsWithDateStatusAndClassroom(
+                    [$pendingStatus], 
+                    $date,
+                    $classroom->id
+                );
+                $reservationSet = $this->cutReservationSetByTimeSlot(
+                    $reservationSet,
+                    $initialTime, 
+                    $endTime
+                );
+                foreach ($reservationSet as $reservationIterable) {
+                    $reservationIterable->reservation_status_id = $rejectedStatus; 
+                    $reservationIterable->save();
+                }
+            }
+            DB::commit();
+            
             return response()->json(
                 ['message' => 'La reserva fue aceptada correctamente'], 
                 200
             );
         } catch (Exception $e) {
+            DB::rollBack();
             return response()->json(
                 [
                     'message' => 'Hubo un error en el servidor',
@@ -310,69 +357,75 @@ class ReservationController extends Controller
             );
         }
     }
-
     /**
      * Function to check availability for all classrooms to do a 
      * reservation in a step 
      * @param Reservation
      * @return boolean 
      */
-    private function checkAvailibility($reservation): bool
+    private function checkAvailibility($reservation)
     {
-        try {
-            //DB::statement('LOCK TABLE reservations IN SHARE MODE'); 
-            $classrooms = $reservation->classrooms;
-            $timeSlots = $reservation->timeSlots; 
-            $init = -1; 
-            $end = -1;
-            foreach ($timeSlots as $iterable) {
-                if ($init==-1) $init = $iterable->id;
-                else $end = $iterable->id;
-            }
-            if ($init>$end) {
-                $temp = $init; 
-                $init = $end; 
-                $end = $temp;
-            }
-            $date = $reservation->date; 
-            $acceptedStatusId = ReservationStatus::where('status', 'accepted')
-                    ->get()
-                    ->pop()
-                    ->id; 
-            $statuses = [$acceptedStatusId]; 
-
-            foreach ($classrooms as $classroom) {
-                $reservations = $this->getActiveReservationsWithDateStatusAndClassroom(
-                    $statuses, 
-                    $date,
-                    $classroom->id
-                );
-
-                $ok = true; 
-                foreach($reservations as $reservation) {
-                    $left = -1; 
-                    $right = -1;
-                    $timeSlotReservations = $reservation->timeSlots;
-                    foreach ($timeSlotReservations as $timeSlotIterable) {
-                        if ($left==-1) $left = $timeSlotIterable->id; 
-                        else $right  = $timeSlotIterable->id;
-                    } 
-                    if ($left>$right) {
-                        $temp = $left; 
-                        $left = $right; 
-                        $right = $temp; 
-                    }
-                    $ok &= ($right<=$init) || ($left>=$end); 
-                }
-                if ($ok==false) 
-                    return false;
-            }
-            //DB::statement('UNLOCK TABLES');
-        } catch (Exception $e) {
-            //DB::statement('UNLOCK TABLES');
-            return false; 
+        $classrooms = $reservation->classrooms;
+        $timeSlots = $reservation->timeSlots; 
+        $init = -1; 
+        $end = -1;
+        foreach ($timeSlots as $iterable) {
+            if ($init==-1) $init = $iterable->id;
+            else $end = $iterable->id;
+        }
+        if ($init>$end) {
+            $temp = $init; 
+            $init = $end; 
+            $end = $temp;
+        }
+        $date = $reservation->date; 
+        $acceptedStatusId = ReservationStatus::where('status', 'ACCEPTED')
+                ->get()
+                ->pop()
+                ->id; 
+        foreach ($classrooms as $classroom) {
+            $reservations = $this->getActiveReservationsWithDateStatusAndClassroom(
+                [$acceptedStatusId], 
+                $date,
+                $classroom->id
+            );
+            $reservations = $this->cutReservationSetByTimeSlot($reservations, $init, $end); 
+            if (count($reservations) != 0) 
+                return false; 
         }
         return true; 
+    }
+    /**
+     * Cut and retrieve a subset of reservations
+     * @param \Illuminate\Database\Eloquent\Collection 
+     * @param int 
+     * @param int
+     * @return array
+     */
+    private function cutReservationSetByTimeSlot(
+        $reservations, 
+        $initialTimeId, 
+        $endTimeId
+    )
+    {
+        $refinedReservationSet = [];
+        foreach ($reservations as $reservation) {
+            $a = -1; 
+            $b = -1;
+            foreach ($reservation->timeSlots as $timeSlot) {
+                if ($a == -1) $a = $timeSlot->id; 
+                else $b = $timeSlot->id; 
+            }
+            if ($a > $b) {
+                $temp = $b; 
+                $b = $a; 
+                $a = $temp; 
+            }
+            if (!($b <= $initialTimeId || $a >= $endTimeId)) {
+                array_push($refinedReservationSet, $reservation); 
+            }  
+        }
+        return $refinedReservationSet;
     }
 
     /**
@@ -405,7 +458,7 @@ class ReservationController extends Controller
     }
 
     /**
-     * Check if a reservation in pending status have conflicts or are really weird
+     * Check if a reservation in pending status have conflicts or is really `weird`
      * @param Reservation
      * @return array 
      */
@@ -454,7 +507,7 @@ class ReservationController extends Controller
 
         // question: if all classroooms are unique in pending requests:
         $statuses = [
-            ReservationStatus::where('status', 'pending')
+            ReservationStatus::where('status', 'PENDING')
                     ->get()
                     ->pop()
                     ->id
@@ -485,22 +538,6 @@ class ReservationController extends Controller
         return $total; 
     }
 
-    public function aux() {
-        try {
-            $reservation = Reservation::find(114); 
-            $statuses = [4]; 
-            $date = $reservation->date; 
-            $classroomId = $reservation->classrooms->pop()->id; 
-            $res = $this->getActiveReservationsWithDateStatusAndClassroom(
-                $statuses, 
-                $date, 
-                $classroomId
-            ); 
-            return response($res, 200);
-        } catch (Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
-    }
     /**
      * Function to retrieve a list of all active reservations
      * @param array, statuses of reservations
