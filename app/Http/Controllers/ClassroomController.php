@@ -6,48 +6,43 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-use App\Models\Classroom; 
+use App\Models\Classroom;
 use App\Models\Block;
+use App\Models\ClassroomType;
 
 class ClassroomController extends Controller
 {
     /**
      * @param
      *  None
-     * @return 
+     * @return
      *  All classrooms
      */
-    public function list() 
+    public function list()
     {
-        try {
-            $classrooms = Classroom::all()
-            ->map(
-                function ($classroom) 
-                {
-                    return [
-                        'classroom_id' => $classroom->id, 
-                        'classroom_name' => $classroom->name, 
-                        'capacity' => $classroom->capacity, 
-                        'floor_number' => $classroom->floor
-                    ];
-                }
-            );
-            return response()->json($classrooms, 200);
-        } catch (Exception $e) {
-            return response()->json(
-                [
-                    'message' => 'Error en el servidor', 
-                    'error' => $e->getMessage()
-                ],
-                500
-            );
-        }
+        $classrooms = Classroom::select('id', 'name', 'capacity', 'floor')
+            ->get()
+            ->map(function ($classroom) {
+                return $this->formatClassroomResponse($classroom);
+            });
+        return response()->json($classrooms, 200);
     }
+
+    private function formatClassroomResponse($classroom)
+    {
+        return [
+            'classroom_id' => $classroom->id,
+            'classroom_name' => $classroom->name,
+            'capacity' => $classroom->capacity,
+            'floor' => $classroom->floor,
+        ];
+    }
+
     /**
-     * @covers: 
+     * @covers:
      * To retrieve data about a environment
      */
-    public function index() 
+    public function index()
     {
     }
 
@@ -57,131 +52,75 @@ class ClassroomController extends Controller
             $classrooms = Classroom::select('id', 'name', 'capacity', 'floor')
                 ->where('block_id', $blockId)
                 ->get()
-                ->map(
-                    function ($classroom)
-                    {
-                        return [
-                            'classroom_id' => $classroom->id,
-                            'classroom_name' => $classroom->name,
-                            'capacity' => $classroom->capacity,
-                            'floor_number' => $classroom->floor,
-                        ];
-                    }
-                );
+                ->map(function ($classroom){
+                    return $this->formatClassroomResponse($classroom);
+                });
 
             return response()->json($classrooms, 200);
         } catch (Exception $e) {
-            return response()->json(
-                [
-                    'message'=>'Hubo un error en el servidor', 
-                    'error' => $e->getMessage()
-                ], 
-                500
-            ); 
-        }    
-    }
-
-    /**
-     * @param
-     * Store a new classroom with the info below
-     * Request (body): 
-     * {
-     * 'classroom_name': str, 
-     * 'capacity': 'number', 
-     * 'type_id': int, 
-     * 'block_id': int
-     * 'floor_number': int
-     * }
-     */
-    public function store(Request $request) 
-    {
-        try {
-            $validator = $this->validateClassroomData($request);
-  
-            if ($validator->fails()) {
-                $message = ''; 
-                foreach ($validator->errors()->all() as $value) 
-                    $message = $message . $value . '\n';
-                return response()->json(
-                    ['message' => $message], 
-                    400
-                );
-            }
-
-            $data = $validator->validated();
-
-            $block = Block::findOrFail($data['block_id']); 
-            if ($block->maxfloor < $data['floor_number']) {
-                return response()->json(
-                    ['messagge' => 
-                       'El numero de piso es mayor a la maximo piso del bloque seleccionado'], 
-                    400
-                );
-            }
-
-            DB::transaction(
-                function() use ($data) 
-                {
-                    $classroom = new Classroom();
-                    $classroom->name = $data['classroom_name']; 
-                    $classroom->capacity = $data['capacity'];
-                    $classroom->floor = $data['type_id']; 
-                    $classroom->block_id = $data['block_id']; 
-                    $classroom->classroom_type_id = $data['floor_number']; 
-    
-                    $classroom->save();    
-                }
-            );
-            
-            return response()->json(
-                ['message'=>'Ambiente registrado correctamente'], 
-                200
-            );
-        } catch (Exception $e) {
-            return response()->json(
-                [
-                    'message'=>'Ha ocurrido un error en el servidor', 
-                    'error'=>$e->getMessage()
-                ],
-                500
-            ); 
+            return response()->json(['error'=>$e->getMessage()], 500);
         }
     }
 
     /**
-     * @covers 
-     * Validate all atributes whithin Classroom register
+     * @param
+     * Request (body):
+     * {
+     * 'name': str,
+     * 'capacity': 'number',
+     * 'classroomTypeID': int,
+     * 'blockID': int
+     * 'floor': int
+     * }
      */
-    private function validateClassroomData(Request $request) 
+    public function store(Request $request)
     {
-        return \Validator::make($request->all(), [
-            'classroom_name' => 'required|string|regex:/^[A-Z0-9\-\. ]+$/
+        try {
+            $name = strtolower($request->input('name'));
+            $capacity = $request->input('capacity');
+            $classroomTypeID = $request->input('classroomTypeID');
+            $blockID = $request->input('blockID');
+            $floor = $request->input('floor');
 
-            |unique:classrooms,name', 
-            'capacity' => 'required|integer|min:25|max:500', 
-            'type_id' => 'required|integer|exists:classroom_types,id', 
-            'block_id' => 'required|integer|exists:blocks,id', 
-            'floor_number' => 'required|integer|min:0'
-        ], [
-            'type_id.required' => 'El atributo \'tipo de ambiente\' no debe ser nulo o vacio', 
-            'block_id.required' => 'El atributo \'bloque\' no debe ser nulo o vacio', 
-            'classroom_name.required' => 'El atributo \'nombre\' no debe ser nulo o vacio', 
-            'classroom_name.regex' => 'El nombre solamente puede tener caracteres alfanumericos y \'-\', \'.\' y \' \'',
-            'capacity.required' => 'El atributo \'capacidad\' no debe ser nulo o vacio', 
-            'floor_number.required' => 'El atributo \'piso\' no debe ser nulo o vacio', 
-            'unique' => 'El nombre ya existe, intente con otro', 
-            'capacity.min' => 'Debe seleccionar una capacidad mayor o igual a 25',
-            'capacity.max' => 'Debe seleccionar una capacidad menor o igual a 500',
-            'type_id.exists' => 'El \'tipo de ambiente\' debe ser una seleccion valida', 
-            'block_id.exists' => 'El \'bloque\' debe ser una seleccion valida', 
-            'floor_number.min' => 'El \'piso\' debe ser un numero positivo menor a la cantidad de pisos del bloque'
-        ]);
+            $classroom = Classroom::where('name', '=', $name)
+                            ->get()
+                            ->pop();
+
+            if ($classroom!=null) {
+                return response()->json(['message'=>'name already registed'], 208);
+            }
+            $block = Block::find($blockID);
+            if ($block==null) {
+                return response()->json(['message'=>'block does not exists'], 404);
+            }
+            $classroomType = ClassroomType::find($classroomTypeID);
+            if ($classroomType==null) {
+                return response()->json(['message'=>'classroom type does not exist'], 404);
+            }
+
+            DB::transaction(
+                function()
+                use ($name, $capacity, $floor, $blockID, $classroomTypeID)
+                {
+                $classroom = new Classroom();
+                $classroom->name = $name;
+                $classroom->capacity = $capacity;
+                $classroom->floor = $floor;
+                $classroom->block_id = $blockID;
+                $classroom->classroom_type_id = $classroomTypeID;
+
+                $classroom->save();
+            });
+            return response()->json(['message'=>'classroom registered'], 200);
+        } catch (Exception $e) {
+            return response()->json(['error'=>$e->getMessage()], 500);
+        }
     }
     /**
      * @covers
-     * To cancel assigned types. 
+     * To cancel assigned types.
      */
-    public function update(Request $request, $id) 
+    public function update(Request $request, $id)
     {
     }
 
@@ -189,7 +128,7 @@ class ClassroomController extends Controller
      * @covers
      * IDK
      */
-    public function destroy($id) 
+    public function destroy($id)
     {
     }
 }

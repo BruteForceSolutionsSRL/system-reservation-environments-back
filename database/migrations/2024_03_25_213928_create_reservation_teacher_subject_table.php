@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class CreateReservationTeacherSubjectTable extends Migration
@@ -17,7 +18,8 @@ class CreateReservationTeacherSubjectTable extends Migration
             $table->id();
             $table->unsignedBigInteger('reservation_id');
             $table->unsignedBigInteger('teacher_subject_id');
-            $table->timestamps();
+            $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
+            $table->timestamp('updated_at')->default(DB::raw('CURRENT_TIMESTAMP'));
 
             $table->foreign('reservation_id')
                     ->references('id')

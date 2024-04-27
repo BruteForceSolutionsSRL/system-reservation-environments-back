@@ -10,6 +10,7 @@ use App\Http\Controllers\ClassroomController;
 use App\Http\Controllers\ClassroomTypeController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ReservationController;
+use App\Http\Controllers\ReservationReasonController;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,8 +30,9 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::controller(ReservationController::class)->group(function() {
     Route::middleware('sanitize:api')->post('/reservation/assign', 'assign');
     Route::get('/reservations', 'index');
+    Route::get('/pending-requests', 'getPendingRequests');
     Route::get('/reservation/{reservationId}', 'show');
-    Route::middleware('sanitize:api')->put('/reservation/reject/{reservationId}', 'rejectReservation');
+    Route::middleware('sanitize:api')->patch('/reservation/reject/{reservationId}', 'rejectReservation');
     Route::middleware('sanitize:api')->post('/reservation', 'store');
 });
 
@@ -49,4 +51,6 @@ Route::get('/classroomtypes', [ClassroomTypeController::class, 'list']);
 Route::middleware('sanitize:api')->post('/notification', [NotificationController::class ,'store']);
 Route::get('/blocks', [BlockController::class, 'list']);
 Route::get('/timeslots', [TimeSlotController::class, 'list']);
+
+Route::get('/reservation-reasons', [ReservationReasonController::class, 'index']);
 
