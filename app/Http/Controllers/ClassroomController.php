@@ -111,7 +111,7 @@ class ClassroomController extends Controller
             $data = $validator->validated();
 
             $block = Block::findOrFail($data['block_id']); 
-            if ($block->maxfloor < $data['floor_number']) {
+            if ($block->max_floor < $data['floor_number']) {
                 return response()->json(
                     ['messagge' => 
                        'El numero de piso es mayor a la maximo piso del bloque seleccionado'], 
@@ -125,9 +125,9 @@ class ClassroomController extends Controller
                     $classroom = new Classroom();
                     $classroom->name = $data['classroom_name']; 
                     $classroom->capacity = $data['capacity'];
-                    $classroom->floor = $data['type_id']; 
+                    $classroom->floor = $data['floor_number']; 
                     $classroom->block_id = $data['block_id']; 
-                    $classroom->classroom_type_id = $data['floor_number']; 
+                    $classroom->classroom_type_id = $data['type_id']; 
     
                     $classroom->save();    
                 }

@@ -27,11 +27,12 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::controller(ReservationController::class)->group(function() {
-    Route::middleware('sanitize:api')->post('/reservation/assign', 'assign');
+    Route::patch('/reservation/assign/{reservationId}', 'assign');
     Route::get('/reservations', 'index');
     Route::get('/reservation/{reservationId}', 'show');
     Route::middleware('sanitize:api')->put('/reservation/reject/{reservationId}', 'rejectReservation');
     Route::middleware('sanitize:api')->post('/reservation', 'store');
+    Route::get('/reservation/conflicts/{reservationId}', 'getConflicts'); 
 });
 
 Route::controller(ClassroomController::class)->group(function() {

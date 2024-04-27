@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 use App\Models\TeacherSubject;
+use App\Models\Person;
 
 class TeacherSubjectController extends Controller
 {
@@ -27,42 +27,53 @@ class TeacherSubjectController extends Controller
     public function subjectsByTeacher($teacherId)
     {
         try {
-            $universitySubjects = TeacherSubject::with('universitySubject:id,name')
-                ->where('teacher_id', $teacherId)
+            $universitySubjects = TeacherSubject::where('person_id', $teacherId)
                 ->get();
 
-            $universitySubjects = $universitySubjects->map(function ($universitySubject){
-                return[
-                    'university_subject_id' => $universitySubject->university_subject_id,
+            $universitySubjects = $universitySubjects->map(function ($universitySubject)
+            {
+                return [
+                    'id' => $universitySubject->university_subject_id,
                     'name' => $universitySubject->universitySubject->name,
                 ];
             });     
             return response()->json($universitySubjects, 200);
         } catch (\Exception $e) {
-            return response()->json(['error' => $e -> getMessage()],500);
+            return response()->json(
+                [
+                    'message' => 'Hubo un error en el servidor',
+                    'error' => $e -> getMessage()
+                ],
+                500
+            );
         }
     }
 
     public function teachersBySubject($universitySubjectId)
     {
         try {
-            $teacherSubjects = TeacherSubject::with('teacher.person')
-                ->where('university_subject_id', $universitySubjectId)
-                ->select('id','teacher_id', 'group_number')
+            $teacherSubjects = TeacherSubject::where('university_subject_id', $universitySubjectId)
                 ->get();
-   
-            $teacherSubjects = $teacherSubjects->map(function ($teacherSubject){
+            
+            $teacherSubjects = $teacherSubjects->map(function ($teacherSubject)
+            {
+                $teacher = Person::find($teacherSubject->person_id);
+                $fullname = $teacher->name . ' ' . $teacher->last_name;
                 return [
-                    'teacher_subject_id' => $teacherSubject->id,
+                    'id' => $teacherSubject->id,
                     'group_number' => $teacherSubject->group_number,
-                    'teacher_id' => $teacherSubject->teacher->id,
-                    'teacher_name' => $teacherSubject->teacher->person->name,
-                    'teacher_last_name' => $teacherSubject->teacher->person->last_name,    
+                    'teacher_fullname' => $fullname
                 ];
             });
-            return response()->json($teacherSubjects, 200);
+            return response()->json([$teacherSubjects], 200);
         } catch (\Exception $e) {
-            return response()->json(['error' => $e -> getMessage()],500);
+            return response()->json(
+                [
+                    'message' => 'Hubo un error en el servidor',
+                    'error' => $e -> getMessage()
+                ],
+                500
+            );
         }
     }
 

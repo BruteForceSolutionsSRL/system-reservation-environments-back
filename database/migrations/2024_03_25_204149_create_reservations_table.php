@@ -18,7 +18,6 @@ class CreateReservationsTable extends Migration
             $table->integer('number_of_students');
             $table->integer('repeat');
             $table->date('date');
-            $table->string('reason');
             $table->unsignedBigInteger('reservation_status_id');
             $table->unsignedBigInteger('reservation_reason_id');
             $table->timestamps();
