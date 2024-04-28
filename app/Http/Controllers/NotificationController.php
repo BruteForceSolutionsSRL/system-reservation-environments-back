@@ -70,7 +70,13 @@ class NotificationController extends Controller
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json(
+                [
+                    'message' => 'Hubo un error en el servidor',
+                    'error' => $e->getMessage()
+                ],
+                500
+            );
         }
 
         return response()->json($notification, 201);
@@ -87,8 +93,8 @@ class NotificationController extends Controller
         $notification = Notification::find($notificationId);
 
         if ($notification == null) {
-            return response()->json(['error'
-                    => 'There is no notification with this ID'], 404);
+            return response()->json(['meesage'
+                    => 'No existe una notificacion con el ID'], 404);
         }
 
         return $notification;
