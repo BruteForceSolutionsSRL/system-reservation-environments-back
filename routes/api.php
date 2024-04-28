@@ -33,12 +33,14 @@ Route::controller(ReservationController::class)->group(function() {
     Route::get('/pending-requests', 'getPendingRequests');
     Route::get('/reservation/{reservationId}', 'show');
     Route::middleware('sanitize:api')->patch('/reservation/reject/{reservationId}', 'rejectReservation');
+    Route::middleware('sanitize:api')->patch('/reservation/cancel/{reservationId}', 'cancelRequest');
     Route::middleware('sanitize:api')->post('/reservation', 'store');
 });
 
 Route::controller(ClassroomController::class)->group(function() {
     Route::middleware('sanitize:api')->post('/classroom', 'store');
     Route::get('/classrooms/block/{blockId}','classroomsByBlock');
+    Route::get('/avaible-classrooms/block/{blockId}', 'avaibleClassroomsByBlock');
     Route::get('/classrooms', 'list');
 });
 

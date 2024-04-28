@@ -46,6 +46,30 @@ class ClassroomController extends Controller
     {
     }
 
+    public function avaibleClassroomsByBlock($blockId)
+    {
+        try {
+            $classrooms = Classroom::select('id', 'name', 'capacity', 'floor')
+                ->where('block_id', $blockId)
+                ->whereNotIn('id', function ($query) use ($blockId) {
+                    $query->select('C.id')
+                        ->from('classrooms as C')
+                        ->join('classroom_reservation as CR', 'C.id', '=', 'CR.classroom_id')
+                        ->join('reservations as R', 'CR.reservation_id', '=', 'R.id')
+                        ->where('C.block_id', $blockId)
+                        ->where('R.reservation_status_id', 1)
+                        ->where('R.date', '>=', now()->format('Y-m-d'));
+                })->get()
+                ->map(function ($classroom) {
+                    return $this->formatClassroomResponse($classroom);
+                });
+
+            return response()->json($classrooms, 200);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
     public function classroomsByBlock($blockId)
     {
         try {

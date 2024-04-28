@@ -28,7 +28,9 @@ class TeacherSubjectController extends Controller
     {
         try {
             $universitySubjects = TeacherSubject::with('universitySubject:id,name')
+                ->select('university_subject_id')
                 ->where('person_id', $personId)
+                ->groupBy('university_subject_id')
                 ->get();
 
             $universitySubjects = $universitySubjects->map(function ($universitySubject) {

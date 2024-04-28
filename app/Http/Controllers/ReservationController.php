@@ -123,28 +123,63 @@ class ReservationController extends Controller
 
     public function rejectReservation($reservationId)
     {
-        $reservation = Reservation::findOrFail($reservationId);
+        try {
+            $reservation = Reservation::findOrFail($reservationId);
 
-        if ($reservation == null) {
-            return response()->json(['error'
-                    => 'No existe una solicitud con este ID'], 404);
+            if ($reservation == null) {
+                return response()->json(['error'
+                        => 'No existe una solicitud con este ID'], 404);
+            }
+
+            if ($reservation->reservation_status_id == 2) {
+                return response()->json(['error'
+                        => 'Esta solicitud ya fue rechazada'], 200);
+            }
+
+            if ($reservation->reservation_statud_id != 3) {
+                return response()->json(['error'
+                        => 'Esta solicitud ya fue atendida'], 200);
+            }
+
+            $reservation->reservation_status_id = 2;
+            $reservation->save();
+
+            return response()->json(['mensaje'
+            => 'La solicitud de reserva fue rechazada.'], 200);
+        } catch (Exception $err) {
+            return response()->json([
+                'mensaje' => 'Ocurrio un error al rechazar la solicitud.',
+                'error' => $err->getMessage()
+            ], 500);
         }
+    }
 
-        if ($reservation->reservation_status_id == 2) {
-            return response()->json(['error'
-                    => 'Esta solicitud ya fue rechazada'], 200);
+    public function cancelRequest($reservationId)
+    {
+        try {
+            $reservation = Reservation::findOrFail($reservationId);
+
+            if ($reservation == null) {
+                return response()->json(['error'
+                        => 'No existe una solicitud con este ID'], 404);
+            }
+
+            if ($reservation->reservation_status_id == 4) {
+                return response()->json(['error'
+                        => 'Esta solicitud ya fue cancelada'], 200);
+            }
+
+            $reservation->reservation_status_id = 4;
+            $reservation->save();
+
+            return response()->json(['mensaje'
+            => 'La solicitud de reserva fue cancelada.'], 200);
+        } catch (Exception $err) {
+            return response()->json([
+                'mensaje' => 'Ocurrio un error al cancelar la solicitud.',
+                'error' => $err->getMessage()
+            ], 500);
         }
-
-        if ($reservation->reservation_statud_id != 3) {
-            return response()->json(['error'
-                    => 'Esta solicitud ya fue atendida'], 200);
-        }
-
-        $reservation->reservation_status_id = 2;
-        $reservation->save();
-
-        return response()->json(['mensaje'
-                    => 'La solicitud fue rechazada con exito'], 200);
     }
 
     public function store(Request $request)
