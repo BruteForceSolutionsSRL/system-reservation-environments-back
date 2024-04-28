@@ -58,8 +58,8 @@ class ReservationController extends Controller
                     'id' => $teacherSubject->id,
                     'groupNumber' => $teacherSubject->group_number,
                     'teacher' => [
-                        'id' => $teacherSubject->teacher->id,
-                        'person' => $teacherSubject->teacher->person
+                        'id' => $teacherSubject->person->id,
+                        'person' => $teacherSubject->person->person
                     ],
                     'universitySubject' => $teacherSubject->universitySubject
                 ];
@@ -287,8 +287,7 @@ class ReservationController extends Controller
                     );
             }
 
-            $ok = $this->checkAvailibility($reservation); 
-            if ($ok==false) {
+            if (!$this->checkAvailibility($reservation)) {
                 return response()->json(
                     ['message' => 'La solicitud no puede aceptarse, existen ambientes ocupados'], 
                     200

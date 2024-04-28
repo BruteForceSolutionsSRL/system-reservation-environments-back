@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\TimeSlot;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 use App\Models\Classroom; 
 use App\Models\Block;
+use App\Models\ReservationStatus;
+
 
 class ClassroomController extends Controller
 {
@@ -176,6 +179,127 @@ class ClassroomController extends Controller
             'block_id.exists' => 'El \'bloque\' debe ser una seleccion valida', 
             'floor_number.min' => 'El \'piso\' debe ser un numero positivo menor a la cantidad de pisos del bloque'
         ]);
+    }
+
+    public function getClassroomByDisponibility(Request $request) 
+    {
+        try {
+            $validator = $this->validateDisponibilityData($request);
+            if ($validator->fails()) {
+                $message = ''; 
+                foreach ($validator->errors()->all() as $value) 
+                    $message .= $value . '\n';
+                return response()->json(['message' => $message], 400);
+            }
+            $classroomList = [];
+            $data = $validator->validated();
+            
+            $initialTime = -1; 
+            $endTime = -1; 
+            foreach ($data['time_slots_id'] as $timeSlot) {
+                if ($initialTime == -1) $initialTime = $timeSlot->id; 
+                else $endTime = $timeSlot->id; 
+            }
+            if ($initialTime > $endTime) {
+                $temp = $endTime; 
+                $endTime = $initialTime; 
+                $initialTime = $temp;
+            }
+
+            foreach ($data['classroom_id'] as $classroomId) {
+                $classroom = Classroom::findOrFail($classroomId); 
+                if ($classroom->block->id != $data['block_id']) {
+                    return response()->json(
+                        ['message' => 'Los ambientes seleccionados, no pertenecen al bloque'],
+                        404
+                    );
+                }
+                $acceptedStatus = ReservationStatus::where('status', 'ACCEPTED')
+                                ->get()
+                                ->pop()
+                                ->id;
+                $pendingStatus = ReservationStatus::where('status', 'PENDING')
+                                ->get()
+                                ->pop()
+                                ->id;
+    
+                $element = ['classroom_name' => $classroom->name];
+                $robot = new ReservationController();
+                $reservations = $robot->getActiveReservationsWithDateStatusAndClassroom(
+                    [$acceptedStatus, $pendingStatus], 
+                    $data['date'], 
+                    $classroomId
+                );
+                $reservations = $robot->cutReservationSetByTimeSlot(
+                    $reservations, 
+                    $initialTime, 
+                    $endTime
+                );
+
+                for ($timeSlotId = $initialTime; $timeSlotId <= $endTime; $timeSlotId++) {
+                    $timeSlot = TimeSlot::find($timeSlotId); 
+                    $element = [$timeSlot->time => [
+                        'valor' => 0, 
+                        'message' => 'Disponible'
+                    ]];
+                }
+
+                foreach ($reservations as $reservation) {
+                    if ($reservation->reservation_status_id == $pendingStatus) {
+
+                    } else {
+                        for ($timeSlotId = $timeSlotId; $timeSlotId <= $endTime; $timeSlotId++) {
+                            $timeSlot = TimeSlot::find($timeSlotId); 
+                            $element = [$timeSlot->time => [
+                                'valor' => 0, 
+                                'message' => 'Disponible'
+                            ]];
+                        }                                                        
+                    }
+                }
+
+            }
+            return response()->json($classroomList, 200);
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'message' => 'Hubo un error en el servidor', 
+                    'error' => $e->getMessage()
+                ], 
+                500
+            );
+        }
+    }
+    private function validateDisponibilityData(Request $request) 
+    {
+        return \Validator::make($request->all(), [
+            'date' => 'required|date',
+            'block_id' => 'required|exists:blocks,id',
+            'classroom_id.*' => 'required|exists:classrooms,id',
+            'time_slot_id.*' => 'required|exists:time_slots,id',
+            'time_slot_id' => [
+                'required',
+                'array',
+                function ($attribute, $value, $fail) {
+                    if (count($value) !== 2) {
+                        $fail('Debe seleccionar exactamente dos periodos de tiempo.');
+                    }else if ($value[1] <= $value[0]) {
+                        $fail('El segundo periodo debe ser mayor que el primero.');
+                    }
+                }
+            ],
+        ], [
+            'date.required' => 'La fecha es obligatoria.',
+            'block_id.required' => 'El bloque no debe ir vacio',
+            'block_id.exists' => 'El bloque seleccionado debe existir',
+            'date.date' => 'La fecha debe ser un formato válido.',
+            'classroom_id.*.required' => 'Se requiere al menos una aula.',
+            'classroom_id.*.exists' => 'Una de las aulas seleccionadas no es válida.',
+            'time_slot_id.*.required' => 'Se requieren los periodos de tiempo.',
+            'time_slot_id.*.exists' => 'Uno de los periodos de tiempo seleccionados no es válido.',
+            'time_slot_id.required' => 'Se requieren dos periodos de tiempo.',
+            'time_slot_id.array' => 'Los periodos de tiempo deben ser un arreglo.',
+        ]);    
     }
     /**
      * @covers
