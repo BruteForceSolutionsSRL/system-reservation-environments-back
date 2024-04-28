@@ -60,12 +60,13 @@ class TeacherSubjectController extends Controller
                 ->get();
 
             $teacherSubjects = $teacherSubjects->map(function ($teacherSubject){
+                $teacher = Person::find($teacherSubject->person_id);
                 return [
                     'id' => $teacherSubject->id,
                     'group_number' => $teacherSubject->group_number,
-                    'person_id' => $teacherSubject->teacher->id,
-                    'teacher_name' => $teacherSubject->teacher->person->name,
-                    'teacher_last_name' => $teacherSubject->teacher->person->last_name,
+                    'person_id' => $teacher->id,
+                    'teacher_name' => $teacher->name,
+                    'teacher_last_name' => $teacher->last_name,
                 ];
             });
             return response()->json([$teacherSubjects], 200);
