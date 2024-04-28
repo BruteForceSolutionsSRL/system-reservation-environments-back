@@ -18,7 +18,7 @@ class BlockController extends Controller
                                 return [
                                     'block_id' => $block->id, 
                                     'block_name' => $block->name, 
-                                    'block_maxfloor' => $block->maxfloor
+                                    'block_maxfloor' => $block->max_floor
                                 ];
                             }
                         );
