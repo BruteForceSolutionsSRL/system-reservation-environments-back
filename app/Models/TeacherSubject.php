@@ -8,7 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class TeacherSubject extends Model
 {
     use HasFactory;
-    public function person()
+
+    public function teacher()
     {
         return $this->belongsTo(Person::class);
     }

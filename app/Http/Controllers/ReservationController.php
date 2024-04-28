@@ -8,27 +8,28 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
-use App\Models\Reservation; 
+use App\Models\Reservation;
 use App\Models\ReservationStatus;
+use Carbon\Carbon;
 
 class ReservationController extends Controller
 {
     /**
-     * index function retrieves all reservations. 
+     * index function retrieves all reservations.
      */
-    public function index() 
+    public function index()
     {
         $reservations = Reservation::with([
             'reservationStatus:id,status',
+            'reservationReason:id,reason',
             'timeSlots:id,time',
-            'teacherSubjects:id,group_number,teacher_id,university_subject_id',
-            'teacherSubjects.teacher:id,person_id',
-            'teacherSubjects.teacher.person:id,name,last_name,email,phone_number',
+            'teacherSubjects:id,group_number,person_id,university_subject_id',
+            'teacherSubjects.person:id,name,last_name',
             'teacherSubjects.universitySubject:id,name',
-            'classrooms:id,name,capacity,floor,block_id,classroom_type_id',
+            'classrooms:id,name,capacity,block_id',
             'classrooms.block:id,name',
             'classrooms.classroomType:id,description'
-        ])->get();
+        ])->orderBy('date')->get();
 
         $formattedReservations = $reservations->map(function ($reservation) {
             return ReservationController::formatOutput($reservation);
@@ -37,43 +38,64 @@ class ReservationController extends Controller
         return response()->json($formattedReservations, 200);
     }
 
-    private function formatOutput($reservation)
+    public function getPendingRequests()
     {
+        $reservations = Reservation::with([
+            'reservationStatus:id,status',
+            'reservationReason:id,reason',
+            'timeSlots:id,time',
+            'teacherSubjects:id,group_number,person_id,university_subject_id',
+            'teacherSubjects.person:id,name,last_name',
+            'teacherSubjects.universitySubject:id,name',
+            'classrooms:id,name,capacity,block_id',
+            'classrooms.block:id,name',
+            'classrooms.classroomType:id,description'
+        ])->where('date', '>=', Carbon::now()->format('Y-m-d'))
+            ->where('reservation_status_id', '=', '3')->get();
+
+        $formattedReservations = $reservations->map(function ($reservation) {
+            return ReservationController::formatOutput($reservation);
+        });
+
+        return response()->json($formattedReservations, 200);
+    }
+
+    private function formatOutput(Reservation $reservation)
+    {
+        $reservationReason = $reservation->reservationReason;
+        $classrooms = $reservation->classrooms;
+        $teacherSubjects = $reservation->teacherSubjects;
+        $timeSlots = $reservation->timeSlots;
+        $priority = 0;
+
+        if (Carbon::now()->diffInDays(Carbon::parse($reservation->date)) <= 5) {
+            $priority = 1;
+        }
+
         return [
-            'id' => $reservation->id,
-            'numberOfStudents' => $reservation->number_of_students,
-            'date' => $reservation->date,
-            'reason' => $reservation->reason,
-            'createdAt' => $reservation->created_at,
-            'updatedAt' => $reservation->updated_at,
-            'reservationStatus' => $reservation->reservationStatus,
-            'schedule' => $reservation->timeSlots->map(function ($timeSlot) {
+            'reservation_id' => $reservation->id,
+            'subject_name' => $teacherSubjects->first()->universitySubject->name,
+            'quantity' => $reservation->number_of_students,
+            'reservation_date' => $reservation->date,
+            'timeSlot' => $timeSlots->map(function ($timeSlot) {
+                return $timeSlot->time;
+            }),
+            'groups' => $teacherSubjects->map(function ($teacherSubject) {
+                $person = $teacherSubject->person;
+
                 return [
-                    'id' => $timeSlot->id,
-                    'time' => $timeSlot->time
+                    'teacher_name' => $person->name . ' ' . $person->last_name,
+                    'group_number' => $teacherSubject->group_number,
                 ];
             }),
-            'assignment' => $reservation->teacherSubjects->map(function ($teacherSubject) {
+            'classrooms' => $classrooms->map(function ($classroom) {
                 return [
-                    'id' => $teacherSubject->id,
-                    'groupNumber' => $teacherSubject->group_number,
-                    'teacher' => [
-                        'id' => $teacherSubject->person->id,
-                        'person' => $teacherSubject->person->person
-                    ],
-                    'universitySubject' => $teacherSubject->universitySubject
-                ];
-            }),
-            'classrooms' => $reservation->classrooms->map(function ($classroom) {
-                return [
-                    'id' => $classroom->id,
-                    'name' => $classroom->name,
+                    'classroom_name' => $classroom->name,
                     'capacity' => $classroom->capacity,
-                    'floor' => $classroom->floor,
-                    'block' => $classroom->block,
-                    'classroomType' => $classroom->classroomType
                 ];
-            })
+            }),
+            'reason_name' => $reservationReason->reason,
+            'priority' => $priority,
         ];
     }
 
@@ -81,19 +103,19 @@ class ReservationController extends Controller
     {
         $reservation = Reservation::with([
             'reservationStatus:id,status',
+            'reservationReason:id,reason',
             'timeSlots:id,time',
-            'teacherSubjects:id,group_number,teacher_id,university_subject_id',
-            'teacherSubjects.teacher:id,person_id',
-            'teacherSubjects.teacher.person:id,name,last_name,email,phone_number',
+            'teacherSubjects:id,group_number,person_id,university_subject_id',
+            'teacherSubjects.person:id,name,last_name',
             'teacherSubjects.universitySubject:id,name',
-            'classrooms:id,name,capacity,floor,block_id,classroom_type_id',
+            'classrooms:id,name,capacity,block_id',
             'classrooms.block:id,name',
             'classrooms.classroomType:id,description'
         ])->findOrFail($reservationId);
 
         if ($reservation == null) {
             return response()->json(['error'
-                    => 'There is no reservation, try it later?'], 404);
+                    => 'No existe una solicitud con este ID'], 404);
         }
 
         return ReservationController::formatOutput($reservation);
@@ -101,29 +123,66 @@ class ReservationController extends Controller
 
     public function rejectReservation($reservationId)
     {
-        $reservation = Reservation::findOrFail($reservationId);
+        try {
+            $reservation = Reservation::findOrFail($reservationId);
 
-        if ($reservation == null) {
-            return response()->json(['error'
-                    => 'There is no reservation, try it later?'], 404);
+            if ($reservation == null) {
+                return response()->json(['error'
+                        => 'No existe una solicitud con este ID'], 404);
+            }
+
+            if ($reservation->reservation_status_id == 2) {
+                return response()->json(['error'
+                        => 'Esta solicitud ya fue rechazada'], 200);
+            }
+
+            if ($reservation->reservation_statud_id != 3) {
+                return response()->json(['error'
+                        => 'Esta solicitud ya fue atendida'], 200);
+            }
+
+            $reservation->reservation_status_id = 2;
+            $reservation->save();
+
+            return response()->json(['mensaje'
+            => 'La solicitud de reserva fue rechazada.'], 200);
+        } catch (Exception $err) {
+            return response()->json([
+                'mensaje' => 'Ocurrio un error al rechazar la solicitud.',
+                'error' => $err->getMessage()
+            ], 500);
         }
-
-        if ($reservation->reservation_status_id == 2) {
-            return response()->json(['error'
-                    => 'This request has already been rejected'], 200);
-        }
-
-        $reservation->reservation_status_id = 2;
-        $reservation->save();
-
-        return response()->json(['message'
-                    => 'Request rejected'], 200);
     }
 
-    /**
-     * Store a new Request
-     */
-    public function store(Request $request) 
+    public function cancelRequest($reservationId)
+    {
+        try {
+            $reservation = Reservation::findOrFail($reservationId);
+
+            if ($reservation == null) {
+                return response()->json(['error'
+                        => 'No existe una solicitud con este ID'], 404);
+            }
+
+            if ($reservation->reservation_status_id == 4) {
+                return response()->json(['error'
+                        => 'Esta solicitud ya fue cancelada'], 200);
+            }
+
+            $reservation->reservation_status_id = 4;
+            $reservation->save();
+
+            return response()->json(['mensaje'
+            => 'La solicitud de reserva fue cancelada.'], 200);
+        } catch (Exception $err) {
+            return response()->json([
+                'mensaje' => 'Ocurrio un error al cancelar la solicitud.',
+                'error' => $err->getMessage()
+            ], 500);
+        }
+    }
+
+    public function store(Request $request)
     {
         try {
             $validator = $this->validateReservationData($request);
@@ -278,7 +337,7 @@ class ReservationController extends Controller
                             404
                         ); 
             }
-            
+
             $reservationStatus = $reservation->reservationStatus;
             if ($reservationStatus->status!='PENDING') {
                 return response()->json(
@@ -392,16 +451,16 @@ class ReservationController extends Controller
             if (count($reservations) != 0) 
                 return false; 
         }
-        return true; 
+        return true;
     }
     /**
      * Cut and retrieve a subset of reservations
-     * @param \Illuminate\Database\Eloquent\Collection 
+     * @param array 
      * @param int 
      * @param int
      * @return array
      */
-    private function cutReservationSetByTimeSlot(
+    public function cutReservationSetByTimeSlot(
         $reservations, 
         $initialTimeId, 
         $endTimeId
@@ -572,23 +631,20 @@ class ReservationController extends Controller
                 }
             )->get();
         
-        $reservationSet = $reservationSet->map(
-            function ($reservation) use ($date) 
-            {
-                if ($reservation->repeat > 0) {
-                    $initialDate = new DateTime($date); 
-                    $goalDate = new DateTime($reservation->date); 
-                    $repeat = $reservation->repeat;
+        $result = [];
+        foreach ($reservationSet as $reservation) {
+            if ($reservation->repeat > 0) {
+                $initialDate = new DateTime($date); 
+                $goalDate = new DateTime($reservation->date); 
+                $repeat = $reservation->repeat;
 
-                    $difference = $initialDate->diff($goalDate)->days; 
-                    if ($difference % $repeat == 0) {
-                        return $reservation; 
-                    } else return;
-                } else {
-                    return $reservation;
-                }
-            }
-        ); 
-        return $reservationSet; 
+                $difference = $initialDate->diff($goalDate)->days; 
+                if ($difference % $repeat == 0) 
+                    array_push($result, $reservation); 
+            } else 
+                array_push($result, $reservation);
+        }
+        if ($reservationSet == null) $reservationSet = [];
+        return $result; 
     }
 }

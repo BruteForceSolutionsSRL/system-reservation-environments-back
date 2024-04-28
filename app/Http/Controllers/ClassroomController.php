@@ -7,51 +7,69 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-use App\Models\Classroom; 
+use App\Models\Classroom;
 use App\Models\Block;
 use App\Models\ReservationStatus;
-
+use App\Models\ClassroomType;
 
 class ClassroomController extends Controller
 {
     /**
      * @param
      *  None
-     * @return 
+     * @return
      *  All classrooms
      */
-    public function list() 
+    public function list()
     {
-        try {
-            $classrooms = Classroom::all()
-            ->map(
-                function ($classroom) 
-                {
-                    return [
-                        'classroom_id' => $classroom->id, 
-                        'classroom_name' => $classroom->name, 
-                        'capacity' => $classroom->capacity, 
-                        'floor_number' => $classroom->floor
-                    ];
-                }
-            );
-            return response()->json($classrooms, 200);
-        } catch (Exception $e) {
-            return response()->json(
-                [
-                    'message' => 'Error en el servidor', 
-                    'error' => $e->getMessage()
-                ],
-                500
-            );
-        }
+        $classrooms = Classroom::select('id', 'name', 'capacity', 'floor')
+            ->get()
+            ->map(function ($classroom) {
+                return $this->formatClassroomResponse($classroom);
+            });
+        return response()->json($classrooms, 200);
     }
+
+    private function formatClassroomResponse($classroom)
+    {
+        return [
+            'classroom_id' => $classroom->id,
+            'classroom_name' => $classroom->name,
+            'capacity' => $classroom->capacity,
+            'floor' => $classroom->floor,
+        ];
+    }
+
     /**
-     * @covers: 
+     * @covers:
      * To retrieve data about a environment
      */
-    public function index() 
+    public function index()
     {
+    }
+
+    public function avaibleClassroomsByBlock($blockId)
+    {
+        try {
+            $classrooms = Classroom::select('id', 'name', 'capacity', 'floor')
+                ->where('block_id', $blockId)
+                ->whereNotIn('id', function ($query) use ($blockId) {
+                    $query->select('C.id')
+                        ->from('classrooms as C')
+                        ->join('classroom_reservation as CR', 'C.id', '=', 'CR.classroom_id')
+                        ->join('reservations as R', 'CR.reservation_id', '=', 'R.id')
+                        ->where('C.block_id', $blockId)
+                        ->where('R.reservation_status_id', 1)
+                        ->where('R.date', '>=', now()->format('Y-m-d'));
+                })->get()
+                ->map(function ($classroom) {
+                    return $this->formatClassroomResponse($classroom);
+                });
+
+            return response()->json($classrooms, 200);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     public function classroomsByBlock($blockId)
@@ -60,17 +78,9 @@ class ClassroomController extends Controller
             $classrooms = Classroom::select('id', 'name', 'capacity', 'floor')
                 ->where('block_id', $blockId)
                 ->get()
-                ->map(
-                    function ($classroom)
-                    {
-                        return [
-                            'classroom_id' => $classroom->id,
-                            'classroom_name' => $classroom->name,
-                            'capacity' => $classroom->capacity,
-                            'floor_number' => $classroom->floor,
-                        ];
-                    }
-                );
+                ->map(function ($classroom){
+                    return $this->formatClassroomResponse($classroom);
+                });
 
             return response()->json($classrooms, 200);
         } catch (Exception $e) {
@@ -183,6 +193,7 @@ class ClassroomController extends Controller
 
     public function getClassroomByDisponibility(Request $request) 
     {
+        $aux = [];
         try {
             $validator = $this->validateDisponibilityData($request);
             if ($validator->fails()) {
@@ -196,9 +207,9 @@ class ClassroomController extends Controller
             
             $initialTime = -1; 
             $endTime = -1; 
-            foreach ($data['time_slots_id'] as $timeSlot) {
-                if ($initialTime == -1) $initialTime = $timeSlot->id; 
-                else $endTime = $timeSlot->id; 
+            foreach ($data['time_slot_id'] as $timeSlot) {
+                if ($initialTime == -1) $initialTime = $timeSlot; 
+                else $endTime = $timeSlot; 
             }
             if ($initialTime > $endTime) {
                 $temp = $endTime; 
@@ -223,13 +234,16 @@ class ClassroomController extends Controller
                                 ->pop()
                                 ->id;
     
-                $element = ['classroom_name' => $classroom->name];
+                $element = array(); 
+                $element['classroom_name'] = $classroom->name;
+
                 $robot = new ReservationController();
                 $reservations = $robot->getActiveReservationsWithDateStatusAndClassroom(
                     [$acceptedStatus, $pendingStatus], 
                     $data['date'], 
                     $classroomId
                 );
+                array_push($aux, $reservations);
                 $reservations = $robot->cutReservationSetByTimeSlot(
                     $reservations, 
                     $initialTime, 
@@ -238,33 +252,52 @@ class ClassroomController extends Controller
 
                 for ($timeSlotId = $initialTime; $timeSlotId <= $endTime; $timeSlotId++) {
                     $timeSlot = TimeSlot::find($timeSlotId); 
-                    $element = [$timeSlot->time => [
+                    $index = (string)($timeSlot->time);
+                    $element[$index] = [
                         'valor' => 0, 
                         'message' => 'Disponible'
-                    ]];
+                    ];
                 }
 
                 foreach ($reservations as $reservation) {
-                    if ($reservation->reservation_status_id == $pendingStatus) {
+                    $a = -1; 
+                    $b = -1;
 
-                    } else {
-                        for ($timeSlotId = $timeSlotId; $timeSlotId <= $endTime; $timeSlotId++) {
-                            $timeSlot = TimeSlot::find($timeSlotId); 
-                            $element = [$timeSlot->time => [
-                                'valor' => 0, 
-                                'message' => 'Disponible'
-                            ]];
-                        }                                                        
+                    foreach ($reservation->timeSlots as $timeSlot) {
+                        if ($a == -1) $a = $timeSlot->id; 
+                        else $b = $timeSlot->id; 
+                    }
+                    if ($a > $b) {
+                        $temp = $b; 
+                        $b = $a; 
+                        $a = $temp; 
+                    }
+                    $isAccepted = $reservation->reservation_status_id == $acceptedStatus; 
+        
+                    for ($timeSlotId = max($a, $initialTime); $timeSlotId <= min($endTime, $b); $timeSlotId++) {
+                        $timeSlot = TimeSlot::find($timeSlotId);
+                        $index = (string)($timeSlot->time);
+                        $actualValue = $element[$index]['valor']; 
+
+                        if ($actualValue == 2) continue; // ASSIGNED
+                        if ($isAccepted) {
+                            $element[$index]['valor'] = 1; 
+                            $element[$index]['message'] = 'Ocupado';     
+                        } else {
+                            $element[$index]['valor'] = 2; 
+                            $element[$index]['message'] = 'En revision';     
+                        }
                     }
                 }
-
+                array_push($classroomList, $element);
             }
             return response()->json($classroomList, 200);
         } catch (Exception $e) {
             return response()->json(
                 [
                     'message' => 'Hubo un error en el servidor', 
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(), 
+                    'ayuda' => $aux
                 ], 
                 500
             );
@@ -303,9 +336,9 @@ class ClassroomController extends Controller
     }
     /**
      * @covers
-     * To cancel assigned types. 
+     * To cancel assigned types.
      */
-    public function update(Request $request, $id) 
+    public function update(Request $request, $id)
     {
     }
 
@@ -313,7 +346,7 @@ class ClassroomController extends Controller
      * @covers
      * IDK
      */
-    public function destroy($id) 
+    public function destroy($id)
     {
     }
 }

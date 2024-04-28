@@ -31,7 +31,13 @@ class TimeSlotController extends Controller
                 });
             return response()->json($timeSlots, 200);
         } catch (\Exception $e) {
-            return response()->json(['error' => $e -> getMessage()],500);
+            return response()->json(
+                [
+                    'message' => 'Hubo un error en el servidor',
+                    'error' => $e->getMessage()
+                ],
+                500
+            );
         }  
     }
 
