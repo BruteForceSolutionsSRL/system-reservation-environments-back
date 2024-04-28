@@ -346,8 +346,7 @@ class ReservationController extends Controller
                     );
             }
 
-            $ok = $this->checkAvailibility($reservation);
-            if ($ok==false) {
+            if (!$this->checkAvailibility($reservation)) {
                 return response()->json(
                     ['message' => 'La solicitud no puede aceptarse, existen ambientes ocupados'], 
                     200
@@ -456,12 +455,12 @@ class ReservationController extends Controller
     }
     /**
      * Cut and retrieve a subset of reservations
-     * @param \Illuminate\Database\Eloquent\Collection 
+     * @param array 
      * @param int 
      * @param int
      * @return array
      */
-    private function cutReservationSetByTimeSlot(
+    public function cutReservationSetByTimeSlot(
         $reservations, 
         $initialTimeId, 
         $endTimeId
@@ -632,23 +631,20 @@ class ReservationController extends Controller
                 }
             )->get();
         
-        $reservationSet = $reservationSet->map(
-            function ($reservation) use ($date) 
-            {
-                if ($reservation->repeat > 0) {
-                    $initialDate = new DateTime($date); 
-                    $goalDate = new DateTime($reservation->date); 
-                    $repeat = $reservation->repeat;
+        $result = [];
+        foreach ($reservationSet as $reservation) {
+            if ($reservation->repeat > 0) {
+                $initialDate = new DateTime($date); 
+                $goalDate = new DateTime($reservation->date); 
+                $repeat = $reservation->repeat;
 
-                    $difference = $initialDate->diff($goalDate)->days; 
-                    if ($difference % $repeat == 0) {
-                        return $reservation; 
-                    } else return;
-                } else {
-                    return $reservation;
-                }
-            }
-        ); 
-        return $reservationSet; 
+                $difference = $initialDate->diff($goalDate)->days; 
+                if ($difference % $repeat == 0) 
+                    array_push($result, $reservation); 
+            } else 
+                array_push($result, $reservation);
+        }
+        if ($reservationSet == null) $reservationSet = [];
+        return $result; 
     }
 }

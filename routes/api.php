@@ -43,6 +43,8 @@ Route::controller(ClassroomController::class)->group(function() {
     Route::get('/classrooms/block/{blockId}','classroomsByBlock');
     Route::get('/avaible-classrooms/block/{blockId}', 'avaibleClassroomsByBlock');
     Route::get('/classrooms', 'list');
+
+    Route::post('/classroom/disponibility', 'getClassroomByDisponibility');
 });
 
 Route::controller(TeacherSubjectController::class)->group(function() {
