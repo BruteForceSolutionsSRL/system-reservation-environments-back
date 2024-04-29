@@ -31,11 +31,13 @@ Route::controller(ReservationController::class)->group(function() {
     Route::patch('/reservation/assign/{reservationId}', 'assign');
     Route::get('/reservations', 'index');
     Route::get('/pending-requests', 'getPendingRequests');
+    Route::get('/reservations/{teacherId}', 'listRequestsByTeacher');
+    Route::get('/all-reservations/{teacherId}', 'listAllRequestsByTeacher'); // para el historial ?
     Route::get('/reservation/{reservationId}', 'show');
     Route::middleware('sanitize:api')->patch('/reservation/reject/{reservationId}', 'rejectReservation');
     Route::middleware('sanitize:api')->patch('/reservation/cancel/{reservationId}', 'cancelRequest');
     Route::middleware('sanitize:api')->post('/reservation', 'store');
-    Route::get('/reservation/conflicts/{reservationId}', 'getConflicts'); 
+    Route::get('/reservation/conflicts/{reservationId}', 'getConflicts');
 });
 
 Route::controller(ClassroomController::class)->group(function() {

@@ -9,7 +9,15 @@ class TeacherSubject extends Model
 {
     use HasFactory;
 
+    /**
+    *   @todo borrar esta funcion hasta que no haya conflictos
+    */
     public function teacher()
+    {
+        return $this->belongsTo(Person::class);
+    }
+
+    public function person()
     {
         return $this->belongsTo(Person::class);
     }
