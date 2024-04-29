@@ -127,7 +127,7 @@ class ReservationController extends Controller
             'subject_name' => $teacherSubjects->first()->universitySubject->name,
             'quantity' => $reservation->number_of_students,
             'reservation_date' => $reservation->date,
-            'timeSlot' => $timeSlots->map(function ($timeSlot) {
+            'time_slot' => $timeSlots->map(function ($timeSlot) {
                 return $timeSlot->time;
             }),
             'groups' => $teacherSubjects->map(function ($teacherSubject) {
@@ -138,6 +138,7 @@ class ReservationController extends Controller
                     'group_number' => $teacherSubject->group_number,
                 ];
             }),
+            'block_name' => $classrooms->first()->block->name,
             'classrooms' => $classrooms->map(function ($classroom) {
                 return [
                     'classroom_name' => $classroom->name,
