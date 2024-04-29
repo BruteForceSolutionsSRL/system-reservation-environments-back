@@ -554,7 +554,7 @@ class ReservationController extends Controller
                 );
             }
             $result = $this->alertReservation($reservation);
-            unset($result['ok']);
+            //unset($result['ok']);
             return response()->json($result, 200);
         } catch (Exception $e) {
             return response()->json(
@@ -599,7 +599,7 @@ class ReservationController extends Controller
             $result['ok'] = 1;
         }
 
-        $block = $reservation->classrooms->pop()->block;
+        $block = $reservation->classrooms->get(0)->block;
         $dp = array_fill(0, $block->max_floor+1, 0);
         $usedFloors = 0;
         foreach ($reservation->classrooms as $classroom) {
@@ -638,6 +638,23 @@ class ReservationController extends Controller
             }
         }
 
+        foreach ($reservation->teacherSubjects as $teacherSubject) {
+            $teacher = $teacherSubject->person; 
+            $fullname = $teacher->name . ' ' . $teacher->last_name; 
+            $count = 0;
+            $set = [];    
+
+            foreach ($teacherSubject->reservations as $item)
+            if ($item->reservation_status_id == 1) $count++;
+
+            if (($count > 3) && (!array_key_exists($fullname, $set))) {
+                $result['ok'] = 1;
+                array_push($result['teacher']['list'], $fullname);
+                $set[$fullname] = 1;
+            }
+        }
+        $result['classroom']['list'] = array_unique($result['classroom']['list']); 
+        $result['teacher']['list'] = array_unique($result['teacher']['list']);
         return $result;
     }
     public function getTotalCapacity($classrooms)
