@@ -193,7 +193,6 @@ class ClassroomController extends Controller
 
     public function getClassroomByDisponibility(Request $request) 
     {
-        $aux = [];
         try {
             $validator = $this->validateDisponibilityData($request);
             if ($validator->fails()) {
@@ -243,7 +242,6 @@ class ClassroomController extends Controller
                     $data['date'], 
                     $classroomId
                 );
-                array_push($aux, $reservations);
                 $reservations = $robot->cutReservationSetByTimeSlot(
                     $reservations, 
                     $initialTime, 
@@ -296,8 +294,7 @@ class ClassroomController extends Controller
             return response()->json(
                 [
                     'message' => 'Hubo un error en el servidor', 
-                    'error' => $e->getMessage(), 
-                    'ayuda' => $aux
+                    'error' => $e->getMessage() 
                 ], 
                 500
             );
@@ -328,6 +325,170 @@ class ClassroomController extends Controller
             'date.date' => 'La fecha debe ser un formato válido.',
             'classroom_id.*.required' => 'Se requiere al menos una aula.',
             'classroom_id.*.exists' => 'Una de las aulas seleccionadas no es válida.',
+            'time_slot_id.*.required' => 'Se requieren los periodos de tiempo.',
+            'time_slot_id.*.exists' => 'Uno de los periodos de tiempo seleccionados no es válido.',
+            'time_slot_id.required' => 'Se requieren dos periodos de tiempo.',
+            'time_slot_id.array' => 'Los periodos de tiempo deben ser un arreglo.',
+        ]);    
+    }
+
+    public function suggestClassrooms(Request $request) 
+    {
+        try {
+            $validator = $this->validateSuggestionData($request);
+
+            if ($validator->fails()) {
+                $message = ''; 
+                foreach ($validator->errors()->all() as $value) 
+                    $message .= $value . '\n';
+                return response()->json(['message' => $message], 400);
+            }
+
+            $data = $validator->validated(); 
+
+            $classroomSet = Classroom::where('block_id', $data['block_id'])
+                            ->get();
+            $classroomSets = [];
+            $max_floor = Block::find($data['block_id'])->max_floor;
+
+            for ($i = 0; $i<=$max_floor; $i++) {
+                $classroomSets[$i] = [
+                    "quantity" => 0, 
+                    "list" => array()
+                ];
+            }
+            $acceptedStatus = ReservationStatus::where('status', 'ACCEPTED')
+            ->get()
+            ->pop()
+            ->id;
+            $robot = new ReservationController(); 
+
+            foreach ($classroomSet as $classroom) {
+                $reservations = $robot->getActiveReservationsWithDateStatusAndClassroom(
+                    [$acceptedStatus], 
+                    $data['date'], 
+                    $classroom->id
+                );
+                $reservations = $robot->cutReservationSetByTimeSlot(
+                    $reservations, 
+                    $data['time_slot_id'][0], 
+                    $data['time_slot_id'][1]
+                );
+                if (count($reservations) != 0) continue;
+                $classroomSets[$classroom->floor]['quantity'] += $classroom->capacity; 
+                array_push($classroomSets[$classroom->floor]['list'], $classroom);
+            }
+
+            $MAX_LEN = 1e4+10;
+            $dp = array_fill(0, $MAX_LEN+1, $max_floor+100); 
+            $pointerDp = array_fill(0, $MAX_LEN+1, -1); 
+            $dp[0] = 0; 
+            for ($i = 0; $i<=$max_floor; $i++) 
+            for ($j = $MAX_LEN; $j>-1; $j--) 
+            if ($dp[$j] < $max_floor+100) {
+                $index = $j+$classroomSets[$i]['quantity']; 
+                if ($index > $MAX_LEN) break; 
+                $len = $dp[$j]+count($classroomSets[$i]['list']);
+
+                if ($dp[$index] > $len) {
+                    $dp[$index] = $len; 
+                    $pointerDp[$index] = $i;
+                }
+            }
+
+            $bestSuggest = $dp[$data['quantity']];
+
+            for ($i = $data['quantity']; $i <= min($data['quantity']+300, 1e5); $i++) 
+            if (($bestSuggest == -1) || ($dp[$bestSuggest] > $dp[$i])) 
+                $bestSuggest = $i;
+
+            if ($pointerDp[$bestSuggest] == -1) {
+                return response()->json(
+                    ['message' => 'No existe una sugerencia apropiada'],
+                    400
+                );
+            }
+
+            $classrooms = array();
+            $piv = $bestSuggest; 
+            while ($piv > 0) {
+                $itemId = $pointerDp[$piv];
+                foreach ($classroomSets[$itemId]['list'] as $classroom) 
+                    array_push($classrooms, $classroom);
+                $piv = $piv-$classroomSets[$itemId]['quantity']; 
+            }
+
+            $dp = array_fill(0, $MAX_LEN+1, -1); 
+            $pointerDp = array_fill(0, $MAX_LEN, -1);
+            $dp[0] = 0; 
+            foreach ($classrooms as $classroom) 
+            for ($j = $MAX_LEN; $j>-1; $j--) 
+            if ($dp[$j] != -1) {
+                $index = $j+($classroom->capacity); 
+                if ($index > $MAX_LEN) continue;
+                $len = $dp[$j]+1; 
+                if (($dp[$index]==-1) || ($dp[$index] > $len)) {
+                    $dp[$index] = $len; 
+                    $pointerDp[$index] = $classroom->id;
+                }
+            }
+
+            $bestSuggest = $data['quantity'];
+            for ($i = $data['quantity']; $i <= $MAX_LEN; $i++) 
+            if ($dp[$i] != -1)
+            if (($dp[$bestSuggest] == -1) || ($dp[$bestSuggest] > $dp[$i])) 
+                $bestSuggest = $i;
+
+            $res = array();
+            $piv = $bestSuggest; 
+            while ($piv != 0) {
+                $classroom = Classroom::find($pointerDp[$piv]);
+                //return response()->json($pointerDp[$piv], 200);
+
+                array_push($res, $this->formatClassroomResponse($classroom)); 
+                $piv -= $classroom->capacity;
+            }
+
+            return response()->json(
+                $res,
+                200
+            );
+
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'message' => 'Hubo un error en el servidor', 
+                    'error' => $e->getMessage() 
+                ], 
+                500
+            );
+        } 
+    }
+    private function validateSuggestionData(Request $request) 
+    {
+        return \Validator::make($request->all(), [
+            'date' => 'required|date',
+            'quantity' => 'required|integer',
+            'block_id' => 'required|exists:blocks,id',
+            'time_slot_id.*' => 'required|exists:time_slots,id',
+            'time_slot_id' => [
+                'required',
+                'array',
+                function ($attribute, $value, $fail) {
+                    if (count($value) !== 2) {
+                        $fail('Debe seleccionar exactamente dos periodos de tiempo.');
+                    }else if ($value[1] <= $value[0]) {
+                        $fail('El segundo periodo debe ser mayor que el primero.');
+                    }
+                }
+            ],
+        ], [
+            'date.required' => 'La fecha es obligatoria.',
+            'quantity.required' => 'El número de estudiantes es obligatorio.',
+            'quantity.integer' => 'El número de estudiantes debe ser un valor entero.',
+            'block_id.required' => 'El bloque no debe ir vacio',
+            'block_id.exists' => 'El bloque seleccionado debe existir',
+            'date.date' => 'La fecha debe ser un formato válido.',
             'time_slot_id.*.required' => 'Se requieren los periodos de tiempo.',
             'time_slot_id.*.exists' => 'Uno de los periodos de tiempo seleccionados no es válido.',
             'time_slot_id.required' => 'Se requieren dos periodos de tiempo.',

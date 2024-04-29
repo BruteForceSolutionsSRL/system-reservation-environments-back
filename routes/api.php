@@ -47,6 +47,7 @@ Route::controller(ClassroomController::class)->group(function() {
     Route::get('/classrooms', 'list');
 
     Route::post('/classroom/disponibility', 'getClassroomByDisponibility');
+    Route::post('/reservation/suggest', 'suggestClassrooms');
 });
 
 Route::controller(TeacherSubjectController::class)->group(function() {
