@@ -169,7 +169,6 @@ class ClassroomController extends Controller
     {
         return \Validator::make($request->all(), [
             'classroom_name' => 'required|string|regex:/^[A-Z0-9\-\. ]+$/
-
             |unique:classrooms,name', 
             'capacity' => 'required|integer|min:25|max:500', 
             'type_id' => 'required|integer|exists:classroom_types,id', 
