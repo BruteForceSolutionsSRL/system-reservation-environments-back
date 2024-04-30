@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Validator;
 
 use App\Models\Reservation;
 use App\Models\ReservationStatus;
+use App\Models\Classroom;
 use Carbon\Carbon;
 
 class ReservationController extends Controller
@@ -257,6 +258,18 @@ class ReservationController extends Controller
                                 ->get()
                                 ->pop();
 
+            $block_id = -1;
+            foreach ($data['classroom_id'] as $classroomId) {
+                $classroom = Classroom::find($classroomId); 
+                if ($block_id == -1) $block_id = $classroom->block_id;
+                if ($classroom->block_id != $block_id) {
+                    return response()->json(
+                        ['message' => 'Los ambientes no pertenecen al bloque'], 
+                        400
+                    );
+                }
+            }
+
             if (!array_key_exists('repeat', $data)) {
                 $data['repeat'] = 0;
             }
@@ -335,7 +348,7 @@ class ReservationController extends Controller
     private function validateReservationData(Request $request)
     {
         return Validator::make($request->all(), [
-            'quantity' => 'required|integer',
+            'quantity' => 'required|integer|min:25|max:500',
             'date' => 'required|date',
             'reason_id' => 'required|int|exists:reservation_reasons,id',
             'group_id.*' => 'required|exists:teacher_subjects,id',
@@ -355,6 +368,8 @@ class ReservationController extends Controller
         ], [
             'quantity.required' => 'El número de estudiantes es obligatorio.',
             'quantity.integer' => 'El número de estudiantes debe ser un valor entero.',
+            'quantity:min' => 'La cantidad debe ser un numero positivo mayor o igual a 25',
+            'quantity:max' => 'La cantidad debe ser un numero positivo menor o igual a 500',
             'date.required' => 'La fecha es obligatoria.',
             'date.date' => 'La fecha debe ser un formato válido.',
             'reason_id.required' => 'El motivo de la reserva es obligatorio.',
