@@ -184,20 +184,20 @@ class ReservationController extends Controller
             }
 
             if ($reservation->reservation_status_id == 2) {
-                return response()->json(['error'
+                return response()->json(['mensaje'
                         => 'Esta solicitud ya fue rechazada'], 200);
             }
 
-            if ($reservation->reservation_statud_id != 3) {
-                return response()->json(['error'
-                        => 'Esta solicitud ya fue atendida'], 200);
+            if ($reservation->reservation_status_id == 3) {
+                $reservation->reservation_status_id = 2;
+                $reservation->save();
+
+                return response()->json(['mensaje'
+                    => 'La solicitud de reserva fue rechazada.'], 200);
+            } else {
+                return response()->json(['mensaje'
+                    => 'Esta solicitud ya fue atendida'], 200);
             }
-
-            $reservation->reservation_status_id = 2;
-            $reservation->save();
-
-            return response()->json(['mensaje'
-            => 'La solicitud de reserva fue rechazada.'], 200);
         } catch (Exception $err) {
             return response()->json([
                 'mensaje' => 'Ocurrio un error al rechazar la solicitud.',
