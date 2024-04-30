@@ -54,7 +54,7 @@ class TeacherSubjectController extends Controller
     public function teachersBySubject($universitySubjectId)
     {
         try {
-            $teacherSubjects = TeacherSubject::with('teacher.person')
+            $teacherSubjects = TeacherSubject::with('person')
                 ->where('university_subject_id', $universitySubjectId)
                 ->select('id','person_id', 'group_number')
                 ->get();
