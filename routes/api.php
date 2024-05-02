@@ -38,6 +38,8 @@ Route::controller(ReservationController::class)->group(function() {
     Route::middleware('sanitize:api')->patch('/reservation/cancel/{reservationId}', 'cancelRequest');
     Route::middleware('sanitize:api')->post('/reservation', 'store');
     Route::get('/reservation/conflicts/{reservationId}', 'getConflicts');
+
+    Route::get('test', 'index2'); 
 });
 
 Route::controller(ClassroomController::class)->group(function() {

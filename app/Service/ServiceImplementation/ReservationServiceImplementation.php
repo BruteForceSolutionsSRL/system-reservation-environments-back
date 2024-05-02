@@ -1,7 +1,10 @@
 <? 
+namespace App\Service\ServiceImplementation;
+
 use App\Service\ReservationService;
+
 use App\Models\Reservation; 
-class ReservationServiceImplementation extends ReservationService 
+class ReservationServiceImplementation implements ReservationService 
 {
     public function getReservation($reservationId): Reservation
     {

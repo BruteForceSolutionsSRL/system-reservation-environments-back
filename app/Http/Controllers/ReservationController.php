@@ -13,8 +13,16 @@ use App\Models\ReservationStatus;
 use App\Models\Classroom;
 use Carbon\Carbon;
 
+use App\Service\ServiceImplementation\ReservationServiceImplementation; 
+
 class ReservationController extends Controller
 {
+    public function index2()
+    {
+        $robot = new ReservationServiceImplementation(); 
+        //$data = $robot->getReservation(1);
+        return response()->json('ok', 200);
+    }
     /**
      * index function retrieves all reservations.
      * @return \Response
