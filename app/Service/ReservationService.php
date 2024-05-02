@@ -2,9 +2,6 @@
 use App\Models\Reservation;
 interface ReservationService 
 {
-    /**
-     * @param int
-     */
     function getReservation($reservationId): Reservation; 
     function getPendingRequest(): array; 
     function listRequestsByTeacher($teacherId): array; 
