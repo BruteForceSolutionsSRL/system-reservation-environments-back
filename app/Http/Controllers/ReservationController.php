@@ -21,7 +21,7 @@ class ReservationController extends Controller
     {
         $robot = new ReservationServiceImplementation(); 
         //$data = $robot->getReservation(1);
-        return response()->json('ok', 200);
+        return response()->json($robot->getReservation(1), 200);
     }
     /**
      * index function retrieves all reservations.
