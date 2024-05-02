@@ -8,6 +8,10 @@ use App\Models\Block;
 
 class BlockController extends Controller
 {
+    /**
+     * Retrieve a list of all blocks registered
+     * @return \Response
+     */
     public function list()
     {
         try {

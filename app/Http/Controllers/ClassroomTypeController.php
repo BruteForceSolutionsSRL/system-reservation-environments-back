@@ -8,7 +8,10 @@ use App\Models\ClassroomType;
 
 class ClassroomTypeController extends Controller
 {
-    // Retrieves all classroom types 
+    /**
+     * Explain: Retrieve all classroom types 
+     * @return \Response
+     */
     public function list() 
     {
         try {

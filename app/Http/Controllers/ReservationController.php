@@ -17,6 +17,7 @@ class ReservationController extends Controller
 {
     /**
      * index function retrieves all reservations.
+     * @return \Response
      */
     public function index()
     {
@@ -39,6 +40,10 @@ class ReservationController extends Controller
         return response()->json($formattedReservations, 200);
     }
 
+    /**
+     * Function to retrieve all pending request
+     * @return \Response
+     */
     public function getPendingRequests()
     {
         $reservations = Reservation::with([
@@ -62,6 +67,10 @@ class ReservationController extends Controller
         return response()->json($formattedReservations, 200);
     }
 
+    /**
+     * Function to retrieve acepted/pending request by teacher
+     * @return \Response
+     */
     public function listRequestsByTeacher($teacherId)
     {
         $reservations = Reservation::with([
@@ -87,6 +96,10 @@ class ReservationController extends Controller
         return response()->json($formattedReservations, 200);
     }
 
+    /**
+     * Function to retrieve all request by teacher
+     * @return \Response
+     */
     public function listAllRequestsByTeacher($teacherId)
     {
         $reservations = Reservation::with([
@@ -110,6 +123,11 @@ class ReservationController extends Controller
         return response()->json($formattedReservations, 200);
     }
 
+    /**
+     * Function to format the output 
+     * @param Reservation
+     * @return array
+     */
     private function formatOutput(Reservation $reservation)
     {
         $reservationReason = $reservation->reservationReason;
@@ -152,6 +170,11 @@ class ReservationController extends Controller
         ];
     }
 
+    /**
+     * Function to retrieve a reservation by its id
+     * @param int reservationId
+     * @return array
+     */
     public function show($reservationId)
     {
         $reservation = Reservation::with([
@@ -174,6 +197,11 @@ class ReservationController extends Controller
         return ReservationController::formatOutput($reservation);
     }
 
+    /**
+     * Function to reject a reservation by its id
+     * @param int reservationId
+     * @return \Response
+     */
     public function rejectReservation($reservationId)
     {
         try {
@@ -207,6 +235,12 @@ class ReservationController extends Controller
         }
     }
 
+    /**
+     * Explain:
+     * Cancel a pending/accepted request-booking
+     * @param int reservationId
+     * @return \Response
+     */
     public function cancelRequest($reservationId)
     {
         try {
@@ -235,6 +269,12 @@ class ReservationController extends Controller
         }
     }
 
+    /**
+     * Explain:
+     * Save a new Classroom Booking Request
+     * @param Request request
+     * @return \Response
+     */
     public function store(Request $request)
     {
         try {
@@ -345,6 +385,12 @@ class ReservationController extends Controller
         }
     }
 
+    /**
+     * Explain:
+     * Validate Request data from a form 
+     * @param Request request
+     * @return \Validator
+     */
     private function validateReservationData(Request $request)
     {
         return Validator::make($request->all(), [
@@ -488,7 +534,7 @@ class ReservationController extends Controller
      * @param Reservation
      * @return boolean
      */
-    private function checkAvailibility($reservation)
+    private function checkAvailibility(Reservation $reservation)
     {
         $classrooms = $reservation->classrooms;
         $timeSlots = $reservation->timeSlots;
@@ -522,10 +568,10 @@ class ReservationController extends Controller
     }
     /**
      * Cut and retrieve a subset of reservations
-     * @param array
-     * @param int
-     * @param int
-     * @return array
+     * @param array reservations
+     * @param int initialTimeId
+     * @param int endTimeId
+     * @return array 
      */
     public function cutReservationSetByTimeSlot(
         $reservations,
@@ -672,6 +718,13 @@ class ReservationController extends Controller
         $result['teacher']['list'] = array_unique($result['teacher']['list']);
         return $result;
     }
+    
+    /**
+     * Function to get Total Capacity 
+     * of a set of classrooms
+     * @param array classrooms
+     * @return int
+     */
     public function getTotalCapacity($classrooms)
     {
         $total = 0;

@@ -17,7 +17,10 @@ class TimeSlotController extends Controller
     {
         //
     }
-
+    /**
+     * Retrieve a list of all time-slots
+     * @return \Response
+     */
     public function list()
     {
         try {

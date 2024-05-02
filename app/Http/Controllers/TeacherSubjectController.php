@@ -23,6 +23,8 @@ class TeacherSubjectController extends Controller
      * Explain:
      * Obtaining subjects,
      * through a teacher id.
+     * @param int personId
+     * @return \Response
      */
     public function subjectsByTeacher($personId)
     {
@@ -51,6 +53,13 @@ class TeacherSubjectController extends Controller
         }
     }
 
+    /**
+     * Explain:
+     * Obtaining teacher-groups,
+     * through a university subject id.
+     * @param int universitySubjectId
+     * @return \Response
+     */
     public function teachersBySubject($universitySubjectId)
     {
         try {

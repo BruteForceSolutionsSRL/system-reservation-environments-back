@@ -48,7 +48,11 @@ class ClassroomController extends Controller
     {
     }
 
-    public function avaibleClassroomsByBlock($blockId)
+    /**
+     * To retrieve data available classrooms within block
+     * @param int $blockId
+     * @return \Response
+     */    public function avaibleClassroomsByBlock($blockId)
     {
         try {
             $classrooms = Classroom::select('id', 'name', 'capacity', 'floor')
@@ -95,7 +99,7 @@ class ClassroomController extends Controller
     }
 
     /**
-     * @param
+     * @param Request
      * Store a new classroom with the info below
      * Request (body): 
      * {
@@ -105,6 +109,7 @@ class ClassroomController extends Controller
      * 'block_id': int
      * 'floor_number': int
      * }
+     * @return \Response
      */
     public function store(Request $request) 
     {
@@ -162,8 +167,8 @@ class ClassroomController extends Controller
     }
 
     /**
-     * @covers 
      * Validate all atributes whithin Classroom register
+     * @param Request
      */
     private function validateClassroomData(Request $request) 
     {
@@ -190,6 +195,12 @@ class ClassroomController extends Controller
         ]);
     }
 
+    /**
+     * Function to retrieve disponibility
+     * status for all selected classrooms
+     * @param Request $request
+     * @return \Response
+     */
     public function getClassroomByDisponibility(Request $request) 
     {
         try {
@@ -299,6 +310,12 @@ class ClassroomController extends Controller
             );
         }
     }
+
+    /**
+     * Function to validate 
+     * all input for a search of disponibility
+     * @param Request $request
+     */
     private function validateDisponibilityData(Request $request) 
     {
         return \Validator::make($request->all(), [
@@ -331,6 +348,11 @@ class ClassroomController extends Controller
         ]);    
     }
 
+    /**
+     * Function suggest a set of classrooms for a booking
+     * @param Request $request
+     * @return \Response
+     */
     public function suggestClassrooms(Request $request) 
     {
         try {
@@ -463,6 +485,12 @@ class ClassroomController extends Controller
             );
         } 
     }
+
+    /**
+     * Function to validate 
+     * all input for a search of suggestion
+     * @param Request $request
+     */
     private function validateSuggestionData(Request $request) 
     {
         return \Validator::make($request->all(), [
@@ -494,6 +522,7 @@ class ClassroomController extends Controller
             'time_slot_id.array' => 'Los periodos de tiempo deben ser un arreglo.',
         ]);    
     }
+
     /**
      * @covers
      * To cancel assigned types.
