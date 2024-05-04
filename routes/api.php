@@ -28,18 +28,16 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::controller(ReservationController::class)->group(function() {
-    Route::patch('/reservation/assign/{reservationId}', 'assign');
     Route::get('/reservations', 'index');
     Route::get('/pending-requests', 'getPendingRequests');
     Route::get('/reservations/{teacherId}', 'listRequestsByTeacher');
-    Route::get('/all-reservations/{teacherId}', 'listAllRequestsByTeacher'); // para el historial ?
+    Route::get('/all-reservations/{teacherId}', 'listAllRequestsByTeacher'); 
     Route::get('/reservation/{reservationId}', 'show');
     Route::middleware('sanitize:api')->patch('/reservation/reject/{reservationId}', 'rejectReservation');
+    Route::middleware('sanitize:api')->patch('/reservation/assign/{reservationId}', 'assign');
     Route::middleware('sanitize:api')->patch('/reservation/cancel/{reservationId}', 'cancelRequest');
     Route::middleware('sanitize:api')->post('/reservation', 'store');
     Route::get('/reservation/conflicts/{reservationId}', 'getConflicts');
-
-    Route::get('test', 'index2'); 
 });
 
 Route::controller(ClassroomController::class)->group(function() {

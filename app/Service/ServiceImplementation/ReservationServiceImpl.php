@@ -1,0 +1,569 @@
+<?php 
+namespace App\Service\ServiceImplementation;
+
+use App\Service\ReservationService;
+
+use App\Models\{
+    Reservation, 
+    Person,
+    Classroom
+};
+use App\Repositories\{
+    PersonRepository, 
+    ReservationStatusRepository as ReservationStatuses
+};
+
+use Illuminate\Support\Facades\DB;
+
+use Carbon\Carbon;
+
+class ReservationServiceImpl implements ReservationService 
+{
+    private $personRepository;
+    function __construct()
+    {
+        $this->personRepository = new PersonRepository(Person::class); 
+    }
+    /**
+     * Retrieve a list of all reservations
+     * @param none
+     * @return array
+     */
+    public function getAllReservations(): array
+    {
+        $reservations = Reservation::with([
+            'reservationStatus:id,status',
+            'reservationReason:id,reason',
+            'timeSlots:id,time',
+            'teacherSubjects:id,group_number,person_id,university_subject_id',
+            'teacherSubjects.person:id,name,last_name',
+            'teacherSubjects.universitySubject:id,name',
+            'classrooms:id,name,capacity,block_id',
+            'classrooms.block:id,name',
+            'classrooms.classroomType:id,description'
+        ])->orderBy('date')->get()->map(
+            function ($reservation) 
+            {
+                return $this->formatOutput($reservation);
+            }
+        );
+        return $reservations->toArray();
+    }
+    /**
+     * Retrieve a single reservation based on its ID
+     * @param int $reservationId
+     * @return array
+     */
+    public function getReservation(int $reservationId): array
+    {
+        $reservation = Reservation::with([
+            'reservationStatus:id,status',
+            'reservationReason:id,reason',
+            'timeSlots:id,time',
+            'teacherSubjects:id,group_number,person_id,university_subject_id',
+            'teacherSubjects.person:id,name,last_name',
+            'teacherSubjects.universitySubject:id,name',
+            'classrooms:id,name,capacity,block_id',
+            'classrooms.block:id,name',
+            'classrooms.classroomType:id,description'
+        ])->find($reservationId);
+
+        if ($reservation == null) {
+            return [];
+        }
+        return $this->formatOutput($reservation); 
+    } 
+    /**
+     * Retrieve a list of all pending request 
+     * @param none
+     * @return array
+     */
+    public function getPendingRequest(): array
+    {
+        return Reservation::with([
+            'reservationStatus:id,status',
+            'reservationReason:id,reason',
+            'timeSlots:id,time',
+            'teacherSubjects:id,group_number,person_id,university_subject_id',
+            'teacherSubjects.person:id,name,last_name',
+            'teacherSubjects.universitySubject:id,name',
+            'classrooms:id,name,capacity,block_id',
+            'classrooms.block:id,name',
+            'classrooms.classroomType:id,description'
+        ])->where('date', '>=', Carbon::now()->format('Y-m-d'))
+            ->where('reservation_status_id', ReservationStatuses::$pending)
+            ->orderBy('date')->get()->map(
+                function ($reservation) 
+                {
+                    return $this->formatOutput($reservation);
+                }
+            )->toArray();
+    }
+    /**
+     * Retrieve a list of accepted/pending by a teacherId
+     * @param int $teacherId
+     * @return array
+     */
+    public function listRequestsByTeacher(int $teacherId): array 
+    {
+        $teacher = $this->personRepository->getPerson($teacherId); 
+        if ($teacher == null) {
+            return ['message' => 'No existe el docente']; 
+        }
+        return Reservation::with([
+            'reservationStatus:id,status',
+            'reservationReason:id,reason',
+            'timeSlots:id,time',
+            'teacherSubjects:id,group_number,person_id,university_subject_id',
+            'teacherSubjects.person:id,name,last_name',
+            'teacherSubjects.universitySubject:id,name',
+            'classrooms:id,name,capacity,block_id',
+            'classrooms.block:id,name',
+            'classrooms.classroomType:id,description'
+        ])->where('date', '>=', Carbon::now()->format('Y-m-d'))
+            ->whereIn('reservation_status_id', [
+                ReservationStatuses::$accepted, 
+                ReservationStatuses::$pending]
+            )->whereHas('teacherSubjects', 
+                function ($query) use ($teacherId) 
+                {
+                    $query->where('person_id', $teacherId);
+                }
+            )->orderBy('date')->get()->map(
+                function ($reservation) 
+                {
+                    return $this->formatOutput($reservation);
+                }
+            )->toArray();
+    }
+    /**
+     * Retrieve a list of all request by teacherId
+     * @param int $teacherId
+     * @return array
+     */
+    public function listAllRequestsByTeacher(int $teacherId): array 
+    {
+        $teacher = $this->personRepository->getPerson($teacherId); 
+        if ($teacher == null) {
+            return ['message' => 'No existe el docente']; 
+        }
+        return Reservation::with([
+            'reservationStatus:id,status',
+            'reservationReason:id,reason',
+            'timeSlots:id,time',
+            'teacherSubjects:id,group_number,person_id,university_subject_id',
+            'teacherSubjects.person:id,name,last_name',
+            'teacherSubjects.universitySubject:id,name',
+            'classrooms:id,name,capacity,block_id',
+            'classrooms.block:id,name',
+            'classrooms.classroomType:id,description'
+        ])->whereHas('teacherSubjects', function ($query) use ($teacherId) {
+                $query->where('person_id', $teacherId);
+            })->orderBy('date')->get()->map(
+                function ($reservation) 
+                {
+                    return $this->formatOutput($reservation);
+                }
+            )->toArray();
+    }
+    /**
+     * Function to reject a reservation based on its ID
+     * @param int $reservationId
+     * @return string
+     */
+    public function reject(int $reservationId): string 
+    {
+        $reservation = Reservation::find($reservationId);
+
+        if ($reservation == null) {
+            return 'No existe una solicitud con este ID';
+        }
+
+        $reservationStatusId = $reservation->reservation_status_id; 
+        if ($reservationStatusId == ReservationStatuses::$rejected) {
+            return 'Esta solicitud ya fue rechazada';
+        }
+
+        if ($reservationStatusId == ReservationStatuses::$pending) {
+            $reservation->reservation_status_id = ReservationStatuses::$rejected;
+            $reservation->save();
+
+            return 'La solicitud de reserva fue rechazada.';
+        } else {
+            return 'Esta solicitud ya fue atendida';
+        }
+    }
+    /**
+     * Function to cancel a accepted/pending reservation based on its ID
+     * @param int $reservationId
+     * @return string
+     */
+    public function cancel(int $reservationId): string 
+    {
+        $reservation = Reservation::find($reservationId);
+
+        if ($reservation == null) {
+            return 'No existe una solicitud con este ID';
+        }
+
+        $reservationStatusId = $reservation->reservation_status_id;  
+        if ($reservationStatusId == ReservationStatuses::$cancelled) {
+            return 'Esta solicitud ya fue cancelada';
+        }
+        if ($reservationStatusId == ReservationStatuses::$rejected) {
+            return 'Esta solicitud ya fue rechazada';
+        }
+
+        $reservation->reservation_status_id = ReservationStatuses::$cancelled;
+        $reservation->save();
+
+        return 'La solicitud de reserva fue cancelada.';
+
+    }
+    /**
+     * Function to accept a request of reservation based on its ID
+     * @param int $reservationId
+     * @return string
+     */
+    public function accept($reservationId): string 
+    {
+        $reservation = Reservation::find($reservationId);
+        if ($reservation==null) {
+            return 'La solicitud de reserva no existe';
+        }
+
+        $reservationStatus = $reservation->reservationStatus->id;
+        if ($reservationStatus != ReservationStatuses::$pending) {
+            return 'Esta solicitud ya fue atendida';
+        }
+        if (!$this->checkAvailibility($reservation)) {
+            return  'La solicitud no puede aceptarse, existen ambientes ocupados';
+        }
+        
+        $reservation->reservation_status_id = ReservationStatuses::$accepted;
+        $reservation->save();
+        
+        DB::beginTransaction();
+        $times = $this->getTimeSlotsSorted($reservation->timeSlots);
+        foreach ($reservation->classrooms as $classroom) {
+            $reservationSet = $this->getActiveReservationsWithDateStatusAndClassroom(
+                [ReservationStatuses::$pending],
+                $reservation->date,
+                $classroom->id
+            );
+            $reservationSet = $this->cutReservationSetByTimeSlot(
+                $reservationSet,
+                $times[0],
+                $times[1]
+            );
+            foreach ($reservationSet as $reservationIterable) 
+                $this->reject($reservationIterable->id);
+        }
+        DB::commit();
+        return 'La reserva fue aceptada correctamente';
+    }
+    /**
+     * Function to store full data about a request and automatic accept/reject
+     * @param array $data
+     * @return string
+     */
+    public function store(array $data): string 
+    {
+        // esto es otra funcion
+        $block_id = -1;
+        foreach ($data['classroom_id'] as $classroomId) {
+            $classroom = Classroom::find($classroomId); 
+            if ($block_id == -1) $block_id = $classroom->block_id;
+            if ($classroom->block_id != $block_id) {
+                return  'Los ambientes no pertenecen al bloque';
+            }
+        }
+
+        if (!array_key_exists('repeat', $data)) {
+            $data['repeat'] = 0;
+        }
+        $reservation = new Reservation();
+        $reservation->number_of_students = $data['quantity'];
+        $reservation->repeat = $data['repeat'];
+        $reservation->date = $data['date'];
+        $reservation->reservation_reason_id = $data['reason_id'];
+        $reservation->reservation_status_id = ReservationStatuses::$pending;
+        $reservation->save();
+
+        $reservation->teacherSubjects()->attach($data['group_id']);
+        $reservation->classrooms()->attach($data['classroom_id']);
+        $reservation->timeSlots()->attach($data['time_slot_id']);
+
+        DB::commit();
+
+        if ($this->checkAvailibility($reservation)) {
+            if ($this->alertReservation($reservation)['ok'] != 0) {
+                return  'Tu solicitud debe ser revisada por un administrador, se enviara una notificacion para mas detalles';
+            }
+            $reservation->reservation_status_id = ReservationStatuses::$accepted;
+            $reservation->save();
+            return 'Tu solicitud de reserva fue aceptada';
+        } else {
+            return $this->reject($reservation->id); 
+        }
+    }
+    /**
+     * Retrieve an array of all conflicts of a reservation
+     * @param int $reservationId
+     * @return array
+     */
+    public function getConflict(int $reservationId): array 
+    {
+        $reservation = Reservation::find($reservationId);
+        if ($reservation == null) {
+            return ['meesage' => 'La reserva no existe'];
+        }
+        $result = $this->alertReservation($reservation);
+        unset($result['ok']);
+        return $result;
+    }
+
+    /**
+     * Function to format from Reservation class to array 
+     * @param Reservation $reservation
+     * @return array
+     */
+    private function formatOutput(Reservation $reservation): array
+    {
+        $reservationReason = $reservation->reservationReason;
+        $reservationStatus = $reservation->reservationStatus;
+        $classrooms = $reservation->classrooms;
+        $teacherSubjects = $reservation->teacherSubjects;
+        $timeSlots = $reservation->timeSlots;
+        $priority = 0;
+
+        if (Carbon::now()->diffInDays(Carbon::parse($reservation->date)) <= 5) {
+            $priority = 1;
+        }
+
+        return [
+            'reservation_id' => $reservation->id,
+            'subject_name' => $teacherSubjects->first()->universitySubject->name,
+            'quantity' => $reservation->number_of_students,
+            'reservation_date' => $reservation->date,
+            'time_slot' => $timeSlots->map(function ($timeSlot) {
+                return $timeSlot->time;
+            }),
+            'groups' => $teacherSubjects->map(function ($teacherSubject) {
+                $person = $teacherSubject->person;
+
+                return [
+                    'teacher_name' => $person->name . ' ' . $person->last_name,
+                    'group_number' => $teacherSubject->group_number,
+                ];
+            }),
+            'block_name' => $classrooms->first()->block->name,
+            'classrooms' => $classrooms->map(function ($classroom) {
+                return [
+                    'classroom_name' => $classroom->name,
+                    'capacity' => $classroom->capacity,
+                ];
+            }),
+            'reason_name' => $reservationReason->reason,
+            'priority' => $priority,
+            'reservation_status' => $reservationStatus->status,
+        ];
+    }
+    /**
+     * Function to retrieve a list of all active reservations
+     * @param array $statuses
+     * @param string $date format must be: 'Y-m-d'
+     * @param int $classroomId
+     * @return array
+     */
+    public function getActiveReservationsWithDateStatusAndClassroom(
+        array $statuses,
+        string $date,
+        int $classroomId
+    ): array
+    {
+        $reservationSet = Reservation::whereHas(
+                'classrooms',
+                function ($query) use ($classroomId)
+                {
+                    $query -> where ('classroom_id', $classroomId);
+                }
+            )->where(
+                function ($query) use ($statuses)
+                {
+                    foreach ($statuses as $status)
+                        $query->orWhere('reservation_status_id', $status);
+                }
+            )->where(
+                function ($query) use ($date)
+                {
+                    $query->where('date', '>=', date('Y-m-d'));
+                    $query->where('date', $date);
+                    $query->orWhere('repeat', '>', 0);
+                }
+            )->get()->map(
+                function ($reservation) use ($date)
+                {
+                    $initialDate = new \DateTime($date);
+                    if ($reservation->repeat > 0) {
+                        $goalDate = new \DateTime($reservation->date);
+                        $repeat = $reservation->repeat;
+        
+                        $difference = $initialDate->diff($goalDate)->days;
+                        if ($difference % $repeat == 0)
+                            return $reservation;
+                    } 
+                }
+            );
+        if ($reservationSet == null) return []; 
+        return $reservationSet->toArray();
+    }
+    /**
+     * Cut and retrieve a subset of reservations
+     * @param array $reservations
+     * @param int $initialTimeId
+     * @param int $endTimeId
+     * @return array 
+     */
+    public function cutReservationSetByTimeSlot(
+        array $reservations,
+        int $initialTimeId,
+        int $endTimeId
+    ): array
+    {
+        $refinedReservationSet = [];
+        foreach ($reservations as $reservation) {
+            $time = $this->getTimeSlotsSorted($reservation->timeSlots);
+            if (!($time[1] <= $initialTimeId || $time[0] >= $endTimeId)) {
+                array_push($refinedReservationSet, $reservation);
+            }
+        }
+        return $refinedReservationSet;
+    }
+    /**
+     * Function to check availability for all classrooms to do a reservation in a step
+     * @param Reservation $reservation
+     * @return boolean
+     */
+    private function checkAvailibility(Reservation $reservation): bool
+    {
+        $time = $this->getTimeSlotsSorted($reservation->timeSlots);
+        foreach ($reservation->classrooms as $classroom) {
+            $reservations = $this->getActiveReservationsWithDateStatusAndClassroom(
+                [ReservationStatuses::$accepted],
+                $reservation->date,
+                $classroom->id
+            );
+            $reservations = $this->cutReservationSetByTimeSlot($reservations, $time[0], $time[1]);
+            if (count($reservations) != 0)
+                return false;
+        }
+        return true;
+    }
+    /**
+     * Check if a reservation in pending status have conflicts or is really `weird`
+     * @param Reservation $reservation
+     * @return array
+     */
+    public function alertReservation(Reservation $reservation): array
+    {
+        $result = [
+            'quantity' => '',
+            'classroom' => [
+                'message' => '',
+                'list' => array()
+            ],
+            'teacher' => [
+                'message' => '',
+                'list' => array()
+            ],
+            'ok' => 0
+        ];
+        $totalCapacity = $this->getTotalCapacity($reservation->classrooms);
+        if ($totalCapacity < $reservation->number_of_students) {
+            $result['quantity'] .= 'la cantidad de estudiantes excede la capacidad de estudiantes.\n';
+            $result['ok'] = 1;
+        }
+
+        $usagePercent = $reservation->number_of_students / $totalCapacity * 100;
+        if ($usagePercent < 50.0) {
+            $message = 'la capacidad de los ambientes solicitados es muy elevada para la capacidad de ambientes solicitados.\n';
+            $result['quantity'] .= $message;
+            $result['ok'] = 1;
+        }
+
+        if ($this->getTotalFloors($reservation->classrooms) > 2) {
+            $result['ok'] = 1;
+            $message = 'los ambientes solicitados, se encuentran en mas de 2 pisos diferentes\n';
+            $result['classroom']['message'] .= $message;
+        }
+
+        foreach ($reservation->classrooms as $classroom) {
+            $reservations = $this->getActiveReservationsWithDateStatusAndClassroom(
+                [ReservationStatuses::$pending],
+                $reservation->date,
+                $classroom->id
+            );
+            if (count($reservations) > 1) {
+                $result['ok'] = 1;
+                array_push($result['classroom']['list'], $classroom->name);
+            }
+        }
+
+        foreach ($reservation->teacherSubjects as $teacherSubject) {
+            $teacher = $teacherSubject->person; 
+            $fullname = $teacher->name . ' ' . $teacher->last_name; 
+            $count = 0;
+
+            foreach ($teacherSubject->reservations as $item)
+            if (($item->reservation_status_id == ReservationStatuses::$accepted))
+                $count++;
+
+            if (($count > 3) && (!array_key_exists($fullname, $set))) {
+                $result['ok'] = 1;
+                array_push($result['teacher']['list'], $fullname);
+                $set[$fullname] = 1;
+            }
+        }
+        $result['classroom']['list'] = array_unique($result['classroom']['list']); 
+        $result['teacher']['list'] = array_unique($result['teacher']['list']);
+        return $result;
+    }
+    private function getTimeSlotsSorted($timeSlots): array
+    {
+        $array = array(); 
+        foreach ($timeSlots as $timeSlot) 
+            array_push($array, $timeSlot->id);
+        sort($array); 
+        return $array;
+    }
+    /**
+     * Function to get Total Capacity of a set of classrooms
+     * @param array $classrooms
+     * @return int
+     */
+    public function getTotalCapacity(array $classrooms): int
+    {
+        $total = 0;
+        foreach ($classrooms as $classroom)
+            $total += $classroom->capacity;
+        return $total;
+    }
+    /**
+     * Retrieve a number of floors used in a set of classrooms
+     * @param array $classrooms
+     * @return int
+     */
+    private function getTotalFloors(array $classrooms): int 
+    {
+        $dp = [];
+        foreach ($classrooms as $classroom) {
+            $floor = $classroom->floor;
+            if ($dp[$floor] == 0) {
+                $dp[$floor] = 1;
+                $usedFloors++;
+            }
+        }
+        return $usedFloors; 
+    }
+}
