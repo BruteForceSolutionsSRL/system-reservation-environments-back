@@ -10,19 +10,18 @@ use App\Models\{
 };
 use App\Repositories\{
     PersonRepository, 
-    ReservationStatusRepository as ReservationStatuses
+    ReservationStatusRepository as ReservationStatuses,
+    ReservationRepository
 };
-
-use Illuminate\Support\Facades\DB;
-
-use Carbon\Carbon;
 
 class ReservationServiceImpl implements ReservationService 
 {
     private $personRepository;
+    private $reservationRepository; 
     function __construct()
     {
-        $this->personRepository = new PersonRepository(Person::class); 
+        $this->personRepository = new PersonRepository(Person::class);
+        $this->reservationRepository = new ReservationRepository(Reservation::class);     
     }
     /**
      * Retrieve a list of all reservations
@@ -31,23 +30,7 @@ class ReservationServiceImpl implements ReservationService
      */
     public function getAllReservations(): array
     {
-        $reservations = Reservation::with([
-            'reservationStatus:id,status',
-            'reservationReason:id,reason',
-            'timeSlots:id,time',
-            'teacherSubjects:id,group_number,person_id,university_subject_id',
-            'teacherSubjects.person:id,name,last_name',
-            'teacherSubjects.universitySubject:id,name',
-            'classrooms:id,name,capacity,block_id',
-            'classrooms.block:id,name',
-            'classrooms.classroomType:id,description'
-        ])->orderBy('date')->get()->map(
-            function ($reservation) 
-            {
-                return $this->formatOutput($reservation);
-            }
-        );
-        return $reservations->toArray();
+        return $this->reservationRepository->getAllReservations(); 
     }
     /**
      * Retrieve a single reservation based on its ID
@@ -56,22 +39,7 @@ class ReservationServiceImpl implements ReservationService
      */
     public function getReservation(int $reservationId): array
     {
-        $reservation = Reservation::with([
-            'reservationStatus:id,status',
-            'reservationReason:id,reason',
-            'timeSlots:id,time',
-            'teacherSubjects:id,group_number,person_id,university_subject_id',
-            'teacherSubjects.person:id,name,last_name',
-            'teacherSubjects.universitySubject:id,name',
-            'classrooms:id,name,capacity,block_id',
-            'classrooms.block:id,name',
-            'classrooms.classroomType:id,description'
-        ])->find($reservationId);
-
-        if ($reservation == null) {
-            return [];
-        }
-        return $this->formatOutput($reservation); 
+        return $this->reservationRepository->getReservation($reservationId);
     } 
     /**
      * Retrieve a list of all pending request 
@@ -80,24 +48,7 @@ class ReservationServiceImpl implements ReservationService
      */
     public function getPendingRequest(): array
     {
-        return Reservation::with([
-            'reservationStatus:id,status',
-            'reservationReason:id,reason',
-            'timeSlots:id,time',
-            'teacherSubjects:id,group_number,person_id,university_subject_id',
-            'teacherSubjects.person:id,name,last_name',
-            'teacherSubjects.universitySubject:id,name',
-            'classrooms:id,name,capacity,block_id',
-            'classrooms.block:id,name',
-            'classrooms.classroomType:id,description'
-        ])->where('date', '>=', Carbon::now()->format('Y-m-d'))
-            ->where('reservation_status_id', ReservationStatuses::$pending)
-            ->orderBy('date')->get()->map(
-                function ($reservation) 
-                {
-                    return $this->formatOutput($reservation);
-                }
-            )->toArray();
+        return $this->reservationRepository->getPendingRequest();
     }
     /**
      * Retrieve a list of accepted/pending by a teacherId
@@ -110,31 +61,7 @@ class ReservationServiceImpl implements ReservationService
         if ($teacher == null) {
             return ['message' => 'No existe el docente']; 
         }
-        return Reservation::with([
-            'reservationStatus:id,status',
-            'reservationReason:id,reason',
-            'timeSlots:id,time',
-            'teacherSubjects:id,group_number,person_id,university_subject_id',
-            'teacherSubjects.person:id,name,last_name',
-            'teacherSubjects.universitySubject:id,name',
-            'classrooms:id,name,capacity,block_id',
-            'classrooms.block:id,name',
-            'classrooms.classroomType:id,description'
-        ])->where('date', '>=', Carbon::now()->format('Y-m-d'))
-            ->whereIn('reservation_status_id', [
-                ReservationStatuses::$accepted, 
-                ReservationStatuses::$pending]
-            )->whereHas('teacherSubjects', 
-                function ($query) use ($teacherId) 
-                {
-                    $query->where('person_id', $teacherId);
-                }
-            )->orderBy('date')->get()->map(
-                function ($reservation) 
-                {
-                    return $this->formatOutput($reservation);
-                }
-            )->toArray();
+        return $this->reservationRepository->getRequestByTeacher($teacherId);
     }
     /**
      * Retrieve a list of all request by teacherId
@@ -147,24 +74,7 @@ class ReservationServiceImpl implements ReservationService
         if ($teacher == null) {
             return ['message' => 'No existe el docente']; 
         }
-        return Reservation::with([
-            'reservationStatus:id,status',
-            'reservationReason:id,reason',
-            'timeSlots:id,time',
-            'teacherSubjects:id,group_number,person_id,university_subject_id',
-            'teacherSubjects.person:id,name,last_name',
-            'teacherSubjects.universitySubject:id,name',
-            'classrooms:id,name,capacity,block_id',
-            'classrooms.block:id,name',
-            'classrooms.classroomType:id,description'
-        ])->whereHas('teacherSubjects', function ($query) use ($teacherId) {
-                $query->where('person_id', $teacherId);
-            })->orderBy('date')->get()->map(
-                function ($reservation) 
-                {
-                    return $this->formatOutput($reservation);
-                }
-            )->toArray();
+        return $this->reservationRepository->getAllRequestByTeacher($teacherId);
     }
     /**
      * Function to reject a reservation based on its ID
@@ -225,7 +135,7 @@ class ReservationServiceImpl implements ReservationService
      * @param int $reservationId
      * @return string
      */
-    public function accept($reservationId): string 
+    public function accept(int $reservationId): string 
     {
         $reservation = Reservation::find($reservationId);
         if ($reservation==null) {
@@ -243,23 +153,18 @@ class ReservationServiceImpl implements ReservationService
         $reservation->reservation_status_id = ReservationStatuses::$accepted;
         $reservation->save();
         
-        DB::beginTransaction();
         $times = $this->getTimeSlotsSorted($reservation->timeSlots);
         foreach ($reservation->classrooms as $classroom) {
-            $reservationSet = $this->getActiveReservationsWithDateStatusAndClassroom(
-                [ReservationStatuses::$pending],
-                $reservation->date,
-                $classroom->id
-            );
-            $reservationSet = $this->cutReservationSetByTimeSlot(
-                $reservationSet,
-                $times[0],
-                $times[1]
-            );
+            $reservationSet = $this->reservationRepository
+                ->getActiveReservationsWithDateStatusClassroomTimes(
+                    [ReservationStatuses::$pending],
+                    $reservation->date,
+                    $classroom->id, 
+                    $times
+                );
             foreach ($reservationSet as $reservationIterable) 
                 $this->reject($reservationIterable->id);
         }
-        DB::commit();
         return 'La reserva fue aceptada correctamente';
     }
     /**
@@ -282,19 +187,8 @@ class ReservationServiceImpl implements ReservationService
         if (!array_key_exists('repeat', $data)) {
             $data['repeat'] = 0;
         }
-        $reservation = new Reservation();
-        $reservation->number_of_students = $data['quantity'];
-        $reservation->repeat = $data['repeat'];
-        $reservation->date = $data['date'];
-        $reservation->reservation_reason_id = $data['reason_id'];
-        $reservation->reservation_status_id = ReservationStatuses::$pending;
-        $reservation->save();
 
-        $reservation->teacherSubjects()->attach($data['group_id']);
-        $reservation->classrooms()->attach($data['classroom_id']);
-        $reservation->timeSlots()->attach($data['time_slot_id']);
-
-        DB::commit();
+        $reservation = $this->reservationRepository->save($data);
 
         if ($this->checkAvailibility($reservation)) {
             if ($this->alertReservation($reservation)['ok'] != 0) {
@@ -322,124 +216,6 @@ class ReservationServiceImpl implements ReservationService
         unset($result['ok']);
         return $result;
     }
-
-    /**
-     * Function to format from Reservation class to array 
-     * @param Reservation $reservation
-     * @return array
-     */
-    private function formatOutput(Reservation $reservation): array
-    {
-        $reservationReason = $reservation->reservationReason;
-        $reservationStatus = $reservation->reservationStatus;
-        $classrooms = $reservation->classrooms;
-        $teacherSubjects = $reservation->teacherSubjects;
-        $timeSlots = $reservation->timeSlots;
-        $priority = 0;
-
-        if (Carbon::now()->diffInDays(Carbon::parse($reservation->date)) <= 5) {
-            $priority = 1;
-        }
-
-        return [
-            'reservation_id' => $reservation->id,
-            'subject_name' => $teacherSubjects->first()->universitySubject->name,
-            'quantity' => $reservation->number_of_students,
-            'reservation_date' => $reservation->date,
-            'time_slot' => $timeSlots->map(function ($timeSlot) {
-                return $timeSlot->time;
-            }),
-            'groups' => $teacherSubjects->map(function ($teacherSubject) {
-                $person = $teacherSubject->person;
-
-                return [
-                    'teacher_name' => $person->name . ' ' . $person->last_name,
-                    'group_number' => $teacherSubject->group_number,
-                ];
-            }),
-            'block_name' => $classrooms->first()->block->name,
-            'classrooms' => $classrooms->map(function ($classroom) {
-                return [
-                    'classroom_name' => $classroom->name,
-                    'capacity' => $classroom->capacity,
-                ];
-            }),
-            'reason_name' => $reservationReason->reason,
-            'priority' => $priority,
-            'reservation_status' => $reservationStatus->status,
-        ];
-    }
-    /**
-     * Function to retrieve a list of all active reservations
-     * @param array $statuses
-     * @param string $date format must be: 'Y-m-d'
-     * @param int $classroomId
-     * @return array
-     */
-    public function getActiveReservationsWithDateStatusAndClassroom(
-        array $statuses,
-        string $date,
-        int $classroomId
-    ): array
-    {
-        $reservationSet = Reservation::whereHas(
-                'classrooms',
-                function ($query) use ($classroomId)
-                {
-                    $query -> where ('classroom_id', $classroomId);
-                }
-            )->where(
-                function ($query) use ($statuses)
-                {
-                    foreach ($statuses as $status)
-                        $query->orWhere('reservation_status_id', $status);
-                }
-            )->where(
-                function ($query) use ($date)
-                {
-                    $query->where('date', '>=', date('Y-m-d'));
-                    $query->where('date', $date);
-                    $query->orWhere('repeat', '>', 0);
-                }
-            )->get()->map(
-                function ($reservation) use ($date)
-                {
-                    $initialDate = new \DateTime($date);
-                    if ($reservation->repeat > 0) {
-                        $goalDate = new \DateTime($reservation->date);
-                        $repeat = $reservation->repeat;
-        
-                        $difference = $initialDate->diff($goalDate)->days;
-                        if ($difference % $repeat == 0)
-                            return $reservation;
-                    } 
-                }
-            );
-        if ($reservationSet == null) return []; 
-        return $reservationSet->toArray();
-    }
-    /**
-     * Cut and retrieve a subset of reservations
-     * @param array $reservations
-     * @param int $initialTimeId
-     * @param int $endTimeId
-     * @return array 
-     */
-    public function cutReservationSetByTimeSlot(
-        array $reservations,
-        int $initialTimeId,
-        int $endTimeId
-    ): array
-    {
-        $refinedReservationSet = [];
-        foreach ($reservations as $reservation) {
-            $time = $this->getTimeSlotsSorted($reservation->timeSlots);
-            if (!($time[1] <= $initialTimeId || $time[0] >= $endTimeId)) {
-                array_push($refinedReservationSet, $reservation);
-            }
-        }
-        return $refinedReservationSet;
-    }
     /**
      * Function to check availability for all classrooms to do a reservation in a step
      * @param Reservation $reservation
@@ -449,12 +225,13 @@ class ReservationServiceImpl implements ReservationService
     {
         $time = $this->getTimeSlotsSorted($reservation->timeSlots);
         foreach ($reservation->classrooms as $classroom) {
-            $reservations = $this->getActiveReservationsWithDateStatusAndClassroom(
-                [ReservationStatuses::$accepted],
-                $reservation->date,
-                $classroom->id
-            );
-            $reservations = $this->cutReservationSetByTimeSlot($reservations, $time[0], $time[1]);
+            $reservations = $this->reservationRepository
+                ->getActiveReservationsWithDateStatusClassroomTimes(
+                    [ReservationStatuses::$accepted],
+                    $reservation->date,
+                    $classroom->id, 
+                    $time
+                );
             if (count($reservations) != 0)
                 return false;
         }
@@ -499,11 +276,12 @@ class ReservationServiceImpl implements ReservationService
         }
 
         foreach ($reservation->classrooms as $classroom) {
-            $reservations = $this->getActiveReservationsWithDateStatusAndClassroom(
-                [ReservationStatuses::$pending],
-                $reservation->date,
-                $classroom->id
-            );
+            $reservations = $this->reservationRepository
+                ->getActiveReservationsWithDateStatusAndClassroom(
+                    [ReservationStatuses::$pending],
+                    $reservation->date,
+                    $classroom->id
+                );
             if (count($reservations) > 1) {
                 $result['ok'] = 1;
                 array_push($result['classroom']['list'], $classroom->name);
@@ -516,7 +294,12 @@ class ReservationServiceImpl implements ReservationService
             $count = 0;
 
             foreach ($teacherSubject->reservations as $item)
-            if (($item->reservation_status_id == ReservationStatuses::$accepted))
+            if (($item->reservation_status_id == ReservationStatuses::$accepted)
+                && $this->isInside(
+                    $item, 
+                    $reservation->date, 
+                    $this->getTimeSlotsSorted($reservation->timeSlots))
+            )
                 $count++;
 
             if (($count > 3) && (!array_key_exists($fullname, $set))) {
@@ -548,6 +331,35 @@ class ReservationServiceImpl implements ReservationService
         foreach ($classrooms as $classroom)
             $total += $classroom->capacity;
         return $total;
+    }
+    private function isInside(
+        Reservation $reservation, 
+        string $date, 
+        array $times
+    ): bool
+    {
+        if ($date == $reservation->date) {
+            $time = $this->getTimeSlotsSorted($reservation->timeSlots);
+            if (!($time[1] <= $times[0] || $time[0] >= $times[1])) {
+                return true;
+            }
+        } else {
+            $initialDate = new \DateTime($date);
+            if ($reservation->repeat > 0) {
+                $goalDate = new \DateTime($reservation->date);
+                $repeat = $reservation->repeat;
+
+                $difference = $initialDate->diff($goalDate)->days;
+                if ($difference % $repeat == 0) {
+                    $time = $this->getTimeSlotsSorted($reservation->timeSlots);
+                    if (!($time[1] <= $times[0] || $time[0] >= $times[1])) {
+                        return true;
+                    }                        
+                }
+            } 
+
+        }
+        return false;
     }
     /**
      * Retrieve a number of floors used in a set of classrooms

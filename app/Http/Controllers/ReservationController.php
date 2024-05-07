@@ -86,12 +86,12 @@ class ReservationController extends Controller
     public function listAllRequestsByTeacher(int $teacherId): Response
     {
         try {
-            $reservations = $this->robotService->listRequestsByTeacher($teacherId); 
+            $reservations = $this->robotService->listAllRequestsByTeacher($teacherId); 
             if (array_key_exists('message', $reservations)) {
                 return response()->json($reservations, 404);
             }
             return response()->json(
-                $this->robotService->listRequestsByTeacher($teacherId), 
+                $reservations, 
                 200
             );
         } catch (Exception $e) {
@@ -158,7 +158,7 @@ class ReservationController extends Controller
     public function cancelRequest(int $reservationId): Response
     {
         try {
-            $message = $this->robotService->reject($reservationId); 
+            $message = $this->robotService->cancel($reservationId); 
             if ($message == 'No existe una solicitud con este ID') {
                 return response()->json(['message' => $message], 404);
             }

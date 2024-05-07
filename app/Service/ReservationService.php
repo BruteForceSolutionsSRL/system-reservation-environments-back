@@ -15,6 +15,3 @@ interface ReservationService
     function store(array $data): string; 
     function getConflict(int $reservationId): array; 
 }
-/**
- * interface List<classroom>: count; 
- */
