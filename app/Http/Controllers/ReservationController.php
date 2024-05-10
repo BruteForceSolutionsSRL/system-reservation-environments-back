@@ -2,7 +2,7 @@
 namespace App\Http\Controllers;
 
 use Exception;
-use Response;
+use Illuminate\Http\JsonResponse as Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 

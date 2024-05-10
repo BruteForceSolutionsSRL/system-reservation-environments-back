@@ -1,7 +1,6 @@
 <?php
 namespace App\Repositories; 
 
-use App\Models\Person;
 use Illuminate\Cache\Repository; 
 class PersonRepository extends Repository
 {

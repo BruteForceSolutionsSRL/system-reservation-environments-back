@@ -90,12 +90,12 @@ class ReservationServiceImpl implements ReservationService
         }
 
         $reservationStatusId = $reservation->reservation_status_id; 
-        if ($reservationStatusId == ReservationStatuses::$rejected) {
+        if ($reservationStatusId == ReservationStatuses::rejected()) {
             return 'Esta solicitud ya fue rechazada';
         }
 
-        if ($reservationStatusId == ReservationStatuses::$pending) {
-            $reservation->reservation_status_id = ReservationStatuses::$rejected;
+        if ($reservationStatusId == ReservationStatuses::pending()) {
+            $reservation->reservation_status_id = ReservationStatuses::rejected();
             $reservation->save();
 
             return 'La solicitud de reserva fue rechazada.';
@@ -117,14 +117,14 @@ class ReservationServiceImpl implements ReservationService
         }
 
         $reservationStatusId = $reservation->reservation_status_id;  
-        if ($reservationStatusId == ReservationStatuses::$cancelled) {
+        if ($reservationStatusId == ReservationStatuses::cancelled()) {
             return 'Esta solicitud ya fue cancelada';
         }
-        if ($reservationStatusId == ReservationStatuses::$rejected) {
+        if ($reservationStatusId == ReservationStatuses::rejected()) {
             return 'Esta solicitud ya fue rechazada';
         }
 
-        $reservation->reservation_status_id = ReservationStatuses::$cancelled;
+        $reservation->reservation_status_id = ReservationStatuses::cancelled();
         $reservation->save();
 
         return 'La solicitud de reserva fue cancelada.';
@@ -143,27 +143,30 @@ class ReservationServiceImpl implements ReservationService
         }
 
         $reservationStatus = $reservation->reservationStatus->id;
-        if ($reservationStatus != ReservationStatuses::$pending) {
+        if ($reservationStatus != ReservationStatuses::pending()) {
             return 'Esta solicitud ya fue atendida';
         }
         if (!$this->checkAvailibility($reservation)) {
+            $this->reject($reservation->id);
             return  'La solicitud no puede aceptarse, existen ambientes ocupados';
         }
         
-        $reservation->reservation_status_id = ReservationStatuses::$accepted;
+        $reservation->reservation_status_id = ReservationStatuses::accepted();
         $reservation->save();
         
+        $message = ''; 
+
         $times = $this->getTimeSlotsSorted($reservation->timeSlots);
         foreach ($reservation->classrooms as $classroom) {
             $reservationSet = $this->reservationRepository
                 ->getActiveReservationsWithDateStatusClassroomTimes(
-                    [ReservationStatuses::$pending],
+                    [ReservationStatuses::pending()],
                     $reservation->date,
                     $classroom->id, 
                     $times
                 );
             foreach ($reservationSet as $reservationIterable) 
-                $this->reject($reservationIterable->id);
+                $message.=$this->reject($reservationIterable->id);
         }
         return 'La reserva fue aceptada correctamente';
     }
@@ -194,7 +197,7 @@ class ReservationServiceImpl implements ReservationService
             if ($this->alertReservation($reservation)['ok'] != 0) {
                 return  'Tu solicitud debe ser revisada por un administrador, se enviara una notificacion para mas detalles';
             }
-            $reservation->reservation_status_id = ReservationStatuses::$accepted;
+            $reservation->reservation_status_id = ReservationStatuses::accepted();
             $reservation->save();
             return 'Tu solicitud de reserva fue aceptada';
         } else {
@@ -227,7 +230,7 @@ class ReservationServiceImpl implements ReservationService
         foreach ($reservation->classrooms as $classroom) {
             $reservations = $this->reservationRepository
                 ->getActiveReservationsWithDateStatusClassroomTimes(
-                    [ReservationStatuses::$accepted],
+                    [ReservationStatuses::accepted()],
                     $reservation->date,
                     $classroom->id, 
                     $time
@@ -278,14 +281,14 @@ class ReservationServiceImpl implements ReservationService
         foreach ($reservation->classrooms as $classroom) {
             $reservations = $this->reservationRepository
                 ->getActiveReservationsWithDateStatusAndClassroom(
-                    [ReservationStatuses::$pending],
+                    [ReservationStatuses::pending()],
                     $reservation->date,
                     $classroom->id
                 );
             if (count($reservations) > 1) {
                 $result['ok'] = 1;
                 array_push($result['classroom']['list'], $classroom->name);
-            }
+            } 
         }
 
         foreach ($reservation->teacherSubjects as $teacherSubject) {
@@ -294,7 +297,7 @@ class ReservationServiceImpl implements ReservationService
             $count = 0;
 
             foreach ($teacherSubject->reservations as $item)
-            if (($item->reservation_status_id == ReservationStatuses::$accepted)
+            if (($item->reservation_status_id == ReservationStatuses::accepted())
                 && $this->isInside(
                     $item, 
                     $reservation->date, 
@@ -325,7 +328,7 @@ class ReservationServiceImpl implements ReservationService
      * @param array $classrooms
      * @return int
      */
-    public function getTotalCapacity(array $classrooms): int
+    public function getTotalCapacity($classrooms): int
     {
         $total = 0;
         foreach ($classrooms as $classroom)
@@ -366,11 +369,13 @@ class ReservationServiceImpl implements ReservationService
      * @param array $classrooms
      * @return int
      */
-    private function getTotalFloors(array $classrooms): int 
+    private function getTotalFloors($classrooms): int 
     {
         $dp = [];
+        $usedFloors = 0;
         foreach ($classrooms as $classroom) {
             $floor = $classroom->floor;
+            if (!array_key_exists($floor, $dp)) $dp[$floor] = 0;
             if ($dp[$floor] == 0) {
                 $dp[$floor] = 1;
                 $usedFloors++;
