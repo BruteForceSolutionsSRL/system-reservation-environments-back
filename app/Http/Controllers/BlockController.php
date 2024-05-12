@@ -11,17 +11,26 @@ class BlockController extends Controller
     public function list()
     {
         try {
-            $blocks = Block::select('id', 'name')
-                ->get()
-                ->map(function ($block){
-                    return [
-                        'block_id' => $block->id,
-                        'name' => $block->name,
-                    ];
-                });
+            $blocks = Block::all()
+                        ->map(
+                            function ($block) 
+                            {
+                                return [
+                                    'block_id' => $block->id, 
+                                    'block_name' => $block->name, 
+                                    'block_maxfloor' => $block->max_floor
+                                ];
+                            }
+                        );
             return response()->json($blocks, 200);
         } catch (\Exception $e) {
-            return response()->json(['error'=>$e->getMessage()],500);
+            return response()->json(
+                [
+                    'message' => 'Hubo un error en el servidor',
+                    'error' => $e->getMessage()
+                ],
+                500
+            );
         }
     }
 }

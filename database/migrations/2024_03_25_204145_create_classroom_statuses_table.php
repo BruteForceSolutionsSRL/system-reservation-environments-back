@@ -2,10 +2,9 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-class CreateNotificationTypesTable extends Migration
+class CreateClassroomStatusesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -14,10 +13,9 @@ class CreateNotificationTypesTable extends Migration
      */
     public function up()
     {
-        Schema::create('notification_types', function (Blueprint $table) {
+        Schema::create('classroom_statuses', function (Blueprint $table) {
             $table->id();
-            $table->string('description');
-            $table->string('color');
+            $table->string('name');
             $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
             $table->timestamp('updated_at')->default(DB::raw('CURRENT_TIMESTAMP'));
         });
@@ -30,6 +28,6 @@ class CreateNotificationTypesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('notification_types');
+        Schema::dropIfExists('classroom_statuses');
     }
 }

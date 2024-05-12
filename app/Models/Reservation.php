@@ -13,7 +13,6 @@ class Reservation extends Model
         'number_of_students',
         'repeat',
         'date',
-        'reason',
         'reservation_status_id'
     ];
 
