@@ -7,6 +7,8 @@ use Carbon\Carbon;
 
 use Illuminate\Cache\Repository;
 use SebastianBergmann\Type\VoidType;
+use App\Repositories\reservationStatusRepository as ReservationStatuses;
+
 class ReservationRepository extends Repository 
 {
     protected $model; 

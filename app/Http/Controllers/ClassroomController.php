@@ -2,32 +2,51 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Validator;
+
 use App\Models\TimeSlot;
 use Exception;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-use App\Models\Classroom;
-use App\Models\Block;
-use App\Models\ReservationStatus;
-use App\Models\ClassroomType;
+use Illuminate\Http\{
+    JsonResponse as Response,
+    Request,
+};
+
+use App\Models\{
+    Classroom,
+    Block,
+    ReservationStatus,
+    ClassroomType,
+};
+
+use App\Service\ServiceImplementation\ClassroomServiceImpl as ClassroomService;
 
 class ClassroomController extends Controller
 {
-    /**
-     * @param
-     *  None
-     * @return
-     *  All classrooms
-     */
-    public function list()
+    private $robotService;
+    function __construct()
     {
-        $classrooms = Classroom::select('id', 'name', 'capacity', 'floor')
-            ->get()
-            ->map(function ($classroom) {
-                return $this->formatClassroomResponse($classroom);
-            });
-        return response()->json($classrooms, 200);
+        $this->robotService = new ClassroomService();
+    }
+    /**
+     * list function retrieves all classrooms.
+     * @return Response
+     */
+    public function list(): Response
+    {
+        try {
+            return response()->json($this->robotService->getAllClassrooms(), 
+                200);
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'message' => 'Hubo un error en el servidor',
+                    'error' => $e->getMessage()
+                ],
+                500
+            );
+        }
     }
 
     private function formatClassroomResponse($classroom)
@@ -41,52 +60,34 @@ class ClassroomController extends Controller
     }
 
     /**
-     * @covers:
-     * To retrieve data about a environment
-     */
-    public function index()
-    {
-    }
-
-    /**
      * To retrieve data available classrooms within block
      * @param int $blockId
-     * @return \Response
-     */    public function avaibleClassroomsByBlock($blockId)
+     * @return Response
+     */    
+    public function availableClassroomsByBlock($blockId): Response
     {
         try {
-            $classrooms = Classroom::select('id', 'name', 'capacity', 'floor')
-                ->where('block_id', $blockId)
-                ->whereNotIn('id', function ($query) use ($blockId) {
-                    $query->select('C.id')
-                        ->from('classrooms as C')
-                        ->join('classroom_reservation as CR', 'C.id', '=', 'CR.classroom_id')
-                        ->join('reservations as R', 'CR.reservation_id', '=', 'R.id')
-                        ->where('C.block_id', $blockId)
-                        ->where('R.reservation_status_id', 1)
-                        ->where('R.date', '>=', now()->format('Y-m-d'));
-                })->get()
-                ->map(function ($classroom) {
-                    return $this->formatClassroomResponse($classroom);
-                });
-
-            return response()->json($classrooms, 200);
+            return response()->Json($this->robotService->availableClassroomsByBlock($blockId));
         } catch (Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json(
+                [
+                    'message' => 'Hubo un error en el servidor',
+                    'error' => $e->getMessage()
+                ],
+                500
+            );
         }
     }
 
-    public function classroomsByBlock($blockId)
+    /**
+     * Return all classrooms in a block
+     * @param int $blockId
+     * @return Response
+     */ 
+    public function classroomsByBlock($blockId): Response
     {
         try {
-            $classrooms = Classroom::select('id', 'name', 'capacity', 'floor')
-                ->where('block_id', $blockId)
-                ->get()
-                ->map(function ($classroom){
-                    return $this->formatClassroomResponse($classroom);
-                });
-
-            return response()->json($classrooms, 200);
+            return response()->json($this->robotService->getClassroomsByBlock($blockId));
         } catch (Exception $e) {
             return response()->json(
                 [
@@ -99,8 +100,8 @@ class ClassroomController extends Controller
     }
 
     /**
-     * @param Request
      * Store a new classroom with the info below
+     * @param Request
      * Request (body): 
      * {
      * 'classroom_name': str, 
@@ -109,9 +110,9 @@ class ClassroomController extends Controller
      * 'block_id': int
      * 'floor_number': int
      * }
-     * @return \Response
+     * @return Response
      */
-    public function store(Request $request) 
+    public function store(Request $request): Response 
     {
         try {
             $validator = $this->validateClassroomData($request);
@@ -136,25 +137,8 @@ class ClassroomController extends Controller
                     400
                 );
             }
-
-            DB::transaction(
-                function() use ($data) 
-                {
-                    $classroom = new Classroom();
-                    $classroom->name = $data['classroom_name']; 
-                    $classroom->capacity = $data['capacity'];
-                    $classroom->floor = $data['floor_number']; 
-                    $classroom->block_id = $data['block_id']; 
-                    $classroom->classroom_type_id = $data['type_id']; 
-    
-                    $classroom->save();    
-                }
-            );
-            
-            return response()->json(
-                ['message'=>'Ambiente registrado correctamente'], 
-                200
-            );
+        
+            return response()->json(['message'=> $this->robotService->store($data)],200);
         } catch (Exception $e) {
             return response()->json(
                 [
@@ -172,7 +156,7 @@ class ClassroomController extends Controller
      */
     private function validateClassroomData(Request $request) 
     {
-        return \Validator::make($request->all(), [
+        return Validator::make($request->all(), [
             'classroom_name' => 'required|string|regex:/^[A-Z0-9\-\. ]+$/
             |unique:classrooms,name', 
             'capacity' => 'required|integer|min:25|max:500', 
@@ -199,9 +183,9 @@ class ClassroomController extends Controller
      * Function to retrieve disponibility
      * status for all selected classrooms
      * @param Request $request
-     * @return \Response
+     * @return Response
      */
-    public function getClassroomByDisponibility(Request $request) 
+    public function getClassroomByDisponibility(Request $request): Response 
     {
         try {
             $validator = $this->validateDisponibilityData($request);
@@ -318,7 +302,7 @@ class ClassroomController extends Controller
      */
     private function validateDisponibilityData(Request $request) 
     {
-        return \Validator::make($request->all(), [
+        return Validator::make($request->all(), [
             'date' => 'required|date',
             'block_id' => 'required|exists:blocks,id',
             'classroom_id.*' => 'required|exists:classrooms,id',
@@ -493,7 +477,7 @@ class ClassroomController extends Controller
      */
     private function validateSuggestionData(Request $request) 
     {
-        return \Validator::make($request->all(), [
+        return Validator::make($request->all(), [
             'date' => 'required|date',
             'quantity' => 'required|integer',
             'block_id' => 'required|exists:blocks,id',

@@ -43,9 +43,8 @@ Route::controller(ReservationController::class)->group(function() {
 Route::controller(ClassroomController::class)->group(function() {
     Route::middleware('sanitize:api')->post('/classroom', 'store');
     Route::get('/classrooms/block/{blockId}','classroomsByBlock');
-    Route::get('/avaible-classrooms/block/{blockId}', 'avaibleClassroomsByBlock');
+    Route::get('/avaible-classrooms/block/{blockId}', 'availableClassroomsByBlock');
     Route::get('/classrooms', 'list');
-
     Route::post('/classroom/disponibility', 'getClassroomByDisponibility');
     Route::post('/reservation/suggest', 'suggestClassrooms');
 });
