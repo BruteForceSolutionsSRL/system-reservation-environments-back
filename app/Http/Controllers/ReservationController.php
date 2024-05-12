@@ -107,9 +107,9 @@ class ReservationController extends Controller
     /**
      * Function to retrieve a reservation by its id
      * @param int $reservationId
-     * @return array
+     * @return Response
      */
-    public function show(int $reservationId): array
+    public function show(int $reservationId): \Response
     {
         try {
             $reservation = $this->robotService->getReservation($reservationId); 
