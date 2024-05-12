@@ -21,6 +21,7 @@ class CreateClassroomsTable extends Migration
             $table->integer('floor');
             $table->unsignedBigInteger('block_id');
             $table->unsignedBigInteger('classroom_type_id');
+            $table->unsignedBigInteger('classroom_status_id'); 
             $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
             $table->timestamp('updated_at')->default(DB::raw('CURRENT_TIMESTAMP'));
 
@@ -31,6 +32,10 @@ class CreateClassroomsTable extends Migration
             $table->foreign('classroom_type_id')
                     ->references('id')
                     ->on('classroom_types')
+                    ->cascadeOnDelete();
+            $table->foreign('classroom_status_id')
+                    ->references('id')
+                    ->on('classroom_statuses')
                     ->cascadeOnDelete();
         });
     }
