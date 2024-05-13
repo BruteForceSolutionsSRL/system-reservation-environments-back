@@ -77,5 +77,9 @@ class ClassroomRepository extends Repository
         $classroom->save();    
         return $classroom;
     }
+
+    function getClassroomById($classroomId){
+        return $this->model::findOrFail($classroomId)->toArray();
+    }
 }
 

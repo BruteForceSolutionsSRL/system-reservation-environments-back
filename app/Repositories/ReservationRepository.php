@@ -3,12 +3,12 @@ namespace App\Repositories;
 
 use App\Models\Reservation;
 
-use Carbon\Carbon; 
+use App\Repositories\ReservationStatusRepository as ReservationStatuses; 
+
+use Carbon\Carbon;
+use DateTime; 
 
 use Illuminate\Cache\Repository;
-use SebastianBergmann\Type\VoidType;
-use App\Repositories\reservationStatusRepository as ReservationStatuses;
-
 class ReservationRepository extends Repository 
 {
     protected $model; 
@@ -63,7 +63,7 @@ class ReservationRepository extends Repository
             'classrooms.block:id,name',
             'classrooms.classroomType:id,description'
         ])->where('date', '>=', Carbon::now()->format('Y-m-d'))
-            ->where('reservation_status_id', ReservationStatuses::$pending)
+            ->where('reservation_status_id', ReservationStatuses::pending())
             ->orderBy('date')->get()->map(
                 function ($reservation) 
                 {
@@ -85,8 +85,8 @@ class ReservationRepository extends Repository
             'classrooms.classroomType:id,description'
         ])->where('date', '>=', Carbon::now()->format('Y-m-d'))
             ->whereIn('reservation_status_id', [
-                ReservationStatuses::$accepted, 
-                ReservationStatuses::$pending]
+                ReservationStatuses::accepted(), 
+                ReservationStatuses::pending()]
             )->whereHas('teacherSubjects', 
                 function ($query) use ($teacherId) 
                 {
@@ -199,22 +199,20 @@ class ReservationRepository extends Repository
                     $query->where('date', $date);
                     $query->orWhere('repeat', '>', 0);
                 }
-            )->get()->map(
-                function ($reservation) use ($date)
-                {
-                    $initialDate = new \DateTime($date);
-                    if ($reservation->repeat > 0) {
-                        $goalDate = new \DateTime($reservation->date);
-                        $repeat = $reservation->repeat;
-        
-                        $difference = $initialDate->diff($goalDate)->days;
-                        if ($difference % $repeat == 0)
-                            return $reservation;
-                    } 
-                }
-            );
-        if ($reservationSet == null) return []; 
-        return $reservationSet->toArray();
+            )->get();
+        $result = []; 
+        foreach ($reservationSet as $reservation) {
+            $initialDate = new DateTime($date);
+            if ($reservation->repeat > 0) {
+                $goalDate = new DateTime($reservation->date);
+                $repeat = $reservation->repeat;
+
+                $difference = $initialDate->diff($goalDate)->days;
+                if ($difference % $repeat == 0)
+                    array_push($result, $reservation);
+            } else array_push($result, $reservation);
+        }
+        return $result;
     }
     /**
      * Function to retrieve a list of all active reservations
@@ -252,7 +250,7 @@ class ReservationRepository extends Repository
         $reservation->repeat = $data['repeat'];
         $reservation->date = $data['date'];
         $reservation->reservation_reason_id = $data['reason_id'];
-        $reservation->reservation_status_id = ReservationStatuses::$pending;
+        $reservation->reservation_status_id = ReservationStatuses::pending();
         $reservation->save();
 
         $reservation->teacherSubjects()->attach($data['group_id']);
@@ -260,5 +258,13 @@ class ReservationRepository extends Repository
         $reservation->timeSlots()->attach($data['time_slot_id']);
         
         return $reservation; 
+    }
+    private function getTimeSlotsSorted($timeSlots): array
+    {
+        $array = array(); 
+        foreach ($timeSlots as $timeSlot) 
+            array_push($array, $timeSlot->id);
+        sort($array); 
+        return $array;
     }
 }

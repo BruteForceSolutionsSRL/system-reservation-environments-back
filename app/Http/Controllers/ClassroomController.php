@@ -17,7 +17,6 @@ use App\Models\{
     Classroom,
     Block,
     ReservationStatus,
-    ClassroomType,
 };
 
 use App\Service\ServiceImplementation\ClassroomServiceImpl as ClassroomService;
@@ -195,95 +194,8 @@ class ClassroomController extends Controller
                     $message .= $value . '\n';
                 return response()->json(['message' => $message], 400);
             }
-            $classroomList = [];
             $data = $validator->validated();
-            
-            $initialTime = -1; 
-            $endTime = -1; 
-            foreach ($data['time_slot_id'] as $timeSlot) {
-                if ($initialTime == -1) $initialTime = $timeSlot; 
-                else $endTime = $timeSlot; 
-            }
-            if ($initialTime > $endTime) {
-                $temp = $endTime; 
-                $endTime = $initialTime; 
-                $initialTime = $temp;
-            }
-
-            foreach ($data['classroom_id'] as $classroomId) {
-                $classroom = Classroom::findOrFail($classroomId); 
-                if ($classroom->block->id != $data['block_id']) {
-                    return response()->json(
-                        ['message' => 'Los ambientes seleccionados, no pertenecen al bloque'],
-                        404
-                    );
-                }
-                $acceptedStatus = ReservationStatus::where('status', 'ACCEPTED')
-                                ->get()
-                                ->pop()
-                                ->id;
-                $pendingStatus = ReservationStatus::where('status', 'PENDING')
-                                ->get()
-                                ->pop()
-                                ->id;
-    
-                $element = array(); 
-                $element['classroom_name'] = $classroom->name;
-
-                $robot = new ReservationController();
-                $reservations = $robot->getActiveReservationsWithDateStatusAndClassroom(
-                    [$acceptedStatus, $pendingStatus], 
-                    $data['date'], 
-                    $classroomId
-                );
-                $reservations = $robot->cutReservationSetByTimeSlot(
-                    $reservations, 
-                    $initialTime, 
-                    $endTime
-                );
-
-                for ($timeSlotId = $initialTime; $timeSlotId <= $endTime; $timeSlotId++) {
-                    $timeSlot = TimeSlot::find($timeSlotId); 
-                    $index = (string)($timeSlot->time);
-                    $element[$index] = [
-                        'valor' => 0, 
-                        'message' => 'Disponible'
-                    ];
-                }
-
-                foreach ($reservations as $reservation) {
-                    $a = -1; 
-                    $b = -1;
-
-                    foreach ($reservation->timeSlots as $timeSlot) {
-                        if ($a == -1) $a = $timeSlot->id; 
-                        else $b = $timeSlot->id; 
-                    }
-                    if ($a > $b) {
-                        $temp = $b; 
-                        $b = $a; 
-                        $a = $temp; 
-                    }
-                    $isAccepted = $reservation->reservation_status_id == $acceptedStatus; 
-        
-                    for ($timeSlotId = max($a, $initialTime); $timeSlotId <= min($endTime, $b); $timeSlotId++) {
-                        $timeSlot = TimeSlot::find($timeSlotId);
-                        $index = (string)($timeSlot->time);
-                        $actualValue = $element[$index]['valor']; 
-
-                        if ($actualValue == 2) continue; // ASSIGNED
-                        if ($isAccepted) {
-                            $element[$index]['valor'] = 1; 
-                            $element[$index]['message'] = 'Ocupado';     
-                        } else {
-                            $element[$index]['valor'] = 2; 
-                            $element[$index]['message'] = 'En revision';     
-                        }
-                    }
-                }
-                array_push($classroomList, $element);
-            }
-            return response()->json($classroomList, 200);
+            return response()->json($this->robotService->getClassroomByDisponibility($data), 200);
         } catch (Exception $e) {
             return response()->json(
                 [
@@ -335,9 +247,9 @@ class ClassroomController extends Controller
     /**
      * Function suggest a set of classrooms for a booking
      * @param Request $request
-     * @return \Response
+     * @return Response
      */
-    public function suggestClassrooms(Request $request) 
+    public function suggestClassrooms(Request $request): Response
     {
         try {
             $validator = $this->validateSuggestionData($request);

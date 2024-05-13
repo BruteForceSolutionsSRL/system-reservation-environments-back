@@ -7,6 +7,10 @@ use Illuminate\Http\Request;
 
 class ReservationReasonController extends Controller
 {
+    /**
+     * @param none
+     * @return Request
+     */
     public function index()
     {
         $reservationResons = ReservationReason::all()
