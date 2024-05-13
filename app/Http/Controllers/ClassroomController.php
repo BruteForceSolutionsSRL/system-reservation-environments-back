@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Validation\Rule;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 use Illuminate\Support\Facades\Validator;
 
@@ -55,7 +56,16 @@ class ClassroomController extends Controller
     public function availableClassroomsByBlock($blockId): Response
     {
         try {
+            Block::findOrFail($blockId);
             return response()->Json($this->robotService->availableClassroomsByBlock($blockId));
+        } catch (ModelNotFoundException $e) {
+            return response()->json(
+                [
+                    'message' => 'El bloque especificado no existe.',
+                    'error' => $e->getMessage()
+                ],
+                404
+            );
         } catch (Exception $e) {
             return response()->json(
                 [
@@ -75,8 +85,18 @@ class ClassroomController extends Controller
      */ 
     public function classroomsByBlock($blockId): Response
     {
+        
         try {
+            Block::findOrFail($blockId);
             return response()->json($this->robotService->getClassroomsByBlock($blockId));
+        } catch (ModelNotFoundException $e) {
+            return response()->json(
+                [
+                    'message' => 'El bloque especificado no existe',
+                    'error' => $e->getMessage()
+                ], 
+                404
+            );
         } catch (Exception $e) {
             return response()->json(
                 [
@@ -187,6 +207,7 @@ class ClassroomController extends Controller
     public function getClassroomByDisponibility(Request $request): Response 
     {
         try {
+
             $validator = $this->validateDisponibilityData($request);
             if ($validator->fails()) {
                 $message = ''; 
