@@ -12,8 +12,13 @@ class ClassroomRepository extends Repository
     {
         $this->model = $model;
     }
-    
-    function getAllClassrooms()
+
+    /**
+     * Function to retrieve a list of all classrooms
+     * @param none
+     * @return array
+     */
+    function getAllClassrooms(): array
     {
         return $this->model::select(
             'id',
@@ -27,7 +32,12 @@ class ClassroomRepository extends Repository
         )->toArray();
     }
 
-    function availableClassroomsByBlock($blockId)
+    /**
+     * Function to retrieve a list of classrooms available by block
+     * @param int $blockId
+     * @return array
+     */
+    function availableClassroomsByBlock(int $blockId): array
     {
         return $this->model::select('id', 'name', 'capacity', 'floor')
                 ->where('block_id', $blockId)
@@ -45,7 +55,12 @@ class ClassroomRepository extends Repository
                 })->toArray();
     }
 
-    function getClassroomsByBlock($blockId)
+    /**
+     * Function to retrieve a list of classrooms by block
+     * @param int $blockId
+     * @return array
+     */
+    function getClassroomsByBlock(int $blockId): array
     {
         return $this->model::select('id', 'name', 'capacity', 'floor')
             ->where('block_id', $blockId)
@@ -55,17 +70,12 @@ class ClassroomRepository extends Repository
             }
         )->toArray();
     }
-
-    private function formatOutput($classroom)
-    {
-        return [
-            'classroom_id' => $classroom->id,
-            'classroom_name' => $classroom->name,
-            'capacity' => $classroom->capacity,
-            'floor' => $classroom->floor,
-        ];
-    }
-
+    
+    /**
+     * Function to save data of classroom
+     * @param array $data
+     * @return Classroom
+     */
     function save(array $data): Classroom 
     {
         $classroom = new Classroom();
@@ -78,8 +88,29 @@ class ClassroomRepository extends Repository
         return $classroom;
     }
 
-    function getClassroomById($classroomId){
-        return $this->model::findOrFail($classroomId)->toArray();
+    /**
+     * Function to retrieve a classroom by ID
+     * @param int $classroomId
+     * @return Classroom
+     */
+    function getClassroomById(int $classroomId): Classroom
+    {
+        return $this->model::find($classroomId);
+    }
+
+    /**
+     * Function to format a classroom into an array
+     * @param Classroom $classroom
+     * @return array
+     */
+    function formatOutput(Classroom $classroom): array
+    {
+        return [
+            'classroom_id' => $classroom->id,
+            'classroom_name' => $classroom->name,
+            'capacity' => $classroom->capacity,
+            'floor' => $classroom->floor,
+        ];
     }
 }
 

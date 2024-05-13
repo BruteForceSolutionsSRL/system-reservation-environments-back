@@ -2,22 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Validation\Rule;
+
 use Illuminate\Support\Facades\Validator;
 
-use App\Models\TimeSlot;
 use Exception;
-use Illuminate\Support\Facades\DB;
 
 use Illuminate\Http\{
     JsonResponse as Response,
     Request,
 };
 
-use App\Models\{
-    Classroom,
-    Block,
-    ReservationStatus,
-};
+use App\Models\Block;
 
 use App\Service\ServiceImplementation\ClassroomServiceImpl as ClassroomService;
 
@@ -29,7 +25,9 @@ class ClassroomController extends Controller
         $this->robotService = new ClassroomService();
     }
     /**
+     * Explain:
      * list function retrieves all classrooms.
+     * @param none
      * @return Response
      */
     public function list(): Response
@@ -48,17 +46,8 @@ class ClassroomController extends Controller
         }
     }
 
-    private function formatClassroomResponse($classroom)
-    {
-        return [
-            'classroom_id' => $classroom->id,
-            'classroom_name' => $classroom->name,
-            'capacity' => $classroom->capacity,
-            'floor' => $classroom->floor,
-        ];
-    }
-
     /**
+     * Explain:
      * To retrieve data available classrooms within block
      * @param int $blockId
      * @return Response
@@ -79,6 +68,7 @@ class ClassroomController extends Controller
     }
 
     /**
+     * Explain:
      * Return all classrooms in a block
      * @param int $blockId
      * @return Response
@@ -99,15 +89,16 @@ class ClassroomController extends Controller
     }
 
     /**
+     * Explain:
      * Store a new classroom with the info below
      * @param Request
      * Request (body): 
      * {
-     * 'classroom_name': str, 
-     * 'capacity': 'number', 
-     * 'type_id': int, 
-     * 'block_id': int
-     * 'floor_number': int
+     * "classroom_name": "str", 
+     * "capacity": number, 
+     * "type_id": int, 
+     * "block_id": int
+     * "floor_number": int
      * }
      * @return Response
      */
@@ -150,8 +141,10 @@ class ClassroomController extends Controller
     }
 
     /**
+     * Explain:
      * Validate all atributes whithin Classroom register
-     * @param Request
+     * @param Request $request
+     * @return mixed
      */
     private function validateClassroomData(Request $request) 
     {
@@ -177,11 +170,18 @@ class ClassroomController extends Controller
             'floor_number.min' => 'El \'piso\' debe ser un numero positivo menor a la cantidad de pisos del bloque'
         ]);
     }
-
+ 
     /**
+     * Explain:
      * Function to retrieve disponibility
      * status for all selected classrooms
      * @param Request $request
+     * {
+     * "date": "yyyy-mm-dd", 
+     * "block_id": int,
+     * "classroom_id": [int], 
+     * "time_slot_id": [int]
+     * }
      * @return Response
      */
     public function getClassroomByDisponibility(Request $request): Response 
@@ -208,16 +208,23 @@ class ClassroomController extends Controller
     }
 
     /**
+     * Explain:
      * Function to validate 
      * all input for a search of disponibility
      * @param Request $request
+     * @return mixed
      */
     private function validateDisponibilityData(Request $request) 
     {
         return Validator::make($request->all(), [
             'date' => 'required|date',
             'block_id' => 'required|exists:blocks,id',
-            'classroom_id.*' => 'required|exists:classrooms,id',
+            'classroom_id.*' => [
+                'required',
+                Rule::exists('classrooms', 'id')->where(function ($query) use ($request) {
+                    $query->where('block_id', $request->input('block_id'));
+                }),
+            ],
             'time_slot_id.*' => 'required|exists:time_slots,id',
             'time_slot_id' => [
                 'required',
@@ -237,6 +244,7 @@ class ClassroomController extends Controller
             'date.date' => 'La fecha debe ser un formato válido.',
             'classroom_id.*.required' => 'Se requiere al menos una aula.',
             'classroom_id.*.exists' => 'Una de las aulas seleccionadas no es válida.',
+            'classroom:id.*.belongs' => 'Una de las aulas no pertenece al bloque seleccionado.',
             'time_slot_id.*.required' => 'Se requieren los periodos de tiempo.',
             'time_slot_id.*.exists' => 'Uno de los periodos de tiempo seleccionados no es válido.',
             'time_slot_id.required' => 'Se requieren dos periodos de tiempo.',
@@ -245,8 +253,15 @@ class ClassroomController extends Controller
     }
 
     /**
+     * Explain:
      * Function suggest a set of classrooms for a booking
      * @param Request $request
+     * * {
+     * "date": "yyyy-mm-dd", 
+     * "quantity": number, 
+     * "block_id": int,
+     * "time_slot_id": [int]
+     * }
      * @return Response
      */
     public function suggestClassrooms(Request $request): Response
@@ -263,113 +278,7 @@ class ClassroomController extends Controller
 
             $data = $validator->validated(); 
 
-            $classroomSet = Classroom::where('block_id', $data['block_id'])
-                            ->get();
-            $classroomSets = [];
-            $max_floor = Block::find($data['block_id'])->max_floor;
-
-            for ($i = 0; $i<=$max_floor; $i++) {
-                $classroomSets[$i] = [
-                    "quantity" => 0, 
-                    "list" => array()
-                ];
-            }
-            $acceptedStatus = ReservationStatus::where('status', 'ACCEPTED')
-            ->get()
-            ->pop()
-            ->id;
-            $robot = new ReservationController(); 
-
-            foreach ($classroomSet as $classroom) {
-                $reservations = $robot->getActiveReservationsWithDateStatusAndClassroom(
-                    [$acceptedStatus], 
-                    $data['date'], 
-                    $classroom->id
-                );
-                $reservations = $robot->cutReservationSetByTimeSlot(
-                    $reservations, 
-                    $data['time_slot_id'][0], 
-                    $data['time_slot_id'][1]
-                );
-                if (count($reservations) != 0) continue;
-                $classroomSets[$classroom->floor]['quantity'] += $classroom->capacity; 
-                array_push($classroomSets[$classroom->floor]['list'], $classroom);
-            }
-
-            $MAX_LEN = 1e4+10;
-            $dp = array_fill(0, $MAX_LEN+1, $max_floor+100); 
-            $pointerDp = array_fill(0, $MAX_LEN+1, -1); 
-            $dp[0] = 0; 
-            for ($i = 0; $i<=$max_floor; $i++) 
-            for ($j = $MAX_LEN; $j>-1; $j--) 
-            if ($dp[$j] < $max_floor+100) {
-                $index = $j+$classroomSets[$i]['quantity']; 
-                if ($index > $MAX_LEN) break; 
-                $len = $dp[$j]+count($classroomSets[$i]['list']);
-
-                if ($dp[$index] > $len) {
-                    $dp[$index] = $len; 
-                    $pointerDp[$index] = $i;
-                }
-            }
-
-            $bestSuggest = $dp[$data['quantity']];
-
-            for ($i = $data['quantity']; $i <= min($data['quantity']+300, 1e5); $i++) 
-            if (($bestSuggest == -1) || ($dp[$bestSuggest] > $dp[$i])) 
-                $bestSuggest = $i;
-
-            if ($pointerDp[$bestSuggest] == -1) {
-                return response()->json(
-                    ['message' => 'No existe una sugerencia apropiada'],
-                    400
-                );
-            }
-
-            $classrooms = array();
-            $piv = $bestSuggest; 
-            while ($piv > 0) {
-                $itemId = $pointerDp[$piv];
-                foreach ($classroomSets[$itemId]['list'] as $classroom) 
-                    array_push($classrooms, $classroom);
-                $piv = $piv-$classroomSets[$itemId]['quantity']; 
-            }
-
-            $dp = array_fill(0, $MAX_LEN+1, -1); 
-            $pointerDp = array_fill(0, $MAX_LEN, -1);
-            $dp[0] = 0; 
-            foreach ($classrooms as $classroom) 
-            for ($j = $MAX_LEN; $j>-1; $j--) 
-            if ($dp[$j] != -1) {
-                $index = $j+($classroom->capacity); 
-                if ($index > $MAX_LEN) continue;
-                $len = $dp[$j]+1; 
-                if (($dp[$index]==-1) || ($dp[$index] > $len)) {
-                    $dp[$index] = $len; 
-                    $pointerDp[$index] = $classroom->id;
-                }
-            }
-
-            $bestSuggest = $data['quantity'];
-            for ($i = $data['quantity']; $i <= $MAX_LEN; $i++) 
-            if ($dp[$i] != -1)
-            if (($dp[$bestSuggest] == -1) || ($dp[$bestSuggest] > $dp[$i])) 
-                $bestSuggest = $i;
-
-            $res = array();
-            $piv = $bestSuggest; 
-            while ($piv != 0) {
-                $classroom = Classroom::find($pointerDp[$piv]);
-                //return response()->json($pointerDp[$piv], 200);
-
-                array_push($res, $this->formatClassroomResponse($classroom)); 
-                $piv -= $classroom->capacity;
-            }
-
-            return response()->json(
-                $res,
-                200
-            );
+            return response()->json($this->robotService->suggestClassrooms($data),200);
 
         } catch (Exception $e) {
             return response()->json(
@@ -383,9 +292,11 @@ class ClassroomController extends Controller
     }
 
     /**
+     * Explain:
      * Function to validate 
      * all input for a search of suggestion
      * @param Request $request
+     * @return mixed
      */
     private function validateSuggestionData(Request $request) 
     {

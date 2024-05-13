@@ -4,8 +4,6 @@ namespace App\Service\ServiceImplementation;
 
 use App\Service\ClassroomService;
 
-use Illuminate\Support\Facades\DB;
-
 use App\Models\{
     Classroom,
     Reservation,
@@ -17,16 +15,19 @@ use App\Repositories\{
     ClassroomRepository,
     ReservationRepository,
     ReservationStatusRepository as ReservationStatuses,
+    TimeSlotRepository,
 };
 
 class ClassroomServiceImpl implements ClassroomService
 {
     private $classroomRepository;
     private $reservationRepository;
+    private $timeSlotRepository;
     function __construct()
     {
         $this->classroomRepository = new ClassroomRepository(Classroom::class);
         $this->reservationRepository = new ReservationRepository(Reservation::class);
+        $this->timeSlotRepository = new TimeSlotRepository(TimeSlot::class);
     }
     /**
      * Retrieve a list of all classrooms
@@ -49,7 +50,7 @@ class ClassroomServiceImpl implements ClassroomService
     }
 
     /**
-     * To retrieve all classrooms within block ID
+     * To retrieve array classrooms within block ID
      * @param int $blockID
      * @return array
      */
@@ -58,6 +59,11 @@ class ClassroomServiceImpl implements ClassroomService
         return $this->classroomRepository->getClassroomsByBlock($blockId);
     }
 
+    /**
+     * Save a classroom with all data previously validated
+     * @param array $data
+     * @return string
+     */
     public function store(array $data): string
     {
         $this->classroomRepository->save($data);
@@ -67,7 +73,7 @@ class ClassroomServiceImpl implements ClassroomService
     /**
      * Function to retrieve disponibility
      * status for all selected classrooms
-     * @param array $request
+     * @param array $data
      * @return array
      */
     public function getClassroomByDisponibility(array $data): array
@@ -86,18 +92,12 @@ class ClassroomServiceImpl implements ClassroomService
             $initialTime = $temp;
         }
 
+        $acceptedStatus = ReservationStatuses::accepted();
+        $pendingStatus = ReservationStatuses::pending();
+
         foreach ($data['classroom_id'] as $classroomId) {
 
-            /* $classroom = $this->classroomRepository->getClassroomById($classroomId); */
-            $classroom = Classroom::findOrFail($classroomId);
-            if ($classroom->block->id != $data['block_id']) {
-                return response()->json(
-                    ['message' => 'Los ambientes seleccionados, no pertenecen al bloque'],
-                    404
-                );
-            }
-            $acceptedStatus = ReservationStatuses::accepted();
-            $pendingStatus = ReservationStatuses::pending();
+            $classroom = $this->classroomRepository->getClassroomById($classroomId);
 
             $element = array();
             $element['classroom_name'] = $classroom->name;
@@ -109,7 +109,7 @@ class ClassroomServiceImpl implements ClassroomService
             );
 
             for ($timeSlotId = $initialTime; $timeSlotId <= $endTime; $timeSlotId++) {
-                $timeSlot = TimeSlot::find($timeSlotId);
+                $timeSlot = $this->timeSlotRepository->getTimeSlotById($timeSlotId);
                 $index = (string)($timeSlot->time);
                 $element[$index] = [
                     'valor' => 0,
@@ -133,7 +133,7 @@ class ClassroomServiceImpl implements ClassroomService
                 $isAccepted = $reservation->reservation_status_id == $acceptedStatus;
 
                 for ($timeSlotId = max($a, $initialTime); $timeSlotId <= min($endTime, $b); $timeSlotId++) {
-                    $timeSlot = TimeSlot::find($timeSlotId);
+                    $timeSlot = $this->timeSlotRepository->getTimeSlotById($timeSlotId);
                     $index = (string)($timeSlot->time);
                     $actualValue = $element[$index]['valor'];
 
@@ -157,7 +157,7 @@ class ClassroomServiceImpl implements ClassroomService
      * @param array $data
      * @return array
      */
-/*     public function suggestClassrooms(array $data): array
+    public function suggestClassrooms(array $data): array
     {
         $classroomSet = Classroom::where('block_id', $data['block_id'])
             ->get();
@@ -206,10 +206,7 @@ class ClassroomServiceImpl implements ClassroomService
                 $bestSuggest = $i;
 
         if ($pointerDp[$bestSuggest] == -1) {
-            return response()->json(
-                ['message' => 'No existe una sugerencia apropiada'],
-                400
-            );
+            return ['No existe una sugerencia apropiada'];
         }
 
         $classrooms = array();
@@ -245,16 +242,11 @@ class ClassroomServiceImpl implements ClassroomService
         $res = array();
         $piv = $bestSuggest;
         while ($piv != 0) {
-            $classroom = Classroom::find($pointerDp[$piv]);
-            //return response()->json($pointerDp[$piv], 200);
-
-            array_push($res, $this->formatClassroomResponse($classroom));
+            $classroom = $this->classroomRepository->getClassroomById($pointerDp[$piv]);
+            array_push($res, $this->classroomRepository->formatOutput($classroom));
             $piv -= $classroom->capacity;
         }
 
-        return response()->json(
-            $res,
-            200
-        );
-    } */
+        return $res;
+    }
 }
