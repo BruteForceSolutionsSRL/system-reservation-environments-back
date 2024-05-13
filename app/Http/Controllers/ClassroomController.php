@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Classroom;
 use App\Models\Block;
 use App\Models\ReservationStatus;
-use App\Models\ClassroomType;
 
 class ClassroomController extends Controller
 {
