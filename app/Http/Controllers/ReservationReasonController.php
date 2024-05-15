@@ -3,17 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Models\ReservationReason;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse as Response; 
 
 class ReservationReasonController extends Controller
 {
     /**
      * @param none
-     * @return Request
+     * @return Response
      */
-    public function index()
+    public function index(): Response
     {
-        $reservationResons = ReservationReason::all()
+        try {
+            $reservationResons = ReservationReason::all()
             ->map(function ($reservationReason) {
                 return [
                     'reason_id' => $reservationReason->id,
@@ -21,6 +24,16 @@ class ReservationReasonController extends Controller
                 ];
             });
 
-        return response()->json($reservationResons, 200);
+            return response()->json($reservationResons, 200);
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'message' => 'Hubo un error en el servidor', 
+                    'error' => $e->getMessage()
+                ], 
+                500
+            );
+
+        }
     }
 }

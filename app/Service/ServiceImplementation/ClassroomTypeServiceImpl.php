@@ -1,0 +1,18 @@
+<?php
+namespace App\Service\ServiceImplementation;
+
+use App\Repositories\ClassroomTypeRepository;
+use App\Service\ClassroomTypeService;
+
+class ClassroomTypeServiceImpl implements ClassroomTypeService
+{
+    private $classroomTypeRepository; 
+    public function __construct()
+    {
+        $this->classroomTypeRepository = new ClassroomTypeRepository();
+    }
+    public function getAllClassroomType(): array
+    {
+        return $this->classroomTypeRepository->getAllClassroomTypes();
+    }
+}

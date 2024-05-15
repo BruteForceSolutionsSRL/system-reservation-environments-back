@@ -109,8 +109,7 @@ class ClassroomServiceImpl implements ClassroomService
             );
 
             for ($timeSlotId = $initialTime; $timeSlotId <= $endTime; $timeSlotId++) {
-                $timeSlot = $this->timeSlotRepository->getTimeSlotById($timeSlotId);
-                $index = (string)($timeSlot->time);
+                $index = $this->timeSlotRepository->getTimeSlotById($timeSlotId)['time'];
                 $element[$index] = [
                     'valor' => 0,
                     'message' => 'Disponible'
@@ -133,8 +132,7 @@ class ClassroomServiceImpl implements ClassroomService
                 $isAccepted = $reservation->reservation_status_id == $acceptedStatus;
 
                 for ($timeSlotId = max($a, $initialTime); $timeSlotId <= min($endTime, $b); $timeSlotId++) {
-                    $timeSlot = $this->timeSlotRepository->getTimeSlotById($timeSlotId);
-                    $index = (string)($timeSlot->time);
+                    $index = $this->timeSlotRepository->getTimeSlotById($timeSlotId)['time'];
                     $actualValue = $element[$index]['valor'];
 
                     if ($actualValue == 2) continue; // ASSIGNED

@@ -2,28 +2,29 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Service\ServiceImplementation\TimeSlotServiceImpl;
 
-use App\Models\TimeSlot;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse as Response;
 
 class TimeSlotController extends Controller
 {
+    private $timeSlotService; 
+    public function __construct()
+    {
+        $this->timeSlotService = new TimeSlotServiceImpl(); 
+    }
     /**
      * Retrieve a list of all time-slots
-     * @return \Response
+     * @return Response
      */
-    public function list()
+    public function list(): Response
     {
         try {
-            $timeSlots = TimeSlot::select('time', 'id')
-                ->get()
-                ->map(function ($timeSlot) {
-                    return [
-                        'time_slot_id' => $timeSlot->id,
-                        'time' => $timeSlot->time,
-                    ];
-                });
-            return response()->json($timeSlots, 200);
+            return response()->json(
+                $this->timeSlotService->getAllTimeSlots(), 
+                200
+            );
         } catch (\Exception $e) {
             return response()->json(
                 [

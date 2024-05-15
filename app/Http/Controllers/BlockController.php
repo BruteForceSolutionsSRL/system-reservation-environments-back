@@ -3,31 +3,30 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse as Response;
+use Exception;
 
-use App\Models\Block;
+use App\Service\ServiceImplementation\BlockServiceImpl; 
 
 class BlockController extends Controller
 {
+    private $blockService; 
+    public function __construct()
+    {
+        $this->blockService = new BlockServiceImpl();
+    }
     /**
      * Retrieve a list of all blocks registered
-     * @return \Response
+     * @return Response
      */
-    public function list()
+    public function list(): Response
     {
         try {
-            $blocks = Block::all()
-                        ->map(
-                            function ($block) 
-                            {
-                                return [
-                                    'block_id' => $block->id, 
-                                    'block_name' => $block->name, 
-                                    'block_maxfloor' => $block->max_floor
-                                ];
-                            }
-                        );
-            return response()->json($blocks, 200);
-        } catch (\Exception $e) {
+            return response()->json(
+                $this->blockService->getAllBlocks(), 
+                200
+            );
+        } catch (Exception $e) {
             return response()->json(
                 [
                     'message' => 'Hubo un error en el servidor',

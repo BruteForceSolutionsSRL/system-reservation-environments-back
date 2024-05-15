@@ -2,47 +2,37 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Service\ServiceImplementation\TeacherSubjectServiceImpl;
 
-use App\Models\TeacherSubject;
-use App\Models\Person;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse as Response;
+
+use Exception;
 
 class TeacherSubjectController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
+    private $teacherSubjectService; 
+    public function __construct()
     {
-        return response()->json([], 200);
+        $this->teacherSubjectService = new TeacherSubjectServiceImpl(); 
     }
-
     /**
      * Explain:
      * Obtaining subjects,
      * through a teacher id.
      * @param int personId
-     * @return \Response
+     * @return Response
      */
-    public function subjectsByTeacher($personId)
+    public function subjectsByTeacher($personId): Response
     {
         try {
-            $universitySubjects = TeacherSubject::with('universitySubject:id,name')
-                ->select('university_subject_id')
-                ->where('person_id', $personId)
-                ->groupBy('university_subject_id')
-                ->get();
-
-            $universitySubjects = $universitySubjects->map(function ($universitySubject) {
-                return [
-                    'subject_id' => $universitySubject->university_subject_id,
-                    'subject_name' => $universitySubject->universitySubject->name,
-                ];
-            });
-            return response()->json($universitySubjects, 200);
-        } catch (\Exception $e) {
+            return response()->json(
+                $this->teacherSubjectService->getSubjectsByTeacherId(
+                    $personId
+                ), 
+                200
+            );
+        } catch (Exception $e) {
             return response()->json(
                 [
                     'message' => 'Hubo un error en el servidor',
@@ -52,34 +42,23 @@ class TeacherSubjectController extends Controller
             );
         }
     }
-
     /**
      * Explain:
      * Obtaining teacher-groups,
      * through a university subject id.
      * @param int universitySubjectId
-     * @return \Response
+     * @return Response
      */
-    public function teachersBySubject($universitySubjectId)
+    public function teachersBySubject($universitySubjectId): Response
     {
         try {
-            $teacherSubjects = TeacherSubject::with('person')
-                ->where('university_subject_id', $universitySubjectId)
-                ->select('id','person_id', 'group_number')
-                ->get();
-
-            $teacherSubjects = $teacherSubjects->map(function ($teacherSubject){
-                $teacher = Person::find($teacherSubject->person_id);
-                return [
-                    'id' => $teacherSubject->id,
-                    'group_number' => $teacherSubject->group_number,
-                    'person_id' => $teacher->id,
-                    'teacher_name' => $teacher->name,
-                    'teacher_last_name' => $teacher->last_name,
-                ];
-            });
-            return response()->json([$teacherSubjects], 200);
-        } catch (\Exception $e) {
+            return response()->json(
+                $this->teacherSubjectService->getTeachersBySubjectId(
+                    $universitySubjectId
+                ), 
+                200
+            );
+        } catch (Exception $e) {
             return response()->json(
                 [
                     'message' => 'Hubo un error en el servidor',
