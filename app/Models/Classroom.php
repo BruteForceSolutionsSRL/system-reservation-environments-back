@@ -28,4 +28,8 @@ class Classroom extends Model
     {
         return $this->belongsToMany(Reservation::class);
     }
+    public function classroomStatus()
+    {
+        return $this->belongsTo(ClassroomStatus::class);
+    }
 }
