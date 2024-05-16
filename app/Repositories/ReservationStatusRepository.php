@@ -8,6 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class ReservationStatusRepository extends Repository
 {
+     
+    private $model; 
+    function __construct(Model $model) 
+    {
+        $this->model = $model;
+    }
+
     public static function accepted() 
     {   
         return ReservationStatus::where('status', 'ACCEPTED')->get()->pop()->id; 
@@ -25,11 +32,5 @@ class ReservationStatusRepository extends Repository
     {
         return ReservationStatus::where('status', 'CANCELLED')
             ->get()->pop()->id;
-    } 
-    private $model; 
-    function __construct(Model $model) 
-    {
-        $this->model = $model;
     }
-
 }
