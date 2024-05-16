@@ -16,7 +16,10 @@ use App\Repositories\{
     ReservationRepository,
     ReservationStatusRepository as ReservationStatuses,
     TimeSlotRepository,
+    ClassroomStatusRepository as ClassroomStatus,
 };
+use PhpParser\Node\Stmt\Continue_;
+use SebastianBergmann\Type\NullType;
 
 class ClassroomServiceImpl implements ClassroomService
 {
@@ -99,6 +102,10 @@ class ClassroomServiceImpl implements ClassroomService
 
             $classroom = $this->classroomRepository->getClassroomById($classroomId);
 
+            /* if($classroom->classroom_status_id !== ClassroomStatus::available()) continue; */
+
+            if ($classroom === null) continue;
+            
             $element = array();
             $element['classroom_name'] = $classroom->name;
 
@@ -136,7 +143,7 @@ class ClassroomServiceImpl implements ClassroomService
                     $actualValue = $element[$index]['valor'];
 
                     if ($actualValue == 2) continue; // ASSIGNED
-                    if ($isAccepted) {
+                    if ($isAccepted) { 
                         $element[$index]['valor'] = 1;
                         $element[$index]['message'] = 'Ocupado';
                     } else {
@@ -158,6 +165,7 @@ class ClassroomServiceImpl implements ClassroomService
     public function suggestClassrooms(array $data): array
     {
         $classroomSet = Classroom::where('block_id', $data['block_id'])
+            ->where('classroom_status_id', ClassroomStatus::available())
             ->get();
         $classroomSets = [];
         $max_floor = Block::find($data['block_id'])->max_floor;
@@ -170,6 +178,7 @@ class ClassroomServiceImpl implements ClassroomService
         }
         $acceptedStatus = ReservationStatuses::accepted();
         foreach ($classroomSet as $classroom) {
+            
             $reservations = $this->reservationRepository->getActiveReservationsWithDateStatusAndClassroom(
                 [$acceptedStatus],
                 $data['date'],
@@ -234,12 +243,13 @@ class ClassroomServiceImpl implements ClassroomService
         $bestSuggest = $data['quantity'];
         for ($i = $data['quantity']; $i <= $MAX_LEN; $i++)
             if ($dp[$i] != -1)
-                if (($dp[$bestSuggest] == -1) || ($dp[$bestSuggest] > $dp[$i]))
+                if (($dp[$bestSuggest] == -1) || ($dp[$bestSuggest] > $dp[$i] && $dp[$i] > -1))
                     $bestSuggest = $i;
 
         $res = array();
         $piv = $bestSuggest;
-        while ($piv != 0) {
+        if ($dp[$piv] == -1) return [];
+        while ($piv != 0 ) {
             $classroom = $this->classroomRepository->getClassroomById($pointerDp[$piv]);
             array_push($res, $this->classroomRepository->formatOutput($classroom));
             $piv -= $classroom->capacity;
