@@ -81,6 +81,7 @@ class NotificationController extends Controller
 
         return response()->json($notification, 201);
     }
+    
     /**
      * Display the specified resource.
      * @param  int  $id

@@ -16,6 +16,12 @@ class ReservationReasonServiceImpl implements ReservationReasonService
     {
         $this->reservationReasonRepository = new ReservationReasonRepository();
     }
+    
+    /**
+     * Retrieve a list of all reservation reasons 
+     * @param none
+     * @return array
+     */
     public function getAllReservationReasons(): array
     {
         return $this->reservationReasonRepository->getAllReservationReason();

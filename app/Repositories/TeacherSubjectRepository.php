@@ -2,7 +2,6 @@
 namespace App\Repositories;
 
 use App\Models\{
-    UniversitySubject, 
     TeacherSubject,
     Person
 };
@@ -14,6 +13,12 @@ class TeacherSubjectRepository
     {
         $this->personRepository = new PersonRepository(Person::class);
     }
+
+    /**
+     * Retrieve a list of university subjects by teacher id
+     * @param int $teacherID
+     * @return array
+     */
     public function getSubjectsByTeacherID(int $teacherID): array 
     {
         return TeacherSubject::with('universitySubject:id,name')
@@ -27,6 +32,12 @@ class TeacherSubjectRepository
                         }
                     )->toArray();
     }
+
+    /**
+     * Retrieve a list of all teachers by university subject id
+     * @param int $universitySubjectID
+     * @return array
+     */
     public function getTeachersBySubject(int $universitySubjectID): array
     {
         return TeacherSubject::with('person')
@@ -47,6 +58,12 @@ class TeacherSubjectRepository
                 }
             )->toArray();
     }
+
+    /**
+     * Transform TeacherSubject to array
+     * @param TeacherSubject $universitySubject
+     * @return array
+     */
     private function formatOutputSubject(TeacherSubject $universitySubject): array
     {
         return [
@@ -54,6 +71,12 @@ class TeacherSubjectRepository
             'subject_name' => $universitySubject->universitySubject->name,
         ];
     }
+
+    /**
+     * Transform Person to array
+     * @param Person $teacher
+     * @return array
+     */
     private function formatOutputTeacher(Person $teacher): array
     {
         return [

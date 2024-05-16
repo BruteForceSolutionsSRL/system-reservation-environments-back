@@ -6,6 +6,11 @@ use App\Models\{
 }; 
 class ClassroomTypeRepository 
 {
+    /**
+     * Retrieve a list of all classroom types
+     * @param none
+     * @return array
+     */
     public function getAllClassroomTypes(): array
     {
         return ClassroomType::all()->map(
@@ -15,6 +20,12 @@ class ClassroomTypeRepository
             }
         )->toArray();
     }
+
+    /**
+     * Format ClassroomType to array
+     * @param ClassroomType $classroomType
+     * @return array
+     */
     private function formatOutput(ClassroomType $classroomType): array
     {
         return [

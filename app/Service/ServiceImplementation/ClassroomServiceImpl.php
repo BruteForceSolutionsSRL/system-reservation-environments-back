@@ -2,6 +2,7 @@
 
 namespace App\Service\ServiceImplementation;
 
+use App\Repositories\BlockRepository;
 use App\Service\ClassroomService;
 
 use App\Models\{
@@ -26,11 +27,17 @@ class ClassroomServiceImpl implements ClassroomService
     private $classroomRepository;
     private $reservationRepository;
     private $timeSlotRepository;
-    function __construct()
+    private $blockRepository; 
+
+    private $timeSlotService; 
+    public function __construct()
     {
         $this->classroomRepository = new ClassroomRepository(Classroom::class);
         $this->reservationRepository = new ReservationRepository(Reservation::class);
         $this->timeSlotRepository = new TimeSlotRepository(TimeSlot::class);
+        $this->blockRepository = new BlockRepository(Block::class);
+
+        $this->timeSlotService = new TimeSlotServiceImpl();
     }
     /**
      * Retrieve a list of all classrooms
@@ -47,9 +54,9 @@ class ClassroomServiceImpl implements ClassroomService
      * @param int $blockID
      * @return array
      */
-    public function availableClassroomsByBlock(int $blockId): array
+    public function getDisponibleClassroomsByBlock(int $blockId): array
     {
-        return $this->classroomRepository->availableClassroomsByBlock($blockId);
+        return $this->classroomRepository->getDisponibleClassroomsByBlock($blockId);
     }
 
     /**
@@ -83,40 +90,30 @@ class ClassroomServiceImpl implements ClassroomService
     {
         $classroomList = [];
 
-        $initialTime = -1;
-        $endTime = -1;
-        foreach ($data['time_slot_id'] as $timeSlot) {
-            if ($initialTime == -1) $initialTime = $timeSlot;
-            else $endTime = $timeSlot;
-        }
-        if ($initialTime > $endTime) {
-            $temp = $endTime;
-            $endTime = $initialTime;
-            $initialTime = $temp;
-        }
+        $times = $data['time_slot_id'];
+        sort($times); 
 
         $acceptedStatus = ReservationStatuses::accepted();
         $pendingStatus = ReservationStatuses::pending();
 
         foreach ($data['classroom_id'] as $classroomId) {
-
             $classroom = $this->classroomRepository->getClassroomById($classroomId);
 
-            /* if($classroom->classroom_status_id !== ClassroomStatus::available()) continue; */
-
-            if ($classroom === null) continue;
+            if (count($classroom) == 0) continue;
             
             $element = array();
-            $element['classroom_name'] = $classroom->name;
+            $element['classroom_name'] = $classroom['classroom_name'];
 
-            $reservations = $this->reservationRepository->getActiveReservationsWithDateStatusAndClassroom(
-                [$acceptedStatus, $pendingStatus],
-                $data['date'],
-                $classroomId
-            );
+            $reservations = $this->reservationRepository
+                ->getActiveReservationsWithDateStatusAndClassroom(
+                    [$acceptedStatus, $pendingStatus],
+                    $data['date'],
+                    $classroomId
+                );
 
-            for ($timeSlotId = $initialTime; $timeSlotId <= $endTime; $timeSlotId++) {
-                $index = $this->timeSlotRepository->getTimeSlotById($timeSlotId)['time'];
+            for ($timeSlotId = $times[0]; $timeSlotId <= $times[1]; $timeSlotId++) {
+                $index = $this->timeSlotRepository
+                    ->getTimeSlotById($timeSlotId)['time'];
                 $element[$index] = [
                     'valor' => 0,
                     'message' => 'Disponible'
@@ -124,26 +121,18 @@ class ClassroomServiceImpl implements ClassroomService
             }
 
             foreach ($reservations as $reservation) {
-                $a = -1;
-                $b = -1;
-
-                foreach ($reservation->timeSlots as $timeSlot) {
-                    if ($a == -1) $a = $timeSlot->id;
-                    else $b = $timeSlot->id;
-                }
-                if ($a > $b) {
-                    $temp = $b;
-                    $b = $a;
-                    $a = $temp;
-                }
+                $timesReservation = $this->timeSlotService
+                    ->getTimeSlotsSorted($reservation->timeSlots);
                 $isAccepted = $reservation->reservation_status_id == $acceptedStatus;
 
-                for ($timeSlotId = max($a, $initialTime); $timeSlotId <= min($endTime, $b); $timeSlotId++) {
+                for ($timeSlotId = max($timesReservation[0], $times[0]); 
+                    $timeSlotId <= min($times[1], $timesReservation[1]); 
+                    $timeSlotId++
+                ) {
                     $index = $this->timeSlotRepository->getTimeSlotById($timeSlotId)['time'];
-                    $actualValue = $element[$index]['valor'];
 
-                    if ($actualValue == 2) continue; // ASSIGNED
-                    if ($isAccepted) { 
+                    if ($element[$index]['valor'] == 1) continue; 
+                    if ($isAccepted) {
                         $element[$index]['valor'] = 1;
                         $element[$index]['message'] = 'Ocupado';
                     } else {
@@ -164,11 +153,10 @@ class ClassroomServiceImpl implements ClassroomService
      */
     public function suggestClassrooms(array $data): array
     {
-        $classroomSet = Classroom::where('block_id', $data['block_id'])
-            ->where('classroom_status_id', ClassroomStatus::available())
-            ->get();
+        $classroomSet = $this->classroomRepository
+            ->getClassroomsByBlock($data['block_id']);
         $classroomSets = [];
-        $max_floor = Block::find($data['block_id'])->max_floor;
+        $max_floor = $this->blockRepository->getBlock($data['block_id'])['block_maxfloor'];
 
         for ($i = 0; $i <= $max_floor; $i++) {
             $classroomSets[$i] = [
@@ -179,14 +167,15 @@ class ClassroomServiceImpl implements ClassroomService
         $acceptedStatus = ReservationStatuses::accepted();
         foreach ($classroomSet as $classroom) {
             
-            $reservations = $this->reservationRepository->getActiveReservationsWithDateStatusAndClassroom(
-                [$acceptedStatus],
-                $data['date'],
-                $classroom->id
-            );
+            $reservations = $this->reservationRepository
+                ->getActiveReservationsWithDateStatusAndClassroom(
+                    [$acceptedStatus],
+                    $data['date'],
+                    $classroom['classroom_id']
+                );
             if (count($reservations) != 0) continue;
-            $classroomSets[$classroom->floor]['quantity'] += $classroom->capacity;
-            array_push($classroomSets[$classroom->floor]['list'], $classroom);
+            $classroomSets[$classroom['floor']]['quantity'] += $classroom['capacity'];
+            array_push($classroomSets[$classroom['floor']]['list'], $classroom);
         }
 
         $MAX_LEN = 1e4 + 10;
@@ -213,7 +202,7 @@ class ClassroomServiceImpl implements ClassroomService
                 $bestSuggest = $i;
 
         if ($pointerDp[$bestSuggest] == -1) {
-            return ['No existe una sugerencia apropiada'];
+            return ['message' => 'No existe una sugerencia apropiada'];
         }
 
         $classrooms = array();
@@ -231,28 +220,31 @@ class ClassroomServiceImpl implements ClassroomService
         foreach ($classrooms as $classroom)
             for ($j = $MAX_LEN; $j > -1; $j--)
                 if ($dp[$j] != -1) {
-                    $index = $j + ($classroom->capacity);
+                    $index = $j + ($classroom['capacity']);
                     if ($index > $MAX_LEN) continue;
                     $len = $dp[$j] + 1;
                     if (($dp[$index] == -1) || ($dp[$index] > $len)) {
                         $dp[$index] = $len;
-                        $pointerDp[$index] = $classroom->id;
+                        $pointerDp[$index] = $classroom['classroom_id'];
                     }
                 }
 
         $bestSuggest = $data['quantity'];
         for ($i = $data['quantity']; $i <= $MAX_LEN; $i++)
             if ($dp[$i] != -1)
-                if (($dp[$bestSuggest] == -1) || ($dp[$bestSuggest] > $dp[$i] && $dp[$i] > -1))
+                if (($dp[$bestSuggest] == -1) || ($dp[$bestSuggest] > $dp[$i]))
                     $bestSuggest = $i;
 
         $res = array();
         $piv = $bestSuggest;
-        if ($dp[$piv] == -1) return [];
+        if ($dp[$piv] == -1) 
+            return ['message' => 'No existe una sugerencia apropiada'];
+
         while ($piv != 0 ) {
-            $classroom = $this->classroomRepository->getClassroomById($pointerDp[$piv]);
-            array_push($res, $this->classroomRepository->formatOutput($classroom));
-            $piv -= $classroom->capacity;
+            $classroom = $this->classroomRepository
+                ->getClassroomById($pointerDp[$piv]);
+            array_push($res, $classroom);
+            $piv -= $classroom['capacity'];
         }
 
         return $res;

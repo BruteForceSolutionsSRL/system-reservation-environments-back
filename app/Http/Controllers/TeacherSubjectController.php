@@ -4,9 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Service\ServiceImplementation\TeacherSubjectServiceImpl;
 
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse as Response;
-
 use Exception;
 
 class TeacherSubjectController extends Controller
@@ -16,14 +14,13 @@ class TeacherSubjectController extends Controller
     {
         $this->teacherSubjectService = new TeacherSubjectServiceImpl(); 
     }
+
     /**
-     * Explain:
-     * Obtaining subjects,
-     * through a teacher id.
-     * @param int personId
+     * Obtaining subjects through a teacher id.
+     * @param int $personId
      * @return Response
      */
-    public function subjectsByTeacher($personId): Response
+    public function subjectsByTeacher(int $personId): Response
     {
         try {
             return response()->json(
@@ -42,14 +39,13 @@ class TeacherSubjectController extends Controller
             );
         }
     }
+
     /**
-     * Explain:
-     * Obtaining teacher-groups,
-     * through a university subject id.
-     * @param int universitySubjectId
+     * Obtaining teacher-groups through a university subject id.
+     * @param int $universitySubjectId
      * @return Response
      */
-    public function teachersBySubject($universitySubjectId): Response
+    public function teachersBySubject(int $universitySubjectId): Response
     {
         try {
             return response()->json(

@@ -13,12 +13,38 @@ class TimeSlotServiceImpl implements TimeSlotService
     {
         $this->timeSlotRepository  = new TimeSlotRepository(TimeSlot::class);
     }
+
+    /**
+     * Retrieves a list of all time slots 
+     * @param none
+     * @return array
+     */
     public function getAllTimeSlots(): array
     {
         return $this->timeSlotRepository->getAllTimeSlots();
     }
+    
+    /**
+     * Retrieves a single time slot
+     * @param int $timeSlotID
+     * @return array
+     */
     public function getTimeSlot(int $timeSlotID): array
     {
         return $this->timeSlotRepository->getTimeSlotById($timeSlotID);
+    }
+
+    /**
+     * Sort two timeSlost by its id
+     * @param array $timeSlots
+     * @return array
+     */
+    public function getTimeSlotsSorted(array $timeSlots): array
+    {
+        $array = array(); 
+        foreach ($timeSlots as $timeSlot) 
+            array_push($array, $timeSlot->id);
+        sort($array); 
+        return $array;
     }
 }

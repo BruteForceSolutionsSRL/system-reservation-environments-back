@@ -16,6 +16,7 @@ class ClassroomTypeController extends Controller
     {
         $this->classroomTypeService = new ClassroomTypeServiceImpl();
     }
+    
     /**
      * Explain: Retrieve all classroom types 
      * @return \Response

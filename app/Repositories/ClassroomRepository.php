@@ -10,7 +10,7 @@ use App\Repositories\ClassroomStatusRepository as ClassroomStatus;
 class ClassroomRepository extends Repository
 {
     protected $model;
-    function __construct($model)
+    public function __construct($model)
     {
         $this->model = $model;
     }
@@ -20,7 +20,7 @@ class ClassroomRepository extends Repository
      * @param int
      * @return array
      */
-    function getAllClassrooms(): array
+    public function getAllClassrooms(): array
     {
         return $this->model::select(
             'id',
@@ -42,7 +42,7 @@ class ClassroomRepository extends Repository
      * @param int $blockId
      * @return array
      */
-    function availableClassroomsByBlock(int $blockId): array
+    public function getDisponibleClassroomsByBlock(int $blockId): array
     {
         return $this->model::select('id', 'name', 'capacity', 'floor')
                 ->where('classroom_status_id',ClassroomStatus::available())
@@ -66,16 +66,18 @@ class ClassroomRepository extends Repository
      * @param int $blockId
      * @return array
      */
-    function getClassroomsByBlock(int $blockId): array
+    public function getClassroomsByBlock(int $blockId): array
     {
         return $this->model::select('id', 'name', 'capacity', 'floor')
             ->where('classroom_status_id',ClassroomStatus::available())
             ->where('block_id', $blockId)
             ->get()
-            ->map(function ($classroom){
-                return $this->formatOutput($classroom);
-            }
-        )->toArray();
+            ->map(
+                function ($classroom)
+                {
+                    return $this->formatOutput($classroom);
+                }
+            )->toArray();
     }
     
     /**
@@ -83,7 +85,7 @@ class ClassroomRepository extends Repository
      * @param array $data
      * @return Classroom
      */
-    function save(array $data): Classroom 
+    public function save(array $data): Classroom 
     {
         $classroom = new Classroom();
         $classroom->name = $data['classroom_name']; 
@@ -99,16 +101,18 @@ class ClassroomRepository extends Repository
     /**
      * Function to retrieve a classroom by ID
      * @param int $classroomId
-     * @return Classroom
+     * @return array
      */
-    function getClassroomById(int $classroomId)
+    public function getClassroomById(int $classroomId): array
     {
-        /* $classroom = $this->model::find($classroomId);
-        if ($classroom && ($classroom->classroom_status_id === ClassroomStatus::available())) {
-            return $classroom;
+        $classroom = $this->model::find($classroomId);
+        if (($classroom != null) && 
+              ($classroom->classroom_status_id === ClassroomStatus::available())
+        ) {
+            return $this->formatOutput($classroom);
         }
-        return null; */
-        return $this->model::find($classroomId);
+        return []; 
+        /*return $this->model::find($classroomId);*/
     }
 
     /**
@@ -116,7 +120,7 @@ class ClassroomRepository extends Repository
      * @param Classroom $classroom
      * @return array
      */
-    function formatOutput(Classroom $classroom): array
+    private function formatOutput(Classroom $classroom): array
     {
         return [
             'classroom_id' => $classroom->id,

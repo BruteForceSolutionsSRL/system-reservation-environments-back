@@ -6,6 +6,11 @@ use App\Models\{
 };
 class ReservationReasonRepository
 {
+    /**
+     * Retrieve a list of all reservation reasons formatted
+     * @param none
+     * @return array 
+     */
     public function getAllReservationReason(): array
     {
         return ReservationReason::all()->map(
@@ -15,6 +20,12 @@ class ReservationReasonRepository
             }
         )->toArray();
     }
+
+    /**
+     * Transform ReservationReason to array
+     * @param ReservationReason $reservationReason
+     * @return array
+     */
     private function formatOutput(ReservationReason $reservationReason): array
     {
         return [

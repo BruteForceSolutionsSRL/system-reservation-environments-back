@@ -25,6 +25,7 @@ class ClassroomController extends Controller
     {
         $this->robotService = new ClassroomService();
     }
+    
     /**
      * Explain:
      * list function retrieves all classrooms.
@@ -53,11 +54,11 @@ class ClassroomController extends Controller
      * @param int $blockId
      * @return Response
      */    
-    public function availableClassroomsByBlock($blockId): Response
+    public function availableClassroomsByBlock(int $blockId): Response
     {
         try {
             Block::findOrFail($blockId);
-            return response()->Json($this->robotService->availableClassroomsByBlock($blockId));
+            return response()->Json($this->robotService->getDisponibleClassroomsByBlock($blockId));
         } catch (ModelNotFoundException $e) {
             return response()->json(
                 [
@@ -83,7 +84,7 @@ class ClassroomController extends Controller
      * @param int $blockId
      * @return Response
      */ 
-    public function classroomsByBlock($blockId): Response
+    public function classroomsByBlock(int $blockId): Response
     {
         
         try {
@@ -111,15 +112,7 @@ class ClassroomController extends Controller
     /**
      * Explain:
      * Store a new classroom with the info below
-     * @param Request
-     * Request (body): 
-     * {
-     * "classroom_name": "str", 
-     * "capacity": number, 
-     * "type_id": int, 
-     * "block_id": int
-     * "floor_number": int
-     * }
+     * @param Request $request
      * @return Response
      */
     public function store(Request $request): Response 
@@ -192,16 +185,8 @@ class ClassroomController extends Controller
     }
  
     /**
-     * Explain:
-     * Function to retrieve disponibility
-     * status for all selected classrooms
+     * Function to retrieve disponibility status for all selected classrooms
      * @param Request $request
-     * {
-     * "date": "yyyy-mm-dd", 
-     * "block_id": int,
-     * "classroom_id": [int], 
-     * "time_slot_id": [int]
-     * }
      * @return Response
      */
     public function getClassroomByDisponibility(Request $request): Response 
@@ -216,7 +201,10 @@ class ClassroomController extends Controller
                 return response()->json(['message' => $message], 400);
             }
             $data = $validator->validated();
-            return response()->json($this->robotService->getClassroomByDisponibility($data), 200);
+            return response()->json(
+                $this->robotService->getClassroomByDisponibility($data), 
+                200
+            );
         } catch (Exception $e) {
             return response()->json(
                 [
@@ -229,9 +217,7 @@ class ClassroomController extends Controller
     }
 
     /**
-     * Explain:
-     * Function to validate 
-     * all input for a search of disponibility
+     * Function to validate all input for a search of disponibility
      * @param Request $request
      * @return mixed
      */
@@ -274,15 +260,8 @@ class ClassroomController extends Controller
     }
 
     /**
-     * Explain:
      * Function suggest a set of classrooms for a booking
      * @param Request $request
-     * * {
-     * "date": "yyyy-mm-dd", 
-     * "quantity": number, 
-     * "block_id": int,
-     * "time_slot_id": [int]
-     * }
      * @return Response
      */
     public function suggestClassrooms(Request $request): Response
@@ -313,9 +292,7 @@ class ClassroomController extends Controller
     }
 
     /**
-     * Explain:
-     * Function to validate 
-     * all input for a search of suggestion
+     * Function to validate all input for a search of suggestion
      * @param Request $request
      * @return mixed
      */

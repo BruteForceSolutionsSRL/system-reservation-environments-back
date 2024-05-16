@@ -11,6 +11,12 @@ class ClassroomTypeServiceImpl implements ClassroomTypeService
     {
         $this->classroomTypeRepository = new ClassroomTypeRepository();
     }
+    
+    /**
+     * Retrieve a list of all classroom types
+     * @param none
+     * @return array
+     */
     public function getAllClassroomType(): array
     {
         return $this->classroomTypeRepository->getAllClassroomTypes();

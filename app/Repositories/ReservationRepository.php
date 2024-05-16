@@ -17,7 +17,13 @@ class ReservationRepository extends Repository
     {
         $this->model = $model; 
     }
-    public function getReservation($id) 
+
+    /**
+     * Retrieve a single Reservation in array by its ID
+     * @param int $id
+     * @return array
+     */
+    public function getReservation(int $id): array 
     {
         return $this->formatOutput(Reservation::with([
             'reservationStatus:id,status',
@@ -31,7 +37,13 @@ class ReservationRepository extends Repository
             'classrooms.classroomType:id,description'
         ])->find($id));
     }
-    public function getAllReservations() 
+
+    /**
+     * Retrieve a list of all reservations
+     * @param none
+     * @return array
+     */
+    public function getAllReservations(): array 
     {
         return $this->model::with([
             'reservationStatus:id,status',
@@ -50,7 +62,13 @@ class ReservationRepository extends Repository
             }
         )->toArray();
     }
-    public function getPendingRequest()
+
+    /**
+     * Retrieve a list of pending request 
+     * @param none
+     * @return array
+     */
+    public function getPendingRequest(): array
     {
         return Reservation::with([
             'reservationStatus:id,status',
@@ -71,7 +89,13 @@ class ReservationRepository extends Repository
                 }
             )->toArray();
     }
-    public function getRequestByTeacher($teacherId) 
+
+    /**
+     * Retrieve a list of all request accepted/pending by teacher ID
+     * @param int $teacherId
+     * @return array
+     */
+    public function getRequestByTeacher(int $teacherId): array 
     {
         return Reservation::with([
             'reservationStatus:id,status',
@@ -99,7 +123,13 @@ class ReservationRepository extends Repository
                 }
             )->toArray();
     }
-    public function getAllRequestByTeacher($teacherId) 
+
+    /**
+     * Retrieve a list of all request by teacher ID
+     * @param int $teacherId
+     * @return array
+     */
+    public function getAllRequestByTeacher(int $teacherId): array 
     {
         return Reservation::with([
             'reservationStatus:id,status',
@@ -120,6 +150,7 @@ class ReservationRepository extends Repository
                 }
             )->toArray();
     }
+
     /**
      * Function to format from Reservation class to array 
      * @param Reservation $reservation
@@ -167,6 +198,7 @@ class ReservationRepository extends Repository
             'reservation_status' => $reservationStatus->status,
         ];
     }
+
     /**
      * Function to retrieve a list of all active reservations
      * @param array $statuses
@@ -214,6 +246,7 @@ class ReservationRepository extends Repository
         }
         return $result;
     }
+
     /**
      * Function to retrieve a list of all active reservations
      * @param array $statuses
@@ -243,6 +276,12 @@ class ReservationRepository extends Repository
         }
         return $refinedReservationSet;
     }
+
+    /**
+     * Store a new Reservation request
+     * @param array $data
+     * @return Reservation
+     */
     public function save(array $data): Reservation 
     {
         $reservation = new Reservation();
@@ -259,7 +298,13 @@ class ReservationRepository extends Repository
         
         return $reservation; 
     }
-    private function getTimeSlotsSorted($timeSlots): array
+    
+    /**
+     * Retrieve a list of timeslots ids by a Collection
+     * @param array $timeSlots
+     * @return array
+     */
+    private function getTimeSlotsSorted(array $timeSlots): array
     {
         $array = array(); 
         foreach ($timeSlots as $timeSlot) 

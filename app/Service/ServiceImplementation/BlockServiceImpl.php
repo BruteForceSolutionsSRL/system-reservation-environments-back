@@ -16,10 +16,22 @@ class BlockServiceImpl implements BlockService
     {
         $this->blockRepository = new BlockRepository();
     }
+
+    /**
+     * Retrieves a list of all blocks 
+     * @param none
+     * @return array
+     */
     public function getAllBlocks(): array
     {
         return $this->blockRepository->getAllBlocks();
     }
+    
+    /**
+     * Retrieve a single Block using its ID
+     * @param int $id
+     * @return array
+     */
     public function getBlock(int $id): array
     {
         return $this->blockRepository->getBlock($id); 

@@ -1,8 +1,6 @@
 <?php
-
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse as Response;
 use Exception;
 
@@ -15,8 +13,10 @@ class BlockController extends Controller
     {
         $this->blockService = new BlockServiceImpl();
     }
+
     /**
      * Retrieve a list of all blocks registered
+     * @param none
      * @return Response
      */
     public function list(): Response

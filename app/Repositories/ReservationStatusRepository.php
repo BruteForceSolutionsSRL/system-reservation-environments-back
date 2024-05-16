@@ -15,20 +15,44 @@ class ReservationStatusRepository extends Repository
         $this->model = $model;
     }
 
-    public static function accepted() 
+    /**
+     * Retrieve accepted reservation status id
+     * @param none
+     * @return int
+     */
+    public static function accepted(): int 
     {   
         return ReservationStatus::where('status', 'ACCEPTED')->get()->pop()->id; 
     }
-    public static function rejected() 
+    
+    /**
+     * Retrieve rejected reservation status id
+     * @param none
+     * @return int
+     */
+    public static function rejected(): int 
     {
         return ReservationStatus::where('status', 'REJECTED')
             ->get()->pop()->id;
     } 
-    public static function pending() {
+
+    /**
+     * Retrieve pending reservation status id
+     * @param none
+     * @return int
+     */
+    public static function pending() : int
+    {
         return ReservationStatus::where('status', 'PENDING')
             ->get()->pop()->id; 
     }
-    public static function cancelled() 
+
+    /**
+     * Retrieve cancelled reservation status id
+     * @param none
+     * @return int
+     */
+    public static function cancelled(): int 
     {
         return ReservationStatus::where('status', 'CANCELLED')
             ->get()->pop()->id;

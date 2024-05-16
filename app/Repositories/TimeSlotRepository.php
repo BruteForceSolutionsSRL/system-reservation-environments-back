@@ -13,10 +13,21 @@ class TimeSlotRepository extends Repository
         $this->model = $model;
     }
 
+    /**
+     * Retrieve TimeSlot by its id
+     * @param int $timeSlotId
+     * @return array
+     */
     public function getTimeSlotById(int $timeSlotId): array
     {
         return $this->formatOutput($this->model::find($timeSlotId));
     }
+
+    /**
+     * Retrieve a list of all TimeSlots
+     * @param none
+     * @return array
+     */
     public function getAllTimeSlots(): array
     {
         return $this->model::select('time', 'id')
@@ -28,6 +39,12 @@ class TimeSlotRepository extends Repository
                 )->toArray();
 
     }
+
+    /**
+     * Transform TimeSlot to array
+     * @param TimeSlot $timeSlot
+     * @return array
+     */
     private function formatOutput(TimeSlot $timeSlot): array
     {
         return [

@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Service\ServiceImplementation\TimeSlotServiceImpl;
 
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse as Response;
+use Exception;
 
 class TimeSlotController extends Controller
 {
@@ -14,8 +14,10 @@ class TimeSlotController extends Controller
     {
         $this->timeSlotService = new TimeSlotServiceImpl(); 
     }
+
     /**
      * Retrieve a list of all time-slots
+     * @param none
      * @return Response
      */
     public function list(): Response
@@ -25,7 +27,7 @@ class TimeSlotController extends Controller
                 $this->timeSlotService->getAllTimeSlots(), 
                 200
             );
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json(
                 [
                     'message' => 'Hubo un error en el servidor',

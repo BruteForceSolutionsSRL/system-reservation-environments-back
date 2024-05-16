@@ -2,8 +2,10 @@
 namespace App\Http\Controllers;
 
 use Exception;
-use Illuminate\Http\JsonResponse as Response;
-use Illuminate\Http\Request;
+use Illuminate\Http\{
+    JsonResponse as Response, 
+    Request
+};
 use Illuminate\Support\Facades\Validator;
 
 use App\Service\ServiceImplementation\ReservationServiceImpl; 
@@ -15,15 +17,19 @@ class ReservationController extends Controller
     {
         $this->robotService = new ReservationServiceImpl();
     }
+
     /**
-     * index function retrieves all reservations.
+     * Retrieves all reservations.
+     * @param none
      * @return Response
      */
     public function index(): Response
     {
         try {
-            return response()->json($this->robotService->getAllReservations(), 
-                200);
+            return response()->json(
+                $this->robotService->getAllReservations(), 
+                200
+            );
         } catch (Exception $e) {
             return response()->json(
                 [
@@ -34,14 +40,19 @@ class ReservationController extends Controller
             );
         }
     }
+
     /**
      * Function to retrieve all pending request
+     * @param none
      * @return Response
      */
     public function getPendingRequests(): Response
     {
         try {
-            return response()->json($this->robotService->getPendingRequest(), 200);
+            return response()->json(
+                $this->robotService->getPendingRequest(), 
+                200
+            );
         } catch (Exception $e) {
             return response()->json(
                 [
@@ -52,6 +63,7 @@ class ReservationController extends Controller
             );
         }
     }
+
     /**
      * Function to retrieve acepted/pending request by teacher
      * @param int $teacher
@@ -78,6 +90,7 @@ class ReservationController extends Controller
             );
         }
     }
+
     /**
      * Function to retrieve all request by teacher
      * @param int $teacherId
@@ -104,6 +117,7 @@ class ReservationController extends Controller
             );
         }
     }
+
     /**
      * Function to retrieve a reservation by its id
      * @param int $reservationId
@@ -129,6 +143,7 @@ class ReservationController extends Controller
             );
         }
     }
+
     /**
      * Function to reject a reservation by its id
      * @param int $reservationId
@@ -149,8 +164,8 @@ class ReservationController extends Controller
             ], 500);
         }
     }
+
     /**
-     * Explain:
      * Cancel a pending/accepted request-booking
      * @param int $reservationId
      * @return Response
@@ -170,8 +185,8 @@ class ReservationController extends Controller
             ], 500);
         }
     }
+
     /**
-     * Explain:
      * Save a new Classroom Booking Request
      * @param Request $request
      * @return Response
@@ -189,7 +204,10 @@ class ReservationController extends Controller
             }
 
             $data = $validator->validated();
-            return response()->json(['message' => $this->robotService->store($data)], 200);
+            return response()->json(
+                ['message' => $this->robotService->store($data)], 
+                200
+            );
         } catch (Exception $e) {
             return response()->json(
                 [
@@ -200,8 +218,8 @@ class ReservationController extends Controller
             );
         }
     }
+
     /**
-     * Explain:
      * Validate Request data from a form 
      * @param Request $request
      * @return mixed
@@ -246,10 +264,9 @@ class ReservationController extends Controller
             'time_slot_id.array' => 'Los periodos de tiempo deben ser un arreglo.',
         ]);
     }
+
     /**
-     * Endpoint to assign reservations
-     * if fulfill no overlapping with assigned
-     * reservations.
+     * Endpoint to assign reservations if fulfill no overlapping with assigned reservations.
      * @param int $reservationId
      * @return Response
      */
@@ -268,6 +285,7 @@ class ReservationController extends Controller
             ], 500);
         }
     }
+
     /**
      * Endpoint to retrieve if a reservation have conflicts
      * @param int $reservationId
