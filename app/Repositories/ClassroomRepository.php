@@ -5,6 +5,8 @@ use App\Models\Classroom;
 
 use Illuminate\Cache\Repository;
 
+use App\Repositories\ClassroomStatusRepository as ClassroomStatus;
+
 class ClassroomRepository extends Repository
 {
     protected $model;
@@ -15,7 +17,7 @@ class ClassroomRepository extends Repository
 
     /**
      * Function to retrieve a list of all classrooms
-     * @param none
+     * @param int
      * @return array
      */
     function getAllClassrooms(): array
@@ -25,7 +27,10 @@ class ClassroomRepository extends Repository
             'name',
             'capacity',
             'floor'
-        )->get()->map(
+        )
+        ->where('classroom_status_id',ClassroomStatus::available())
+        ->get()
+        ->map(
             function ($classroom) {
                 return $this->formatOutput($classroom);
             }
@@ -40,6 +45,7 @@ class ClassroomRepository extends Repository
     function availableClassroomsByBlock(int $blockId): array
     {
         return $this->model::select('id', 'name', 'capacity', 'floor')
+                ->where('classroom_status_id',ClassroomStatus::available())
                 ->where('block_id', $blockId)
                 ->whereNotIn('id', function ($query) use ($blockId) {
                     $query->select('C.id')
@@ -63,6 +69,7 @@ class ClassroomRepository extends Repository
     function getClassroomsByBlock(int $blockId): array
     {
         return $this->model::select('id', 'name', 'capacity', 'floor')
+            ->where('classroom_status_id',ClassroomStatus::available())
             ->where('block_id', $blockId)
             ->get()
             ->map(function ($classroom){
@@ -83,7 +90,8 @@ class ClassroomRepository extends Repository
         $classroom->capacity = $data['capacity'];
         $classroom->floor = $data['floor_number']; 
         $classroom->block_id = $data['block_id']; 
-        $classroom->classroom_type_id = $data['type_id']; 
+        $classroom->classroom_type_id = $data['type_id'];
+        $classroom->classroom_status_id = 1; 
         $classroom->save();    
         return $classroom;
     }
@@ -93,8 +101,13 @@ class ClassroomRepository extends Repository
      * @param int $classroomId
      * @return Classroom
      */
-    function getClassroomById(int $classroomId): Classroom
+    function getClassroomById(int $classroomId)
     {
+        /* $classroom = $this->model::find($classroomId);
+        if ($classroom && ($classroom->classroom_status_id === ClassroomStatus::available())) {
+            return $classroom;
+        }
+        return null; */
         return $this->model::find($classroomId);
     }
 
