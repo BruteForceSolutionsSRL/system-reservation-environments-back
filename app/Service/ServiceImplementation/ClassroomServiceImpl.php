@@ -7,6 +7,7 @@ use App\Service\ClassroomService;
 
 use App\Models\{
     Classroom,
+    ClassroomLogs,
     Reservation,
     TimeSlot,
     Block,
@@ -17,10 +18,10 @@ use App\Repositories\{
     ReservationRepository,
     ReservationStatusRepository as ReservationStatuses,
     TimeSlotRepository,
-    ClassroomStatusRepository as ClassroomStatus,
+    ClassroomLogsRepository,
 };
-use PhpParser\Node\Stmt\Continue_;
-use SebastianBergmann\Type\NullType;
+
+use DateTime;
 
 class ClassroomServiceImpl implements ClassroomService
 {
@@ -28,16 +29,17 @@ class ClassroomServiceImpl implements ClassroomService
     private $reservationRepository;
     private $timeSlotRepository;
     private $blockRepository; 
-
-    private $timeSlotService; 
+    private $timeSlotService;
+    private $classroomLog;
+    
     public function __construct()
     {
         $this->classroomRepository = new ClassroomRepository(Classroom::class);
         $this->reservationRepository = new ReservationRepository(Reservation::class);
         $this->timeSlotRepository = new TimeSlotRepository(TimeSlot::class);
         $this->blockRepository = new BlockRepository(Block::class);
-
         $this->timeSlotService = new TimeSlotServiceImpl();
+        $this->classroomLog = new ClassroomLogsRepository(ClassroomLogs::class);
     }
     /**
      * Retrieve a list of all classrooms
@@ -248,5 +250,15 @@ class ClassroomServiceImpl implements ClassroomService
         }
 
         return $res;
+    }
+
+    /**
+     * Function to retrieve a classroom not deleted and with a date earlier than the provided date
+     * @param array $data
+     * @return array
+     */
+    public function retriveLastClassroom(array $data): array
+    {
+        return $this->classroomLog->retriveLastClassroom($data);
     }
 }

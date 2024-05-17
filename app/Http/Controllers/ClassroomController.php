@@ -15,8 +15,10 @@ use Illuminate\Http\{
 };
 
 use App\Models\Block;
-
+use App\Models\Classroom;
 use App\Service\ServiceImplementation\ClassroomServiceImpl as ClassroomService;
+use DateTime;
+use PhpParser\Node\Stmt\TryCatch;
 
 class ClassroomController extends Controller
 {
@@ -325,6 +327,62 @@ class ClassroomController extends Controller
             'time_slot_id.*.exists' => 'Uno de los periodos de tiempo seleccionados no es válido.',
             'time_slot_id.required' => 'Se requieren dos periodos de tiempo.',
             'time_slot_id.array' => 'Los periodos de tiempo deben ser un arreglo.',
+        ]);    
+    }
+
+    /**
+     * Function to retrieve a classroom not deleted and with a date earlier than the provided date
+     * @param  Request $request
+     * @return Response
+     */
+    public function retriveLastClassroom(Request $request): Response
+    {
+        try {
+            $validator = $this->validateRetriveLastClassroomData($request);
+            if ($validator->fails()) {
+                $message = ''; 
+                foreach ($validator->errors()->all() as $value) 
+                    $message .= $value;
+                return response()->json(['message' => $message], 400);
+            }
+
+            $data = $validator->validated();
+
+            $classroom = $this->robotService->retriveLastClassroom($data);
+            if(count($classroom) <= 0) {
+                return response()->json(
+                    [
+                        'message' => 'Aula no encontrada'
+                    ], 
+                    404
+                );
+            }
+            return response()->json($classroom, 200);
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'message' => 'error interno del servidor',
+                    'error' => $e->getMessage()
+                ],
+                500
+            );
+        }
+    }
+    /**
+     * Function to validate all input for a retrive a last classroom
+     * @param Request $request
+     * @return mixed
+     */
+    private function validateRetriveLastClassroomData(Request $request) 
+    {
+        return Validator::make($request->all(), [
+            'date' => 'required|date',
+            'classroom_id' => 'required|exists:classroom_logs,classroom_id',
+        ], [
+            'date.required' => 'La fecha es obligatoria. ',
+            'date.date' => 'La fecha debe ser un formato válido. ',
+            'classroom_id.required' => 'El ID del aula es obligatorio. ',
+            'classroom_id.exists' => 'El aula no existe. ',
         ]);    
     }
 
