@@ -2,14 +2,21 @@
 namespace App\Service\ServiceImplementation;
 
 use App\Repositories\ClassroomTypeRepository;
+
 use App\Service\ClassroomTypeService;
+
+use App\Models\{
+    ClassroomType
+};
 
 class ClassroomTypeServiceImpl implements ClassroomTypeService
 {
     private $classroomTypeRepository; 
     public function __construct()
     {
-        $this->classroomTypeRepository = new ClassroomTypeRepository();
+        $this->classroomTypeRepository = new ClassroomTypeRepository(
+            ClassroomType::class
+        );
     }
     
     /**

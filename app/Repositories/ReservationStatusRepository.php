@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 class ReservationStatusRepository extends Repository
 {
      
-    private $model; 
+    protected $model; 
     function __construct(Model $model) 
     {
         $this->model = $model;

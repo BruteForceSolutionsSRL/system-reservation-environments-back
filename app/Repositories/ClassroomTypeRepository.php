@@ -6,6 +6,11 @@ use App\Models\{
 }; 
 class ClassroomTypeRepository 
 {
+    protected $model; 
+    public function __construct($model)
+    {
+        $this->model = $model;
+    }
     /**
      * Retrieve a list of all classroom types
      * @param none
@@ -13,7 +18,7 @@ class ClassroomTypeRepository
      */
     public function getAllClassroomTypes(): array
     {
-        return ClassroomType::all()->map(
+        return $this->model::all()->map(
             function ($classroomType) 
             {
                 return $this->formatOutput($classroomType);

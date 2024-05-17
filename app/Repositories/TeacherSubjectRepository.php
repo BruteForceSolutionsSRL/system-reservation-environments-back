@@ -8,9 +8,11 @@ use App\Models\{
 
 class TeacherSubjectRepository
 {
+    protected $model;
     private $personRepository; 
-    public function __construct()
+    public function __construct($model)
     {
+        $this->model = $model; 
         $this->personRepository = new PersonRepository(Person::class);
     }
 
@@ -21,7 +23,7 @@ class TeacherSubjectRepository
      */
     public function getSubjectsByTeacherID(int $teacherID): array 
     {
-        return TeacherSubject::with('universitySubject:id,name')
+        return $this->model::with('universitySubject:id,name')
                     ->select('university_subject_id')
                     ->where('person_id', $teacherID)
                     ->groupBy('university_subject_id')
@@ -40,7 +42,7 @@ class TeacherSubjectRepository
      */
     public function getTeachersBySubject(int $universitySubjectID): array
     {
-        return TeacherSubject::with('person')
+        return $this->model::with('person')
             ->where('university_subject_id', $universitySubjectID)
             ->select('id','person_id', 'group_number')
             ->get()->map(

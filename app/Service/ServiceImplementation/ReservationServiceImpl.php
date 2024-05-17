@@ -381,6 +381,22 @@ class ReservationServiceImpl implements ReservationService
         }
         return false;
     }
+
+    /**
+     * Retrieve a list of accepted/pending reservations 
+     * @param int $classroomId
+     * @return array
+     */
+    public function getActiveReservationsByClassroom(int $classroomId): array 
+    {
+        return $this->reservationRepository->getReservationsByClassroomAndStatuses(
+            $classroomId, 
+            [
+                ReservationStatuses::accepted(), 
+                ReservationStatuses::pending()
+            ]
+        );
+    }
     
     /**
      * Retrieve a number of floors used in a set of classrooms

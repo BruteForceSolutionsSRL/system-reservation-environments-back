@@ -123,7 +123,7 @@ class ReservationController extends Controller
      * @param int $reservationId
      * @return Response
      */
-    public function show(int $reservationId): \Response
+    public function show(int $reservationId): Response
     {
         try {
             $reservation = $this->robotService->getReservation($reservationId); 

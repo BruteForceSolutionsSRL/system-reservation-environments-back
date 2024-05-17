@@ -43,6 +43,7 @@ class BlockRepository
      */
     private function formatOutput(Block $block): array 
     {
+        if ($block == null) return [];
         return [
             'block_id' => $block->id, 
             'block_name' => $block->name, 
