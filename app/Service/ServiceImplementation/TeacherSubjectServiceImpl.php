@@ -3,6 +3,10 @@ namespace App\Service\ServiceImplementation;
 
 use App\Service\TeacherSubjectService;
 
+use App\Models\{
+    TeacherSubject
+};
+
 use App\Repositories\TeacherSubjectRepository; 
 
 class TeacherSubjectServiceImpl implements TeacherSubjectService
@@ -10,7 +14,9 @@ class TeacherSubjectServiceImpl implements TeacherSubjectService
     private $teacherSubjectRepository; 
     public function __construct()
     {
-        $this->teacherSubjectRepository = new TeacherSubjectRepository();
+        $this->teacherSubjectRepository = new TeacherSubjectRepository(
+            TeacherSubject::class
+        );
     }
 
     /**

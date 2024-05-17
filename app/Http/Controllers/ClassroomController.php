@@ -14,29 +14,28 @@ use Illuminate\Http\{
     Request,
 };
 
-use App\Models\Block;
-
-use App\Service\ServiceImplementation\ClassroomServiceImpl as ClassroomService;
+use App\Service\ServiceImplementation\{
+    ClassroomServiceImpl as ClassroomService,
+    BlockServiceImpl
+};
 
 class ClassroomController extends Controller
 {
-    private $robotService;
+    private $classroomService;
+    private $blockService; 
     function __construct()
     {
-        $this->robotService = new ClassroomService();
+        $this->classroomService = new ClassroomService();
+        $this->blockService = new BlockServiceImpl(); 
     }
     
-    /**
-     * Explain:
-     * list function retrieves all classrooms.
-     * @param none
-     * @return Response
-     */
-    public function list(): Response
+    public function test(): Response
     {
         try {
-            return response()->json($this->robotService->getAllClassrooms(), 
-                200);
+            return response()->json(
+                $this->classroomService->getAllAvailableClassrooms(), 
+                200
+            );
         } catch (Exception $e) {
             return response()->json(
                 [
@@ -50,6 +49,97 @@ class ClassroomController extends Controller
 
     /**
      * Explain:
+     * list function retrieves all classrooms.
+     * @param none
+     * @return Response
+     */
+    public function list(): Response
+    {
+        try {
+            return response()->json(
+                $this->classroomService->getAllClassrooms(), 
+                200
+            );
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'message' => 'Hubo un error en el servidor',
+                    'error' => $e->getMessage()
+                ],
+                500
+            );
+        }
+    }
+
+    /**
+     * Retrieve a single classroom 
+     * @param int $classroomId
+     * @return Response
+     */
+    public function show(int $classroomId): Response
+    {
+        try {
+            return response()->json(
+                $this->classroomService->getClassroomByID($classroomId), 
+                200
+            );
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'message'=>'Hubo un error en el servidor', 
+                    'error' => $e->getMessage()
+                ], 
+                500
+            );  
+        }
+    }
+
+    /**
+     * Update the data in a for specified classroom
+     * @param int $classroomId
+     * @param Request $request
+     * @return Response
+     */
+    public function update(int $classroomId, Request $request): Response
+    {
+        try {
+            $validator = $this->validateClassroomDataUpdate($request); 
+            if ($validator->fails()) {
+                $message = ''; 
+                foreach ($validator->errors()->all() as $value) 
+                    $message = $message . $value . '\n';
+                return response()->json(
+                    ['message' => $message], 
+                    400
+                );
+            }
+            $data = $validator->validated();
+
+            $block = $this->blockService->getBlock($data['block_id']); 
+            if ($block['block_maxfloor'] < $data['floor_number']) {
+                return response()->json(
+                    ['messagge' => 
+                       'El numero de piso es mayor a la maximo piso del bloque seleccionado'], 
+                    400
+                );
+            }
+
+            return response()->json(
+                ['message' => $this->classroomService->update($data)],
+                200 
+            );
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'message'=>'Hubo un error en el servidor', 
+                    'error' => $e->getMessage()
+                ], 
+                500
+            );  
+        }
+    }
+
+    /**
      * To retrieve data available classrooms within block
      * @param int $blockId
      * @return Response
@@ -57,8 +147,14 @@ class ClassroomController extends Controller
     public function availableClassroomsByBlock(int $blockId): Response
     {
         try {
-            Block::findOrFail($blockId);
-            return response()->Json($this->robotService->getDisponibleClassroomsByBlock($blockId));
+            $block = $this->blockService->getBlock($blockId); 
+            if ($block == []) {
+                return response()->json(
+                    ['message' => 'El ID del bloque debe ser valido'], 
+                    400
+                );
+            }
+            return response()->Json($this->classroomService->getDisponibleClassroomsByBlock($blockId));
         } catch (ModelNotFoundException $e) {
             return response()->json(
                 [
@@ -79,17 +175,26 @@ class ClassroomController extends Controller
     }
 
     /**
-     * Explain:
      * Return all classrooms in a block
      * @param int $blockId
      * @return Response
      */ 
     public function classroomsByBlock(int $blockId): Response
-    {
-        
+    {        
         try {
-            Block::findOrFail($blockId);
-            return response()->json($this->robotService->getClassroomsByBlock($blockId));
+            $block = $this->blockService->getBlock($blockId); 
+            
+            if ($block == []) {
+                return response()->json(
+                    ['message'=>'El ID del bloque debe ser valido'], 
+                    400
+                );
+            }
+            
+            return response()->json(
+                $this->classroomService->getClassroomsByBlock($blockId), 
+                200
+            );
         } catch (ModelNotFoundException $e) {
             return response()->json(
                 [
@@ -110,7 +215,6 @@ class ClassroomController extends Controller
     }
 
     /**
-     * Explain:
      * Store a new classroom with the info below
      * @param Request $request
      * @return Response
@@ -132,8 +236,8 @@ class ClassroomController extends Controller
 
             $data = $validator->validated();
 
-            $block = Block::findOrFail($data['block_id']); 
-            if ($block->max_floor < $data['floor_number']) {
+            $block = $this->blockService->getBlock($data['block_id']); 
+            if ($block['block_maxfloor'] < $data['floor_number']) {
                 return response()->json(
                     ['messagge' => 
                        'El numero de piso es mayor a la maximo piso del bloque seleccionado'], 
@@ -141,7 +245,7 @@ class ClassroomController extends Controller
                 );
             }
         
-            return response()->json(['message'=> $this->robotService->store($data)],200);
+            return response()->json(['message'=> $this->classroomService->store($data)],200);
         } catch (Exception $e) {
             return response()->json(
                 [
@@ -154,7 +258,6 @@ class ClassroomController extends Controller
     }
 
     /**
-     * Explain:
      * Validate all atributes whithin Classroom register
      * @param Request $request
      * @return mixed
@@ -183,6 +286,38 @@ class ClassroomController extends Controller
             'floor_number.min' => 'El \'piso\' debe ser un numero positivo menor a la cantidad de pisos del bloque'
         ]);
     }
+
+    /**
+     * Validate all atributes whithin Classroom update
+     * @param Request $request
+     * @return mixed
+     */
+    private function validateClassroomDataUpdate(Request $request) 
+    {
+        return Validator::make($request->all(), [
+            'classroom_id' => 'required|int|exists:classrooms,id',
+            'capacity' => 'required|integer|min:25|max:500', 
+            'type_id' => 'required|integer|exists:classroom_types,id', 
+            'block_id' => 'required|integer|exists:blocks,id', 
+            'floor_number' => 'required|integer|min:0',
+            'status_id' => 'required|integer|exists:classroom_statuses,id'
+        ], [
+            'classroom_id' => 'El ambiente no existe',
+            'type_id.required' => 'El atributo \'tipo de ambiente\' no debe ser nulo o vacio', 
+            'block_id.required' => 'El atributo \'bloque\' no debe ser nulo o vacio', 
+            'capacity.required' => 'El atributo \'capacidad\' no debe ser nulo o vacio', 
+            'floor_number.required' => 'El atributo \'piso\' no debe ser nulo o vacio', 
+            'unique' => 'El nombre ya existe, intente con otro', 
+            'capacity.min' => 'Debe seleccionar una capacidad mayor o igual a 25',
+            'capacity.max' => 'Debe seleccionar una capacidad menor o igual a 500',
+            'type_id.exists' => 'El \'tipo de ambiente\' debe ser una seleccion valida', 
+            'block_id.exists' => 'El \'bloque\' debe ser una seleccion valida', 
+            'floor_number.min' => 'El \'piso\' debe ser un numero positivo menor a la cantidad de pisos del bloque',
+            'status_id.required' => 'El \'estado\' debe ser una opcion valida',
+            'status_id.exists' => 'La opcion de \'estado\' seleccionada no existe',
+        ]);
+    }
+
  
     /**
      * Function to retrieve disponibility status for all selected classrooms
@@ -202,7 +337,7 @@ class ClassroomController extends Controller
             }
             $data = $validator->validated();
             return response()->json(
-                $this->robotService->getClassroomByDisponibility($data), 
+                $this->classroomService->getClassroomByDisponibility($data), 
                 200
             );
         } catch (Exception $e) {
@@ -278,7 +413,7 @@ class ClassroomController extends Controller
 
             $data = $validator->validated(); 
 
-            return response()->json($this->robotService->suggestClassrooms($data),200);
+            return response()->json($this->classroomService->suggestClassrooms($data),200);
 
         } catch (Exception $e) {
             return response()->json(
@@ -326,14 +461,6 @@ class ClassroomController extends Controller
             'time_slot_id.required' => 'Se requieren dos periodos de tiempo.',
             'time_slot_id.array' => 'Los periodos de tiempo deben ser un arreglo.',
         ]);    
-    }
-
-    /**
-     * @covers
-     * To cancel assigned types.
-     */
-    public function update(Request $request, $id)
-    {
     }
 
     /**

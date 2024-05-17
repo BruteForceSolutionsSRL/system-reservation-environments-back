@@ -1,10 +1,14 @@
 <?php
 namespace App\Repositories; 
 
-use App\Models\Reservation;
+use App\Models\{
+    Reservation, 
+    TimeSlot
+};
 
 use App\Repositories\ReservationStatusRepository as ReservationStatuses; 
 
+use App\Service\ServiceImplementation\TimeSlotServiceImpl;
 use Carbon\Carbon;
 use DateTime; 
 
@@ -12,10 +16,11 @@ use Illuminate\Cache\Repository;
 class ReservationRepository extends Repository 
 {
     protected $model; 
-
+    private $timeSlotService; 
     function __construct($model) 
     {
         $this->model = $model; 
+        $this->timeSlotService = new TimeSlotServiceImpl(); 
     }
 
     /**
@@ -25,7 +30,7 @@ class ReservationRepository extends Repository
      */
     public function getReservation(int $id): array 
     {
-        return $this->formatOutput(Reservation::with([
+        return $this->formatOutput($this->model::with([
             'reservationStatus:id,status',
             'reservationReason:id,reason',
             'timeSlots:id,time',
@@ -70,7 +75,7 @@ class ReservationRepository extends Repository
      */
     public function getPendingRequest(): array
     {
-        return Reservation::with([
+        return $this->model::with([
             'reservationStatus:id,status',
             'reservationReason:id,reason',
             'timeSlots:id,time',
@@ -97,7 +102,7 @@ class ReservationRepository extends Repository
      */
     public function getRequestByTeacher(int $teacherId): array 
     {
-        return Reservation::with([
+        return $this->model::with([
             'reservationStatus:id,status',
             'reservationReason:id,reason',
             'timeSlots:id,time',
@@ -131,7 +136,7 @@ class ReservationRepository extends Repository
      */
     public function getAllRequestByTeacher(int $teacherId): array 
     {
-        return Reservation::with([
+        return $this->model::with([
             'reservationStatus:id,status',
             'reservationReason:id,reason',
             'timeSlots:id,time',
@@ -212,7 +217,7 @@ class ReservationRepository extends Repository
         int $classroomId
     ): array
     {
-        $reservationSet = Reservation::whereHas(
+        $reservationSet = $this->model::whereHas(
                 'classrooms',
                 function ($query) use ($classroomId)
                 {
@@ -269,7 +274,7 @@ class ReservationRepository extends Repository
         );
         $refinedReservationSet = [];
         foreach ($reservations as $reservation) {
-            $time = $this->getTimeSlotsSorted($reservation->timeSlots);
+            $time = $this->timeSlotService->getTimeSlotsSorted($reservation->timeSlots);
             if (!($time[1] <= $times[0] || $time[0] >= $times[1])) {
                 array_push($refinedReservationSet, $reservation);
             }
@@ -298,18 +303,36 @@ class ReservationRepository extends Repository
         
         return $reservation; 
     }
-    
+
     /**
-     * Retrieve a list of timeslots ids by a Collection
-     * @param array $timeSlots
+     * Retrieve a list of reservations with a specified classroom with status 
+     * @param int $classroomId
+     * @param array $statuses
      * @return array
      */
-    private function getTimeSlotsSorted(array $timeSlots): array
+    public function getReservationsByClassroomAndStatuses(
+        int $classroomId, 
+        array $statuses
+    ): array
     {
-        $array = array(); 
-        foreach ($timeSlots as $timeSlot) 
-            array_push($array, $timeSlot->id);
-        sort($array); 
-        return $array;
+        return $this->model::whereHas(
+            'classrooms',
+            function ($query) use ($classroomId)
+            {
+                $query -> where ('classroom_id', $classroomId);
+            }
+        )->where(
+            function ($query) use ($statuses)
+            {
+                foreach ($statuses as $status)
+                    $query->orWhere('reservation_status_id', $status);
+            }
+        )->get()
+        ->map(
+            function ($reservation) 
+            {
+                return $this->formatOutput($reservation); 
+            }
+        )->toArray();
     }
 }

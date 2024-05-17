@@ -3,14 +3,17 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-use App\Http\Controllers\TeacherSubjectController;
-use App\Http\Controllers\TimeSlotController;
-use App\Http\Controllers\BlockController;
-use App\Http\Controllers\ClassroomController;
-use App\Http\Controllers\ClassroomTypeController;
-use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\ReservationController;
-use App\Http\Controllers\ReservationReasonController;
+use App\Http\Controllers\{
+    TeacherSubjectController,
+    TimeSlotController,
+    BlockController,
+    ClassroomController,
+    ClassroomTypeController,
+    NotificationController,
+    ReservationController,
+    ReservationReasonController,
+    ClassroomStatusController
+};
 
 /*
 |--------------------------------------------------------------------------
@@ -47,11 +50,16 @@ Route::controller(ClassroomController::class)->group(function() {
     Route::get('/classrooms', 'list');
     Route::post('/classroom/disponibility', 'getClassroomByDisponibility');
     Route::post('/reservation/suggest', 'suggestClassrooms');
+    Route::put('/classroom/{classroomId}', 'update');
 });
 
 Route::controller(TeacherSubjectController::class)->group(function() {
     Route::get('/subjects/teacher/{teacherId}', 'subjectsByTeacher');
     Route::get('/teachers/subject/{universitySubjectID}', 'teachersBySubject');
+});
+
+Route::controller(ClassroomStatusController::class)->group(function() {
+    Route::get('/classroom-statuses', 'list');
 });
 
 Route::get('/classroomtypes', [ClassroomTypeController::class, 'list']);

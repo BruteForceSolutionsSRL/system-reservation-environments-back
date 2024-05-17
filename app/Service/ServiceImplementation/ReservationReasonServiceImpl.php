@@ -5,6 +5,10 @@ use App\Service\{
     ReservationReasonService
 };
 
+use App\Models\{
+    ReservationReason
+};
+
 use App\Repositories\{
     ReservationReasonRepository
 }; 
@@ -14,7 +18,9 @@ class ReservationReasonServiceImpl implements ReservationReasonService
     private $reservationReasonRepository; 
     public function __construct()
     {
-        $this->reservationReasonRepository = new ReservationReasonRepository();
+        $this->reservationReasonRepository = new ReservationReasonRepository(
+            ReservationReason::class
+        );
     }
     
     /**

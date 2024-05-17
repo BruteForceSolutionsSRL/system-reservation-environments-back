@@ -9,5 +9,6 @@ interface ClassroomService
     function getClassroomByDisponibility(array $data): array;
     function suggestClassrooms(array $data): array;
     function store(array $data): string;
+    function update(array $data): string; 
 }
 

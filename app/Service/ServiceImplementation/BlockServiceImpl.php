@@ -5,6 +5,10 @@ use App\Repositories\{
     BlockRepository
 };
 
+use App\Models\{
+    Block
+};
+
 use App\Service\{
     BlockService
 };
@@ -14,7 +18,7 @@ class BlockServiceImpl implements BlockService
     private $blockRepository; 
     public function __construct()
     {
-        $this->blockRepository = new BlockRepository();
+        $this->blockRepository = new BlockRepository(Block::class);
     }
 
     /**
