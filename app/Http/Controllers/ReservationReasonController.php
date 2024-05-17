@@ -2,21 +2,40 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ReservationReason;
-use Illuminate\Http\Request;
+use App\Service\ServiceImplementation\ReservationReasonServiceImpl;
+
+use Exception;
+use Illuminate\Http\JsonResponse as Response; 
 
 class ReservationReasonController extends Controller
 {
-    public function index()
+    private $reservationReasonService;
+    public function __construct()
     {
-        $reservationResons = ReservationReason::all()
-            ->map(function ($reservationReason) {
-                return [
-                    'reason_id' => $reservationReason->id,
-                    'reason_name' => $reservationReason->reason
-                ];
-            });
+        $this->reservationReasonService = new ReservationReasonServiceImpl();
+    }
 
-        return response()->json($reservationResons, 200);
+    /**
+     * Retrieve a JSON of all reservation reasons
+     * @param none
+     * @return Response
+     */
+    public function index(): Response
+    {
+        try {
+            return response()->json(
+                $this->reservationReasonService->getAllReservationReasons(), 
+                200
+            );
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'message' => 'Hubo un error en el servidor', 
+                    'error' => $e->getMessage()
+                ], 
+                500
+            );
+
+        }
     }
 }

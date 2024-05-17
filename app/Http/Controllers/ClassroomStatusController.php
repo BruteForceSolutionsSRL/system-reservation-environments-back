@@ -1,29 +1,25 @@
 <?php
+
 namespace App\Http\Controllers;
 
+use App\Service\ServiceImplementation\ClassroomServiceImpl;
+
+use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse as Response;
-use Exception;
+use Exception; 
 
-use App\Service\ServiceImplementation\BlockServiceImpl; 
-
-class BlockController extends Controller
+class ClassroomStatusController extends Controller
 {
-    private $blockService; 
+    private $classroomService; 
     public function __construct()
     {
-        $this->blockService = new BlockServiceImpl();
+        $this->classroomService = new ClassroomServiceImpl(); 
     }
-
-    /**
-     * Retrieve a list of all blocks registered
-     * @param none
-     * @return Response
-     */
     public function list(): Response
     {
         try {
             return response()->json(
-                $this->blockService->getAllBlocks(), 
+                $this->classroomService->getClassroomStatuses(), 
                 200
             );
         } catch (Exception $e) {
@@ -36,4 +32,5 @@ class BlockController extends Controller
             );
         }
     }
+
 }

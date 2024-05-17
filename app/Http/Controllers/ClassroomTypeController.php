@@ -3,27 +3,32 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse as Response; 
 
-use App\Models\ClassroomType;
+use App\Service\ServiceImplementation\ClassroomTypeServiceImpl; 
+
+use Exception;
 
 class ClassroomTypeController extends Controller
 {
-    // Retrieves all classroom types 
-    public function list() 
+    private $classroomTypeService; 
+    public function __construct()
+    {
+        $this->classroomTypeService = new ClassroomTypeServiceImpl();
+    }
+    
+    /**
+     * Explain: Retrieve all classroom types 
+     * @return \Response
+     */
+    public function list(): Response
     {
         try {
-            $classroomTypes = ClassroomType::all()
-            ->map(
-                function ($classroomType) 
-                {
-                    return [
-                        'type_id' => $classroomType->id, 
-                        'type_name' => $classroomType->description
-                    ];
-                }
+            return response()->json(
+                $this->classroomTypeService->getAllClassroomType(), 
+                200
             );
-            return response()->json($classroomTypes, 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json(
                 [
                     'message' => 'Hubo un error en el servidor', 
