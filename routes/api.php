@@ -32,9 +32,11 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 Route::controller(ReservationController::class)->group(function() {
     Route::get('/reservations', 'index');
+    Route::get('/reservations-history', 'getAllRequestsExceptPending');
     Route::get('/pending-requests', 'getPendingRequests');
     Route::get('/reservations/{teacherId}', 'listRequestsByTeacher');
-    Route::get('/all-reservations/{teacherId}', 'listAllRequestsByTeacher'); 
+    Route::get('/all-reservations/{teacherId}', 'listAllRequestsByTeacher');
+    Route::get('/reservations-history/teacher/{teacherId}', 'getAllRequestsExceptPendingByTeacher');
     Route::get('/reservation/{reservationId}', 'show');
     Route::middleware('sanitize:api')->patch('/reservation/reject/{reservationId}', 'rejectReservation');
     Route::middleware('sanitize:api')->patch('/reservation/assign/{reservationId}', 'assign');
