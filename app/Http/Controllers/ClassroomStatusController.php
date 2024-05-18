@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Service\ServiceImplementation\ClassroomServiceImpl;
 
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse as Response;
 use Exception; 
 
