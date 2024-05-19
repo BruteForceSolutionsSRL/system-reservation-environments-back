@@ -1,5 +1,5 @@
 <?php
-namespace App\Repositories; 
+namespace App\Repositories;
 
 use App\Models\{
     Reservation
@@ -13,10 +13,10 @@ use App\Repositories\{
 
 use App\Service\ServiceImplementation\TimeSlotServiceImpl;
 use Carbon\Carbon;
-use DateTime; 
+use DateTime;
 
 use Illuminate\Cache\Repository;
-class ReservationRepository extends Repository 
+class ReservationRepository extends Repository
 {
     protected $model; 
     private $timeSlotService;
@@ -33,7 +33,7 @@ class ReservationRepository extends Repository
      * @param int $id
      * @return array
      */
-    public function getReservation(int $id): array 
+    public function getReservation(int $id): array
     {
         return $this->formatOutput($this->model::with([
             'reservationStatus:id,status',
@@ -53,7 +53,7 @@ class ReservationRepository extends Repository
      * @param none
      * @return array
      */
-    public function getAllReservations(): array 
+    public function getAllReservations(): array
     {
         return $this->model::with([
             'reservationStatus:id,status',
@@ -66,7 +66,7 @@ class ReservationRepository extends Repository
             'classrooms.block:id,name',
             'classrooms.classroomType:id,description'
         ])->orderBy('date')->get()->map(
-            function ($reservation) 
+            function ($reservation)
             {
                 return $this->formatOutput($reservation);
             }
@@ -74,7 +74,34 @@ class ReservationRepository extends Repository
     }
 
     /**
-     * Retrieve a list of pending request 
+     * Retrieve a list of reservations except pending request
+     * @param none
+     * @return array
+     */
+    public function getReservationsWithoutPendingRequest(): array
+    {
+        return $this->model::with([
+            'reservationStatus:id,status',
+            'reservationReason:id,reason',
+            'timeSlots:id,time',
+            'teacherSubjects:id,group_number,person_id,university_subject_id',
+            'teacherSubjects.person:id,name,last_name',
+            'teacherSubjects.universitySubject:id,name',
+            'classrooms:id,name,capacity,block_id',
+            'classrooms.block:id,name',
+            'classrooms.classroomType:id,description'
+        ])->where('reservation_status_id', '!=', ReservationStatuses::pending())
+            ->orderBy('date')
+            ->get()->map(
+                function ($reservation)
+                {
+                    return $this->formatOutput($reservation);
+                }
+            )->toArray();
+    }
+
+    /**
+     * Retrieve a list of pending request
      * @param none
      * @return array
      */
@@ -93,7 +120,7 @@ class ReservationRepository extends Repository
         ])->where('date', '>=', Carbon::now()->format('Y-m-d'))
             ->where('reservation_status_id', ReservationStatuses::pending())
             ->orderBy('date')->get()->map(
-                function ($reservation) 
+                function ($reservation)
                 {
                     return $this->formatOutput($reservation);
                 }
@@ -105,7 +132,7 @@ class ReservationRepository extends Repository
      * @param int $teacherId
      * @return array
      */
-    public function getRequestByTeacher(int $teacherId): array 
+    public function getRequestByTeacher(int $teacherId): array
     {
         return $this->model::with([
             'reservationStatus:id,status',
@@ -119,15 +146,15 @@ class ReservationRepository extends Repository
             'classrooms.classroomType:id,description'
         ])->where('date', '>=', Carbon::now()->format('Y-m-d'))
             ->whereIn('reservation_status_id', [
-                ReservationStatuses::accepted(), 
+                ReservationStatuses::accepted(),
                 ReservationStatuses::pending()]
-            )->whereHas('teacherSubjects', 
-                function ($query) use ($teacherId) 
+            )->whereHas('teacherSubjects',
+                function ($query) use ($teacherId)
                 {
                     $query->where('person_id', $teacherId);
                 }
             )->orderBy('date')->get()->map(
-                function ($reservation) 
+                function ($reservation)
                 {
                     return $this->formatOutput($reservation);
                 }
@@ -139,7 +166,7 @@ class ReservationRepository extends Repository
      * @param int $teacherId
      * @return array
      */
-    public function getAllRequestByTeacher(int $teacherId): array 
+    public function getAllRequestByTeacher(int $teacherId): array
     {
         return $this->model::with([
             'reservationStatus:id,status',
@@ -154,7 +181,7 @@ class ReservationRepository extends Repository
         ])->whereHas('teacherSubjects', function ($query) use ($teacherId) {
                 $query->where('person_id', $teacherId);
             })->orderBy('date')->get()->map(
-                function ($reservation) 
+                function ($reservation)
                 {
                     return $this->formatOutput($reservation);
                 }
@@ -162,13 +189,42 @@ class ReservationRepository extends Repository
     }
 
     /**
-     * Function to format from Reservation class to array 
+     * Retrieve a list of all request by teacher ID
+     * @param int $teacherId
+     * @return array
+     */
+    public function getReservationsWithoutPendingRequestByTeacher(int $teacherId): array
+    {
+        return $this->model::with([
+            'reservationStatus:id,status',
+            'reservationReason:id,reason',
+            'timeSlots:id,time',
+            'teacherSubjects:id,group_number,person_id,university_subject_id',
+            'teacherSubjects.person:id,name,last_name',
+            'teacherSubjects.universitySubject:id,name',
+            'classrooms:id,name,capacity,block_id',
+            'classrooms.block:id,name',
+            'classrooms.classroomType:id,description'
+        ])->where('reservation_status_id', '!=', ReservationStatuses::pending())
+            ->whereHas('teacherSubjects', function ($query) use ($teacherId) {
+                $query->where('person_id', $teacherId);
+            })->orderBy('date')->get()->map(
+                function ($reservation)
+                {
+                    return $this->formatOutput($reservation);
+                }
+            )->toArray();
+    }
+
+
+    /**
+     * Function to format from Reservation class to array
      * @param Reservation $reservation
      * @return array
      */
     private function formatOutput(Reservation $reservation): array
     {
-        if ($reservation == null) return []; 
+        if ($reservation == null) return [];
         $reservationReason = $reservation->reservationReason;
         $reservationStatus = $reservation->reservationStatus;
         $classrooms = $reservation->classrooms;
@@ -250,7 +306,7 @@ class ReservationRepository extends Repository
                     $query->orWhere('repeat', '>', 0);
                 }
             )->get();
-        $result = []; 
+        $result = [];
         foreach ($reservationSet as $reservation) {
             $initialDate = new DateTime($date);
             if ($reservation->repeat > 0) {
@@ -270,7 +326,7 @@ class ReservationRepository extends Repository
      * @param array $statuses
      * @param string $date format must be: 'Y-m-d'
      * @param int $classroomId
-     * @param array $times 
+     * @param array $times
      * @return array
      */
     public function getActiveReservationsWithDateStatusClassroomTimes(
@@ -281,8 +337,8 @@ class ReservationRepository extends Repository
     ): array
     {
         $reservations = $this->getActiveReservationsWithDateStatusAndClassroom(
-            $statuses, 
-            $date, 
+            $statuses,
+            $date,
             $classroomId
         );
         $refinedReservationSet = [];
@@ -300,7 +356,7 @@ class ReservationRepository extends Repository
      * @param array $data
      * @return Reservation
      */
-    public function save(array $data): Reservation 
+    public function save(array $data): Reservation
     {
         $reservation = new Reservation();
         $reservation->number_of_students = $data['quantity'];
@@ -313,18 +369,18 @@ class ReservationRepository extends Repository
         $reservation->teacherSubjects()->attach($data['group_id']);
         $reservation->classrooms()->attach($data['classroom_id']);
         $reservation->timeSlots()->attach($data['time_slot_id']);
-        
-        return $reservation; 
+
+        return $reservation;
     }
 
     /**
-     * Retrieve a list of reservations with a specified classroom with status 
+     * Retrieve a list of reservations with a specified classroom with status
      * @param int $classroomId
      * @param array $statuses
      * @return array
      */
     public function getReservationsByClassroomAndStatuses(
-        int $classroomId, 
+        int $classroomId,
         array $statuses
     ): array
     {
@@ -342,9 +398,9 @@ class ReservationRepository extends Repository
             }
         )->get()
         ->map(
-            function ($reservation) 
+            function ($reservation)
             {
-                return $this->formatOutput($reservation); 
+                return $this->formatOutput($reservation);
             }
         )->toArray();
     }

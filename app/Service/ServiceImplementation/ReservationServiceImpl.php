@@ -1,4 +1,4 @@
-<?php 
+<?php
 namespace App\Service\ServiceImplementation;
 
 use App\Service\ReservationService;
@@ -6,26 +6,26 @@ use App\Service\ReservationService;
 use Illuminate\Database\Eloquent\Collection;
 
 use App\Models\{
-    Reservation, 
+    Reservation,
     Person,
     Classroom
 };
 use App\Repositories\{
-    PersonRepository, 
+    PersonRepository,
     ReservationStatusRepository as ReservationStatuses,
     ReservationRepository
 };
 
-class ReservationServiceImpl implements ReservationService 
+class ReservationServiceImpl implements ReservationService
 {
     private $personRepository;
     private $reservationRepository;
-    
-    private $timeSlotService; 
+
+    private $timeSlotService;
     function __construct()
     {
         $this->personRepository = new PersonRepository(Person::class);
-        $this->reservationRepository = new ReservationRepository(Reservation::class);     
+        $this->reservationRepository = new ReservationRepository(Reservation::class);
         $this->timeSlotService = new TimeSlotServiceImpl();
     }
     /**
@@ -35,7 +35,16 @@ class ReservationServiceImpl implements ReservationService
      */
     public function getAllReservations(): array
     {
-        return $this->reservationRepository->getAllReservations(); 
+        return $this->reservationRepository->getAllReservations();
+    }
+
+    /**
+     * Retrieve a list of all reservations except pending requests
+     * @return array
+     */
+    public function getAllReservationsExceptPending(): array
+    {
+        return $this->reservationRepository->getReservationsWithoutPendingRequest();
     }
 
     /**
@@ -46,10 +55,10 @@ class ReservationServiceImpl implements ReservationService
     public function getReservation(int $reservationId): array
     {
         return $this->reservationRepository->getReservation($reservationId);
-    } 
+    }
 
     /**
-     * Retrieve a list of all pending request 
+     * Retrieve a list of all pending request
      * @param none
      * @return array
      */
@@ -63,11 +72,11 @@ class ReservationServiceImpl implements ReservationService
      * @param int $teacherId
      * @return array
      */
-    public function listRequestsByTeacher(int $teacherId): array 
+    public function listRequestsByTeacher(int $teacherId): array
     {
-        $teacher = $this->personRepository->getPerson($teacherId); 
+        $teacher = $this->personRepository->getPerson($teacherId);
         if ($teacher == null) {
-            return ['message' => 'No existe el docente']; 
+            return ['message' => 'No existe el docente'];
         }
         return $this->reservationRepository->getRequestByTeacher($teacherId);
     }
@@ -77,13 +86,25 @@ class ReservationServiceImpl implements ReservationService
      * @param int $teacherId
      * @return array
      */
-    public function listAllRequestsByTeacher(int $teacherId): array 
+    public function listAllRequestsByTeacher(int $teacherId): array
     {
-        $teacher = $this->personRepository->getPerson($teacherId); 
+        $teacher = $this->personRepository->getPerson($teacherId);
         if ($teacher == null) {
-            return ['message' => 'No existe el docente']; 
+            return ['message' => 'No existe el docente'];
         }
         return $this->reservationRepository->getAllRequestByTeacher($teacherId);
+    }
+
+    /**
+     * Retrieve a list of all reservations except pending requests
+     * by teacherId
+     * @param int $teacherId
+     * @return array
+     */
+    public function getAllReservationsExceptPendingByTeacher(int $teacherId): array
+    {
+        return $this->reservationRepository
+                ->getReservationsWithoutPendingRequestByTeacher($teacherId);
     }
 
     /**
@@ -91,7 +112,7 @@ class ReservationServiceImpl implements ReservationService
      * @param int $reservationId
      * @return string
      */
-    public function reject(int $reservationId): string 
+    public function reject(int $reservationId): string
     {
         $reservation = Reservation::find($reservationId);
 
@@ -99,7 +120,7 @@ class ReservationServiceImpl implements ReservationService
             return 'No existe una solicitud con este ID';
         }
 
-        $reservationStatusId = $reservation->reservation_status_id; 
+        $reservationStatusId = $reservation->reservation_status_id;
         if ($reservationStatusId == ReservationStatuses::rejected()) {
             return 'Esta solicitud ya fue rechazada';
         }
@@ -119,7 +140,7 @@ class ReservationServiceImpl implements ReservationService
      * @param int $reservationId
      * @return string
      */
-    public function cancel(int $reservationId): string 
+    public function cancel(int $reservationId): string
     {
         $reservation = Reservation::find($reservationId);
 
@@ -127,7 +148,7 @@ class ReservationServiceImpl implements ReservationService
             return 'No existe una solicitud con este ID';
         }
 
-        $reservationStatusId = $reservation->reservation_status_id;  
+        $reservationStatusId = $reservation->reservation_status_id;
         if ($reservationStatusId == ReservationStatuses::cancelled()) {
             return 'Esta solicitud ya fue cancelada';
         }
@@ -147,7 +168,7 @@ class ReservationServiceImpl implements ReservationService
      * @param int $reservationId
      * @return string
      */
-    public function accept(int $reservationId): string 
+    public function accept(int $reservationId): string
     {
         $reservation = Reservation::find($reservationId);
         if ($reservation==null) {
@@ -162,11 +183,11 @@ class ReservationServiceImpl implements ReservationService
             $this->reject($reservation->id);
             return  'La solicitud no puede aceptarse, existen ambientes ocupados';
         }
-        
+
         $reservation->reservation_status_id = ReservationStatuses::accepted();
         $reservation->save();
-        
-        $message = ''; 
+
+        $message = '';
 
         $times = $this->timeSlotService->getTimeSlotsSorted($reservation->timeSlots);
         foreach ($reservation->classrooms as $classroom) {
@@ -174,10 +195,10 @@ class ReservationServiceImpl implements ReservationService
                 ->getActiveReservationsWithDateStatusClassroomTimes(
                     [ReservationStatuses::pending()],
                     $reservation->date,
-                    $classroom->id, 
+                    $classroom->id,
                     $times
                 );
-            foreach ($reservationSet as $reservationIterable) 
+            foreach ($reservationSet as $reservationIterable)
                 $message.=$this->reject($reservationIterable->id);
         }
         return 'La reserva fue aceptada correctamente';
@@ -188,11 +209,11 @@ class ReservationServiceImpl implements ReservationService
      * @param array $data
      * @return string
      */
-    public function store(array $data): string 
+    public function store(array $data): string
     {
         $block_id = -1;
         foreach ($data['classroom_id'] as $classroomId) {
-            $classroom = Classroom::find($classroomId); 
+            $classroom = Classroom::find($classroomId);
             if ($block_id == -1) $block_id = $classroom->block_id;
             if ($classroom->block_id != $block_id) {
                 return  'Los ambientes no pertenecen al bloque';
@@ -213,7 +234,7 @@ class ReservationServiceImpl implements ReservationService
             $reservation->save();
             return 'Tu solicitud de reserva fue aceptada';
         } else {
-            return $this->reject($reservation->id); 
+            return $this->reject($reservation->id);
         }
     }
 
@@ -222,7 +243,7 @@ class ReservationServiceImpl implements ReservationService
      * @param int $reservationId
      * @return array
      */
-    public function getConflict(int $reservationId): array 
+    public function getConflict(int $reservationId): array
     {
         $reservation = Reservation::find($reservationId);
         if ($reservation == null) {
@@ -246,7 +267,7 @@ class ReservationServiceImpl implements ReservationService
                 ->getActiveReservationsWithDateStatusClassroomTimes(
                     [ReservationStatuses::accepted()],
                     $reservation->date,
-                    $classroom->id, 
+                    $classroom->id,
                     $time
                 );
             if (count($reservations) != 0)
@@ -303,19 +324,19 @@ class ReservationServiceImpl implements ReservationService
             if (count($reservations) > 1) {
                 $result['ok'] = 1;
                 array_push($result['classroom']['list'], $classroom->name);
-            } 
+            }
         }
 
         foreach ($reservation->teacherSubjects as $teacherSubject) {
-            $teacher = $teacherSubject->person; 
-            $fullname = $teacher->name . ' ' . $teacher->last_name; 
+            $teacher = $teacherSubject->person;
+            $fullname = $teacher->name . ' ' . $teacher->last_name;
             $count = 0;
 
             foreach ($teacherSubject->reservations as $item)
             if (($item->reservation_status_id == ReservationStatuses::accepted())
                 && $this->isInside(
-                    $item, 
-                    $reservation->date, 
+                    $item,
+                    $reservation->date,
                     $this->timeSlotService->getTimeSlotsSorted($reservation->timeSlots))
             )
                 $count++;
@@ -326,7 +347,7 @@ class ReservationServiceImpl implements ReservationService
                 $set[$fullname] = 1;
             }
         }
-        $result['classroom']['list'] = array_unique($result['classroom']['list']); 
+        $result['classroom']['list'] = array_unique($result['classroom']['list']);
         $result['teacher']['list'] = array_unique($result['teacher']['list']);
         return $result;
     }
@@ -352,8 +373,8 @@ class ReservationServiceImpl implements ReservationService
      * @return bool
      */
     private function isInside(
-        Reservation $reservation, 
-        string $date, 
+        Reservation $reservation,
+        string $date,
         array $times
     ): bool
     {
@@ -373,36 +394,36 @@ class ReservationServiceImpl implements ReservationService
                     $time = $this->timeSlotService->getTimeSlotsSorted($reservation->timeSlots);
                     if (!($time[1] <= $times[0] || $time[0] >= $times[1])) {
                         return true;
-                    }                        
+                    }
                 }
-            } 
+            }
 
         }
         return false;
     }
 
     /**
-     * Retrieve a list of accepted/pending reservations 
+     * Retrieve a list of accepted/pending reservations
      * @param int $classroomId
      * @return array
      */
-    public function getActiveReservationsByClassroom(int $classroomId): array 
+    public function getActiveReservationsByClassroom(int $classroomId): array
     {
         return $this->reservationRepository->getReservationsByClassroomAndStatuses(
-            $classroomId, 
+            $classroomId,
             [
-                ReservationStatuses::accepted(), 
+                ReservationStatuses::accepted(),
                 ReservationStatuses::pending()
             ]
         );
     }
-    
+
     /**
      * Retrieve a number of floors used in a set of classrooms
      * @param array $classrooms
      * @return int
      */
-    private function getTotalFloors($classrooms): int 
+    private function getTotalFloors($classrooms): int
     {
         $dp = [];
         $usedFloors = 0;
@@ -414,6 +435,6 @@ class ReservationServiceImpl implements ReservationService
                 $usedFloors++;
             }
         }
-        return $usedFloors; 
+        return $usedFloors;
     }
 }

@@ -37,6 +37,8 @@ Route::controller(ReservationController::class)->group(function() {
     Route::get('/reservations/teacher/{teacherId}', 'listAllRequestsByTeacher'); 
     Route::get('/reservations/{reservationId}', 'show');
     Route::get('/reservations/{reservationId}/conflicts', 'getConflicts');
+    Route::get('/reservations/history/teacher/{teacherId}', 'getAllRequestsExceptPendingByTeacher');
+
     
     Route::middleware('sanitize:api')->patch('/reservations/{reservationId}/reject/', 'rejectReservation');
     Route::middleware('sanitize:api')->patch('/reservations/{reservationId}/assign/', 'assign');

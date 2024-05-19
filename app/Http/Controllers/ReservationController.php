@@ -3,12 +3,12 @@ namespace App\Http\Controllers;
 
 use Exception;
 use Illuminate\Http\{
-    JsonResponse as Response, 
+    JsonResponse as Response,
     Request
 };
 use Illuminate\Support\Facades\Validator;
 
-use App\Service\ServiceImplementation\ReservationServiceImpl; 
+use App\Service\ServiceImplementation\ReservationServiceImpl;
 
 class ReservationController extends Controller
 {
@@ -34,6 +34,28 @@ class ReservationController extends Controller
             return response()->json(
                 [
                     'message' => 'Hubo un error en el servidor',
+                    'error' => $e->getMessage()
+                ],
+                500
+            );
+        }
+    }
+
+    /**
+     * function to get all requests except pending requests
+     * @return Response
+     */
+    public function getAllRequestsExceptPending(): Response
+    {
+        try {
+            return response()->json(
+                $this->robotService->getAllReservationsExceptPending(),
+                200
+            );
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'message' => 'Hubo en error en el servidor',
                     'error' => $e->getMessage()
                 ],
                 500
@@ -99,12 +121,13 @@ class ReservationController extends Controller
     public function listAllRequestsByTeacher(int $teacherId): Response
     {
         try {
-            $reservations = $this->reservationService->listAllRequestsByTeacher($teacherId); 
+            $reservations = $this->reservationService
+                ->listAllRequestsByTeacher($teacherId); 
             if (array_key_exists('message', $reservations)) {
                 return response()->json($reservations, 404);
             }
             return response()->json(
-                $reservations, 
+                $reservations,
                 200
             );
         } catch (Exception $e) {
@@ -119,6 +142,31 @@ class ReservationController extends Controller
     }
 
     /**
+     * function to get all requests except pending requests by teacher
+     * @param int $teacherId
+     * @return Response
+     */
+    public function getAllRequestsExceptPendingByTeacher(int $teacherId): Response
+    {
+        try {
+            return response()->json(
+                $this->robotService
+                    ->getAllReservationsExceptPendingByTeacher($teacherId),
+                200
+            );
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'message' => 'Hubo en error en el servidor',
+                    'error' => $e->getMessage()
+                ],
+                500
+            );
+        }
+    }
+
+
+    /**
      * Function to retrieve a reservation by its id
      * @param int $reservationId
      * @return Response
@@ -126,7 +174,8 @@ class ReservationController extends Controller
     public function show(int $reservationId): Response
     {
         try {
-            $reservation = $this->reservationService->getReservation($reservationId); 
+            $reservation = $this->reservationService
+                ->getReservation($reservationId); 
             if ($reservation == []) {
                 return response()->json([
                     'message' => 'La reserva no existe'
@@ -220,7 +269,7 @@ class ReservationController extends Controller
     }
 
     /**
-     * Validate Request data from a form 
+     * Validate Request data from a form
      * @param Request $request
      * @return mixed
      */

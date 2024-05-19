@@ -1,17 +1,19 @@
 <?php
-namespace App\Service; 
+namespace App\Service;
 
 use App\Models\Reservation;
-interface ReservationService 
+interface ReservationService
 {
-    function getReservation(int $reservationId): array; 
+    function getReservation(int $reservationId): array;
     function getAllReservations(): array;
-    function getPendingRequest(): array; 
-    function listRequestsByTeacher(int $teacherId): array; 
-    function listAllRequestsByTeacher(int $teacherId): array; 
-    function reject(int $reservationId): string; 
-    function cancel(int $reservationId): string; 
-    function accept(int $reservationId): string; 
-    function store(array $data): string; 
-    function getConflict(int $reservationId): array; 
+    function getAllReservationsExceptPending(): array;
+    function getPendingRequest(): array;
+    function listRequestsByTeacher(int $teacherId): array;
+    function listAllRequestsByTeacher(int $teacherId): array;
+    function getAllReservationsExceptPendingByTeacher(int $teacherId): array;
+    function reject(int $reservationId): string;
+    function cancel(int $reservationId): string;
+    function accept(int $reservationId): string;
+    function store(array $data): string;
+    function getConflict(int $reservationId): array;
 }
