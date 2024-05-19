@@ -20,7 +20,7 @@ class ReservationReasonController extends Controller
      * @param none
      * @return Response
      */
-    public function index(): Response
+    public function list(): Response
     {
         try {
             return response()->json(

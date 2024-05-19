@@ -18,8 +18,9 @@ class ClassroomTypeController extends Controller
     }
     
     /**
-     * Explain: Retrieve all classroom types 
-     * @return \Response
+     * Explain: Retrieve all classroom types
+     * @param none 
+     * @return Response
      */
     public function list(): Response
     {
