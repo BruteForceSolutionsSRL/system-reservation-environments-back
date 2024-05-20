@@ -42,14 +42,14 @@ class ReservationController extends Controller
     }
 
     /**
-     * function to get all requests except pending requests
+     * Function to get all requests except pending requests
      * @return Response
      */
     public function getAllRequestsExceptPending(): Response
     {
         try {
             return response()->json(
-                $this->robotService->getAllReservationsExceptPending(),
+                $this->reservationService->getAllReservationsExceptPending(),
                 200
             );
         } catch (Exception $e) {
@@ -150,7 +150,7 @@ class ReservationController extends Controller
     {
         try {
             return response()->json(
-                $this->robotService
+                $this->reservationService
                     ->getAllReservationsExceptPendingByTeacher($teacherId),
                 200
             );

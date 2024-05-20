@@ -116,9 +116,9 @@ class ClassroomServiceImpl implements ClassroomService
     /**
      * Update with all data previously validated
      * @param array $data
-     * @return array
+     * @return string
      */
-    public function update(array $data): array
+    public function update(array $data): string
     {
         $classroom = $this->classroomRepository->getClassroomById(
             $data['classroom_id']
@@ -134,8 +134,7 @@ class ClassroomServiceImpl implements ClassroomService
             }
             // modulo para enviar las notificaciones :V
         }
-        return $modifiedClassroom; 
-        //return "El ambiente fue actualizado correctamente";
+        return "El ambiente fue actualizado correctamente";
     }
 
     /**

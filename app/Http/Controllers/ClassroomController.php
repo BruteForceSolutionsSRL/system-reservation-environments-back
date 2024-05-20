@@ -30,7 +30,6 @@ class ClassroomController extends Controller
     }
     
     /**
-     * Explain:
      * list function retrieves all classrooms.
      * @param none
      * @return Response
