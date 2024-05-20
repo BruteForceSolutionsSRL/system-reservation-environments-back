@@ -3,19 +3,19 @@ namespace App\Http\Controllers;
 
 use Exception;
 use Illuminate\Http\{
-    JsonResponse as Response, 
+    JsonResponse as Response,
     Request
 };
 use Illuminate\Support\Facades\Validator;
 
-use App\Service\ServiceImplementation\ReservationServiceImpl; 
+use App\Service\ServiceImplementation\ReservationServiceImpl;
 
 class ReservationController extends Controller
 {
-    private $robotService;
+    private $reservationService;
     function __construct()
     {
-        $this->robotService = new ReservationServiceImpl();
+        $this->reservationService = new ReservationServiceImpl();
     }
 
     /**
@@ -23,17 +23,39 @@ class ReservationController extends Controller
      * @param none
      * @return Response
      */
-    public function index(): Response
+    public function list(): Response
     {
         try {
             return response()->json(
-                $this->robotService->getAllReservations(), 
+                $this->reservationService->getAllReservations(), 
                 200
             );
         } catch (Exception $e) {
             return response()->json(
                 [
                     'message' => 'Hubo un error en el servidor',
+                    'error' => $e->getMessage()
+                ],
+                500
+            );
+        }
+    }
+
+    /**
+     * Function to get all requests except pending requests
+     * @return Response
+     */
+    public function getAllRequestsExceptPending(): Response
+    {
+        try {
+            return response()->json(
+                $this->reservationService->getAllReservationsExceptPending(),
+                200
+            );
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'message' => 'Hubo en error en el servidor',
                     'error' => $e->getMessage()
                 ],
                 500
@@ -50,7 +72,7 @@ class ReservationController extends Controller
     {
         try {
             return response()->json(
-                $this->robotService->getPendingRequest(), 
+                $this->reservationService->getPendingRequest(), 
                 200
             );
         } catch (Exception $e) {
@@ -72,12 +94,12 @@ class ReservationController extends Controller
     public function listRequestsByTeacher(int $teacherId): Response
     {
         try {
-            $reservations = $this->robotService->listRequestsByTeacher($teacherId);
+            $reservations = $this->reservationService->listRequestsByTeacher($teacherId);
             if (array_key_exists('message', $reservations)) {
                 return response()->json($reservations, 404);
             }
             return response()->json(
-                $this->robotService->listRequestsByTeacher($teacherId), 
+                $this->reservationService->listRequestsByTeacher($teacherId), 
                 200
             );
         } catch (Exception $e) {
@@ -99,12 +121,13 @@ class ReservationController extends Controller
     public function listAllRequestsByTeacher(int $teacherId): Response
     {
         try {
-            $reservations = $this->robotService->listAllRequestsByTeacher($teacherId); 
+            $reservations = $this->reservationService
+                ->listAllRequestsByTeacher($teacherId); 
             if (array_key_exists('message', $reservations)) {
                 return response()->json($reservations, 404);
             }
             return response()->json(
-                $reservations, 
+                $reservations,
                 200
             );
         } catch (Exception $e) {
@@ -119,6 +142,31 @@ class ReservationController extends Controller
     }
 
     /**
+     * function to get all requests except pending requests by teacher
+     * @param int $teacherId
+     * @return Response
+     */
+    public function getAllRequestsExceptPendingByTeacher(int $teacherId): Response
+    {
+        try {
+            return response()->json(
+                $this->reservationService
+                    ->getAllReservationsExceptPendingByTeacher($teacherId),
+                200
+            );
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'message' => 'Hubo en error en el servidor',
+                    'error' => $e->getMessage()
+                ],
+                500
+            );
+        }
+    }
+
+
+    /**
      * Function to retrieve a reservation by its id
      * @param int $reservationId
      * @return Response
@@ -126,7 +174,8 @@ class ReservationController extends Controller
     public function show(int $reservationId): Response
     {
         try {
-            $reservation = $this->robotService->getReservation($reservationId); 
+            $reservation = $this->reservationService
+                ->getReservation($reservationId); 
             if ($reservation == []) {
                 return response()->json([
                     'message' => 'La reserva no existe'
@@ -152,15 +201,15 @@ class ReservationController extends Controller
     public function rejectReservation(int $reservationId): Response
     {
         try {
-            $message = $this->robotService->reject($reservationId); 
+            $message = $this->reservationService->reject($reservationId); 
             if ($message == 'No existe una solicitud con este ID') {
                 return response()->json(['message' => $message], 404);
             }
             return response()->json(['message' => $message], 200);
-        } catch (Exception $err) {
+        } catch (Exception $e) {
             return response()->json([
                 'message' => 'Ocurrio un error al rechazar la solicitud.',
-                'error' => $err->getMessage()
+                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -173,15 +222,15 @@ class ReservationController extends Controller
     public function cancelRequest(int $reservationId): Response
     {
         try {
-            $message = $this->robotService->cancel($reservationId); 
+            $message = $this->reservationService->cancel($reservationId); 
             if ($message == 'No existe una solicitud con este ID') {
                 return response()->json(['message' => $message], 404);
             }
             return response()->json(['message' => $message], 200);
-        } catch (Exception $err) {
+        } catch (Exception $e) {
             return response()->json([
                 'message' => 'Ocurrio un error al cancelar la solicitud.',
-                'error' => $err->getMessage()
+                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -205,7 +254,7 @@ class ReservationController extends Controller
 
             $data = $validator->validated();
             return response()->json(
-                ['message' => $this->robotService->store($data)], 
+                ['message' => $this->reservationService->store($data)], 
                 200
             );
         } catch (Exception $e) {
@@ -220,7 +269,7 @@ class ReservationController extends Controller
     }
 
     /**
-     * Validate Request data from a form 
+     * Validate Request data from a form
      * @param Request $request
      * @return mixed
      */
@@ -273,15 +322,15 @@ class ReservationController extends Controller
     public function assign(int $reservationId): Response
     {
         try {
-            $message = $this->robotService->accept($reservationId); 
+            $message = $this->reservationService->accept($reservationId); 
             if ($message == 'No existe una solicitud con este ID') {
                 return response()->json(['message' => $message], 404);
             }
             return response()->json(['message' => $message], 200);
-        } catch (Exception $err) {
+        } catch (Exception $e) {
             return response()->json([
                 'message' => 'Ocurrio un error en el servidor.',
-                'error' => $err->getMessage()
+                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -294,7 +343,7 @@ class ReservationController extends Controller
     public function getConflicts(int $reservationId): Response
     {
         try {
-            $result = $this->robotService->getConflict($reservationId); 
+            $result = $this->reservationService->getConflict($reservationId); 
             if (array_key_exists('message', $result)) {
                 return response()->json($result, 404);
             }
@@ -318,7 +367,7 @@ class ReservationController extends Controller
     public function getAllReservationsByClassroom(int $classromId): Response
     {
         try {
-            $reservations = $this->robotService->getAllReservationsByClassroom($classromId); 
+            $reservations = $this->reservationService->getAllReservationsByClassroom($classromId); 
             if ($reservations === []) {
                 response()->json(
                     ['message' => 'El ambiente no tiene reservaciones pendientes o aceptadas.'],

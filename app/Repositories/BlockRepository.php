@@ -9,6 +9,7 @@ class BlockRepository
     {
         $this->model = $model;
     }
+    
     /**
      * Retrieve a list of all blocks Eloquent
      * @param none

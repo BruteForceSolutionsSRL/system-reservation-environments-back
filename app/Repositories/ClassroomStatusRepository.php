@@ -26,11 +26,13 @@ class ClassroomStatusRepository extends Repository
             ->orWhere('name', 'DISABLED')
             ->first()->id; 
     } 
-    public static function deleted() {
+    public static function deleted() 
+    {
         return ClassroomStatus::where('name', 'ELIMINADO')
             ->orWhere('name', 'DELETED')
             ->first()->id; 
     }
+
     /**
      * Retrieve a list of all statuses for classroom except delete 
      * @param none
@@ -58,7 +60,7 @@ class ClassroomStatusRepository extends Repository
         if ($classroomStatus == null) return [];
         return [
             'classroom_status_name' => $classroomStatus->name, 
-            'classrooom_status_id' => $classroomStatus->id
+            'classroom_status_id' => $classroomStatus->id
         ];
     }
 }

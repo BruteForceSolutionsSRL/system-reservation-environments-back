@@ -112,15 +112,16 @@ class ClassroomController extends Controller
         try {
             $validator = $this->validateClassroomDataUpdate($request);
             if ($validator->fails()) {
-                $message = '';
-                foreach ($validator->errors()->all() as $value)
-                    $message = $message . $value . '\n';
+                $message = ''; 
+                foreach ($validator->errors()->all() as $value) 
+                    $message = $message . $value . '.';
                 return response()->json(
                     ['message' => $message],
                     400
                 );
             }
             $data = $validator->validated();
+            $data['classroom_id'] = $classroomId; 
 
             $block = $this->blockService->getBlock($data['block_id']);
             if ($block['block_maxfloor'] < $data['floor_number']) {
@@ -193,7 +194,7 @@ class ClassroomController extends Controller
 
             if ($block == []) {
                 return response()->json(
-                    ['message' => 'El ID del bloque debe ser valido'],
+                    ['message' => 'El ID del bloque debe ser valido'], 
                     400
                 );
             }
@@ -232,9 +233,9 @@ class ClassroomController extends Controller
             $validator = $this->validateClassroomData($request);
 
             if ($validator->fails()) {
-                $message = '';
-                foreach ($validator->errors()->all() as $value)
-                    $message = $message . $value . '\n';
+                $message = ''; 
+                foreach ($validator->errors()->all() as $value) 
+                    $message = $message . $value . '.';
                 return response()->json(
                     ['message' => $message],
                     400
@@ -251,8 +252,11 @@ class ClassroomController extends Controller
                     400
                 );
             }
-
-            return response()->json(['message' => $this->classroomService->store($data)], 200);
+        
+            return response()->json(
+                ['message' => $this->classroomService->store($data)],
+                200
+            );
         } catch (Exception $e) {
             return response()->json(
                 [
@@ -337,9 +341,9 @@ class ClassroomController extends Controller
 
             $validator = $this->validateDisponibilityData($request);
             if ($validator->fails()) {
-                $message = '';
-                foreach ($validator->errors()->all() as $value)
-                    $message .= $value . '\n';
+                $message = ''; 
+                foreach ($validator->errors()->all() as $value) 
+                    $message .= $value . '.';
                 return response()->json(['message' => $message], 400);
             }
             $data = $validator->validated();
@@ -412,9 +416,9 @@ class ClassroomController extends Controller
             $validator = $this->validateSuggestionData($request);
 
             if ($validator->fails()) {
-                $message = '';
-                foreach ($validator->errors()->all() as $value)
-                    $message .= $value . '\n';
+                $message = ''; 
+                foreach ($validator->errors()->all() as $value) 
+                    $message .= $value . '.';
                 return response()->json(['message' => $message], 400);
             }
 
@@ -479,9 +483,9 @@ class ClassroomController extends Controller
         try {
             $validator = $this->validateRetriveLastClassroomData($request);
             if ($validator->fails()) {
-                $message = '';
-                foreach ($validator->errors()->all() as $value)
-                    $message .= $value;
+                $message = ''; 
+                foreach ($validator->errors()->all() as $value) 
+                    $message .= $value . '.';
                 return response()->json(
                     ['message' => $message],
                     400

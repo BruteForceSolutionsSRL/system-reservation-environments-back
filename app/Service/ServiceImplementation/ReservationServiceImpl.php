@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Service\ServiceImplementation;
 
 use App\Service\ReservationService;
@@ -40,6 +39,15 @@ class ReservationServiceImpl implements ReservationService
     }
 
     /**
+     * Retrieve a list of all reservations except pending requests
+     * @return array
+     */
+    public function getAllReservationsExceptPending(): array
+    {
+        return $this->reservationRepository->getReservationsWithoutPendingRequest();
+    }
+
+    /**
      * Retrieve a single reservation based on its ID
      * @param int $reservationId
      * @return array
@@ -50,7 +58,7 @@ class ReservationServiceImpl implements ReservationService
     }
 
     /**
-     * Retrieve a list of all pending request 
+     * Retrieve a list of all pending request
      * @param none
      * @return array
      */
@@ -85,6 +93,18 @@ class ReservationServiceImpl implements ReservationService
             return ['message' => 'No existe el docente'];
         }
         return $this->reservationRepository->getAllRequestByTeacher($teacherId);
+    }
+
+    /**
+     * Retrieve a list of all reservations except pending requests
+     * by teacherId
+     * @param int $teacherId
+     * @return array
+     */
+    public function getAllReservationsExceptPendingByTeacher(int $teacherId): array
+    {
+        return $this->reservationRepository
+                ->getReservationsWithoutPendingRequestByTeacher($teacherId);
     }
 
     /**
@@ -190,7 +210,6 @@ class ReservationServiceImpl implements ReservationService
      */
     public function store(array $data): string
     {
-        // esto es otra funcion
         $block_id = -1;
         foreach ($data['classroom_id'] as $classroomId) {
             $classroom = Classroom::find($classroomId);
@@ -377,12 +396,13 @@ class ReservationServiceImpl implements ReservationService
                     }
                 }
             }
+
         }
         return false;
     }
 
     /**
-     * Retrieve a list of accepted/pending reservations 
+     * Retrieve a list of accepted/pending reservations
      * @param int $classroomId
      * @return array
      */

@@ -195,7 +195,6 @@ class ClassroomRepository extends Repository
             return $this->formatOutput($classroom);
         }
         return [];
-        /*return $this->model::find($classroomId);*/
     }
 
     /**
@@ -208,8 +207,10 @@ class ClassroomRepository extends Repository
         return [
             'classroom_id' => $classroom->id,
             'classroom_name' => $classroom->name,
-            'classroom_type_id' => $classroom->classroom_type_id,
+            'classroom_type_id' => $classroom->classroom_type_id, 
+            'classroom_type_name' => $classroom->classroom_type_id, 
             'classroom_status_id' => $classroom->classroom_status_id,
+            'classroom_status_name' => $classroom->classroom_status_id,
             'capacity' => $classroom->capacity,
             'floor' => $classroom->floor,
             'block_id' => $classroom->block_id
