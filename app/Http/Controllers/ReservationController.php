@@ -309,4 +309,31 @@ class ReservationController extends Controller
             );
         }
     }
+
+    /**
+     * Function to get reservations accepted, pending and reject
+     * @param int $classromId
+     * @return Response
+     */
+    public function getAllReservationsByClassroom(int $classromId): Response
+    {
+        try {
+            $reservations = $this->robotService->getAllReservationsByClassroom($classromId); 
+            if ($reservations === []) {
+                response()->json(
+                    ['message' => 'El ambiente no tiene reservaciones pendientes o aceptadas.'],
+                    404
+                );
+            } 
+            return response()->json($reservations, 200);
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'message' => 'Hubo un error en el servidor',
+                    'error' => $e->getMessage(),
+                ],
+                500
+            );
+        }
+    }
 }

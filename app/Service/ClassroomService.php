@@ -1,11 +1,13 @@
 <?php
 namespace App\Service;
 
-use DateTime;
-
 interface ClassroomService
 {
-    function getAllClassrooms(): array;
+    function getAllClassrooms(string $statuses): array;
+    function getAllClassroomsWithStatistics(): array;
+    function getAllAvailableClassrooms(): array;
+    function getClassroomByID(int $id): array;
+    function isDeletedClassroom(int $classroomId): bool;
     function getDisponibleClassroomsByBlock(int $blockId): array;
     function getClassroomsByBlock(int $blockId): array;
     function getClassroomByDisponibility(array $data): array;
@@ -13,5 +15,6 @@ interface ClassroomService
     function store(array $data): string;
     function update(array $data): string; 
     function retriveLastClassroom(array $data): array;
+    function deleteByClassroomId(int $classroomId): array;
 }
 

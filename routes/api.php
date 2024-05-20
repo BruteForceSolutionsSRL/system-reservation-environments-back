@@ -14,6 +14,7 @@ use App\Http\Controllers\{
     ReservationReasonController,
     ClassroomStatusController
 };
+use App\Models\Role;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,6 +42,7 @@ Route::controller(ReservationController::class)->group(function() {
     Route::middleware('sanitize:api')->patch('/reservation/cancel/{reservationId}', 'cancelRequest');
     Route::middleware('sanitize:api')->post('/reservation', 'store');
     Route::get('/reservation/conflicts/{reservationId}', 'getConflicts');
+    Route::get('/reservations/classroom/{classroomId}','getAllReservationsByClassroom');
 });
 
 Route::controller(ClassroomController::class)->group(function() {
@@ -52,6 +54,8 @@ Route::controller(ClassroomController::class)->group(function() {
     Route::post('/reservation/suggest', 'suggestClassrooms');
     Route::put('/classroom/{classroomId}', 'update');
     Route::get('/classroom/last-validated', 'retriveLastClassroom');
+    Route::get('/classrooms/statistics/list','getAllClassroomsWithStatistics');
+    Route::delete('/classroom/delete/{classroomId}','destroy');
 });
 
 Route::controller(TeacherSubjectController::class)->group(function() {

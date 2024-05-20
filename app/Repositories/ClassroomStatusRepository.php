@@ -4,7 +4,6 @@ namespace App\Repositories;
 use App\Models\ClassroomStatus; 
 
 use Illuminate\Cache\Repository; 
-use Illuminate\Database\Eloquent\Model; 
 
 class ClassroomStatusRepository extends Repository
 {
@@ -18,16 +17,19 @@ class ClassroomStatusRepository extends Repository
     public static function available() 
     {   
         return ClassroomStatus::where('name', 'HABILITADO')
-            ->get()->pop()->id; 
+            ->orWhere('name', 'ENABLED')
+            ->first()->id; 
     }
     public static function disabled() 
     {
-        return ClassroomStatus::where('name', 'DESABILITADO')
-            ->get()->pop()->id;
+        return ClassroomStatus::where('name', 'DESHABILITADO')
+            ->orWhere('name', 'DISABLED')
+            ->first()->id; 
     } 
     public static function deleted() {
         return ClassroomStatus::where('name', 'ELIMINADO')
-            ->get()->pop()->id; 
+            ->orWhere('name', 'DELETED')
+            ->first()->id; 
     }
     /**
      * Retrieve a list of all statuses for classroom except delete 

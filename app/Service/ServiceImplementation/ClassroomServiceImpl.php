@@ -10,7 +10,7 @@ use App\Models\{
     ClassroomLogs,
     Reservation,
     TimeSlot,
-    Block, 
+    Block,
     ClassroomStatus
 };
 
@@ -23,19 +23,17 @@ use App\Repositories\{
     ClassroomLogsRepository
 };
 
-use DateTime;
-
 class ClassroomServiceImpl implements ClassroomService
 {
     private $classroomRepository;
     private $reservationRepository;
     private $timeSlotRepository;
-    private $blockRepository; 
-    private $classroomStatusRepository; 
-    private $reservationService; 
+    private $blockRepository;
+    private $classroomStatusRepository;
+    private $reservationService;
     private $timeSlotService;
-    private $classroomLog;
-    
+    private $classroomLogRepository;
+
     public function __construct()
     {
         $this->classroomRepository = new ClassroomRepository(Classroom::class);
@@ -46,29 +44,41 @@ class ClassroomServiceImpl implements ClassroomService
 
         $this->timeSlotService = new TimeSlotServiceImpl();
         $this->reservationService = new ReservationServiceImpl();
-        $this->classroomLog = new ClassroomLogsRepository(ClassroomLogs::class);
+        $this->classroomLogRepository = new ClassroomLogsRepository(ClassroomLogs::class);
     }
 
     /**
-     * Retrieve a list of all classrooms
+     * Retrieve a list of classrooms through a status
+     * @param string $statuses
+     * @return array
+     */
+    public function getAllClassrooms(string $statuses): array
+    {
+        $idStatuses = $this->classroomStatusRepository->getClassroomStatusIdByStatus($statuses);
+        return $this->classroomRepository->getClassrooomsByStatus($idStatuses);
+    }
+
+    /**
+     * Function to return to information about a classroom with it's statistics
      * @param none
      * @return array
      */
-    public function getAllClassrooms(): array
+    public function getAllClassroomsWithStatistics(): array
     {
-        return $this->classroomRepository->getClassrooomsByStatus(
-            [
-                ClassroomStatusRepository::available(), 
-                ClassroomStatusRepository::disabled()
-            ]
-        );
+        $classroomsStatistics = $this->classroomRepository->getAllClassroomsWithStatistics();
+        return $classroomsStatistics;
     }
 
+    /**
+     * 
+     * @param none
+     * @return array
+     */
     public function getAllAvailableClassrooms(): array
     {
         return $this->classroomRepository->getClassrooomsByStatus(
             [
-                ClassroomStatusRepository::available(), 
+                ClassroomStatusRepository::available(),
                 ClassroomStatusRepository::disabled()
             ]
         );
@@ -76,10 +86,24 @@ class ClassroomServiceImpl implements ClassroomService
 
     /**
      * 
+     * @param int $id
+     * @return array
+     * 
      */
     public function getClassroomByID(int $id): array
     {
         return $this->classroomRepository->getClassroomById($id);
+    }
+
+    /**
+     * 
+     * @param int $classroomId
+     * @return bool
+     */
+    public function isDeletedClassroom(int $classroomId): bool
+    {
+        $isdeleted = $this->classroomRepository->isDeletedClassroom($classroomId);
+        return $isdeleted;
     }
 
     /**
@@ -122,16 +146,16 @@ class ClassroomServiceImpl implements ClassroomService
     {
         $classroom = $this->classroomRepository->getClassroomById(
             $data['classroom_id']
-        ); 
+        );
         $modifiedClassroom = $this->classroomRepository->update($data);
         if ($classroom['classroom_status_id'] != $modifiedClassroom['classroom_status_id']) {
             $reservations = $this->reservationService->getActiveReservationsByClassroom(
                 $classroom['classroom_id']
             );
-            foreach ($reservations as $reservation) 
-            if ($reservation['repeat'] == 0) {
-                $this->reservationService->reject($reservation['reservation_id']);
-            }
+            foreach ($reservations as $reservation)
+                if ($reservation['repeat'] == 0) {
+                    $this->reservationService->reject($reservation['reservation_id']);
+                }
             // modulo para enviar las notificaciones :V
         }
         return "El ambiente fue actualizado correctamente";
@@ -148,7 +172,7 @@ class ClassroomServiceImpl implements ClassroomService
         $classroomList = [];
 
         $times = $data['time_slot_id'];
-        sort($times); 
+        sort($times);
 
         $acceptedStatus = ReservationStatuses::accepted();
         $pendingStatus = ReservationStatuses::pending();
@@ -157,7 +181,7 @@ class ClassroomServiceImpl implements ClassroomService
             $classroom = $this->classroomRepository->getClassroomById($classroomId);
 
             if (count($classroom) == 0) continue;
-            
+
             $element = array();
             $element['classroom_name'] = $classroom['classroom_name'];
 
@@ -182,13 +206,14 @@ class ClassroomServiceImpl implements ClassroomService
                     ->getTimeSlotsSorted($reservation->timeSlots);
                 $isAccepted = $reservation->reservation_status_id == $acceptedStatus;
 
-                for ($timeSlotId = max($timesReservation[0], $times[0]); 
-                    $timeSlotId <= min($times[1], $timesReservation[1]); 
+                for (
+                    $timeSlotId = max($timesReservation[0], $times[0]);
+                    $timeSlotId <= min($times[1], $timesReservation[1]);
                     $timeSlotId++
                 ) {
                     $index = $this->timeSlotRepository->getTimeSlotById($timeSlotId)['time'];
 
-                    if ($element[$index]['valor'] == 1) continue; 
+                    if ($element[$index]['valor'] == 1) continue;
                     if ($isAccepted) {
                         $element[$index]['valor'] = 1;
                         $element[$index]['message'] = 'Ocupado';
@@ -223,7 +248,7 @@ class ClassroomServiceImpl implements ClassroomService
         }
         $acceptedStatus = ReservationStatuses::accepted();
         foreach ($classroomSet as $classroom) {
-            
+
             $reservations = $this->reservationRepository
                 ->getActiveReservationsWithDateStatusAndClassroom(
                     [$acceptedStatus],
@@ -294,10 +319,10 @@ class ClassroomServiceImpl implements ClassroomService
 
         $res = array();
         $piv = $bestSuggest;
-        if ($dp[$piv] == -1) 
+        if ($dp[$piv] == -1)
             return ['message' => 'No existe una sugerencia apropiada'];
 
-        while ($piv != 0 ) {
+        while ($piv != 0) {
             $classroom = $this->classroomRepository
                 ->getClassroomById($pointerDp[$piv]);
             array_push($res, $classroom);
@@ -308,7 +333,9 @@ class ClassroomServiceImpl implements ClassroomService
     }
 
     /**
-     * 
+     * Function to retrive all statuses except deleted
+     * @param none
+     * @return array
      */
     public function getClassroomStatuses(): array
     {
@@ -322,6 +349,18 @@ class ClassroomServiceImpl implements ClassroomService
      */
     public function retriveLastClassroom(array $data): array
     {
-        return $this->classroomLog->retriveLastClassroom($data);
+        return $this->classroomLogRepository->retriveLastClassroom($data);
+    }
+
+    /**
+     * Function to delete classroom through classroom ID and cancel or reject all reservations
+     * @param int $classromId
+     * @return array
+     */
+    public function deleteByClassroomId(int $classroomId): array
+    {
+        $this->reservationService->cancelAndRejectReservationsByClassroom($classroomId);
+        $this->classroomRepository->deleteByClassroomId($classroomId); 
+        return ['message' => 'Ambiente eliminado exitosamente.'];
     }
 }

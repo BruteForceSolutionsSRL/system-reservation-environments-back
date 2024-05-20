@@ -1,7 +1,6 @@
 <?php
 namespace App\Service; 
 
-use App\Models\Reservation;
 interface ReservationService 
 {
     function getReservation(int $reservationId): array; 
@@ -13,5 +12,7 @@ interface ReservationService
     function cancel(int $reservationId): string; 
     function accept(int $reservationId): string; 
     function store(array $data): string; 
-    function getConflict(int $reservationId): array; 
+    function getConflict(int $reservationId): array;
+    function cancelAndRejectReservationsByClassroom(int $classroomId): array;
+    function getAllReservationsByClassroom(int $classromId): array;
 }

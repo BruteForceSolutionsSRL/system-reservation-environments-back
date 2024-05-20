@@ -18,25 +18,29 @@ use App\Service\ServiceImplementation\{
     ClassroomServiceImpl as ClassroomService,
     BlockServiceImpl
 };
-use App\Models\Block;
-use App\Models\Classroom;
-use PhpParser\Node\Stmt\TryCatch;
 
 class ClassroomController extends Controller
 {
     private $classroomService;
-    private $blockService; 
+    private $blockService;
     function __construct()
     {
         $this->classroomService = new ClassroomService();
-        $this->blockService = new BlockServiceImpl(); 
+        $this->blockService = new BlockServiceImpl();
     }
-    
-    public function test(): Response
+
+    /**
+     * Explain:
+     * list function retrieves all classrooms.
+     * @param Request $request
+     * @return Response
+     */
+    public function list(Request $request): Response
     {
         try {
+            $classroomStatus = $request->query('status', 'ENABLED');
             return response()->json(
-                $this->classroomService->getAllAvailableClassrooms(), 
+                $this->classroomService->getAllClassrooms($classroomStatus),
                 200
             );
         } catch (Exception $e) {
@@ -52,15 +56,15 @@ class ClassroomController extends Controller
 
     /**
      * Explain:
-     * list function retrieves all classrooms.
+     * list function retrieves all classrooms with statistis and format.
      * @param none
      * @return Response
      */
-    public function list(): Response
+    public function getAllClassroomsWithStatistics(): Response
     {
         try {
-            return response()->json(
-                $this->classroomService->getAllClassrooms(), 
+            return  response()->json(
+                $this->classroomService->getAllClassroomsWithStatistics(),
                 200
             );
         } catch (Exception $e) {
@@ -83,17 +87,17 @@ class ClassroomController extends Controller
     {
         try {
             return response()->json(
-                $this->classroomService->getClassroomByID($classroomId), 
+                $this->classroomService->getClassroomByID($classroomId),
                 200
             );
         } catch (Exception $e) {
             return response()->json(
                 [
-                    'message'=>'Hubo un error en el servidor', 
+                    'message' => 'Hubo un error en el servidor',
                     'error' => $e->getMessage()
-                ], 
+                ],
                 500
-            );  
+            );
         }
     }
 
@@ -106,39 +110,39 @@ class ClassroomController extends Controller
     public function update(int $classroomId, Request $request): Response
     {
         try {
-            $validator = $this->validateClassroomDataUpdate($request); 
+            $validator = $this->validateClassroomDataUpdate($request);
             if ($validator->fails()) {
-                $message = ''; 
-                foreach ($validator->errors()->all() as $value) 
+                $message = '';
+                foreach ($validator->errors()->all() as $value)
                     $message = $message . $value . '\n';
                 return response()->json(
-                    ['message' => $message], 
+                    ['message' => $message],
                     400
                 );
             }
             $data = $validator->validated();
 
-            $block = $this->blockService->getBlock($data['block_id']); 
+            $block = $this->blockService->getBlock($data['block_id']);
             if ($block['block_maxfloor'] < $data['floor_number']) {
                 return response()->json(
-                    ['messagge' => 
-                       'El numero de piso es mayor a la maximo piso del bloque seleccionado'], 
+                    ['messagge' =>
+                    'El numero de piso es mayor a la maximo piso del bloque seleccionado'],
                     400
                 );
             }
 
             return response()->json(
                 ['message' => $this->classroomService->update($data)],
-                200 
+                200
             );
         } catch (Exception $e) {
             return response()->json(
                 [
-                    'message'=>'Hubo un error en el servidor', 
+                    'message' => 'Hubo un error en el servidor',
                     'error' => $e->getMessage()
-                ], 
+                ],
                 500
-            );  
+            );
         }
     }
 
@@ -146,14 +150,14 @@ class ClassroomController extends Controller
      * To retrieve data available classrooms within block
      * @param int $blockId
      * @return Response
-     */    
+     */
     public function availableClassroomsByBlock(int $blockId): Response
     {
         try {
-            $block = $this->blockService->getBlock($blockId); 
+            $block = $this->blockService->getBlock($blockId);
             if ($block == []) {
                 return response()->json(
-                    ['message' => 'El ID del bloque debe ser valido'], 
+                    ['message' => 'El ID del bloque debe ser valido'],
                     400
                 );
             }
@@ -181,21 +185,21 @@ class ClassroomController extends Controller
      * Return all classrooms in a block
      * @param int $blockId
      * @return Response
-     */ 
+     */
     public function classroomsByBlock(int $blockId): Response
     {        
         try {
-            $block = $this->blockService->getBlock($blockId); 
-            
+            $block = $this->blockService->getBlock($blockId);
+
             if ($block == []) {
                 return response()->json(
-                    ['message'=>'El ID del bloque debe ser valido'], 
+                    ['message' => 'El ID del bloque debe ser valido'],
                     400
                 );
             }
-            
+
             return response()->json(
-                $this->classroomService->getClassroomsByBlock($blockId), 
+                $this->classroomService->getClassroomsByBlock($blockId),
                 200
             );
         } catch (ModelNotFoundException $e) {
@@ -203,13 +207,13 @@ class ClassroomController extends Controller
                 [
                     'message' => 'El bloque especificado no existe',
                     'error' => $e->getMessage()
-                ], 
+                ],
                 404
             );
         } catch (Exception $e) {
             return response()->json(
                 [
-                    'message'=>'Hubo un error en el servidor', 
+                    'message' => 'Hubo un error en el servidor',
                     'error' => $e->getMessage()
                 ], 
                 500
@@ -226,37 +230,37 @@ class ClassroomController extends Controller
     {
         try {
             $validator = $this->validateClassroomData($request);
-  
+
             if ($validator->fails()) {
-                $message = ''; 
-                foreach ($validator->errors()->all() as $value) 
+                $message = '';
+                foreach ($validator->errors()->all() as $value)
                     $message = $message . $value . '\n';
                 return response()->json(
-                    ['message' => $message], 
+                    ['message' => $message],
                     400
                 );
             }
 
             $data = $validator->validated();
 
-            $block = $this->blockService->getBlock($data['block_id']); 
+            $block = $this->blockService->getBlock($data['block_id']);
             if ($block['block_maxfloor'] < $data['floor_number']) {
                 return response()->json(
-                    ['messagge' => 
-                       'El numero de piso es mayor a la maximo piso del bloque seleccionado'], 
+                    ['messagge' =>
+                    'El numero de piso es mayor a la maximo piso del bloque seleccionado'],
                     400
                 );
             }
-        
-            return response()->json(['message'=> $this->classroomService->store($data)],200);
+
+            return response()->json(['message' => $this->classroomService->store($data)], 200);
         } catch (Exception $e) {
             return response()->json(
                 [
-                    'message'=>'Ha ocurrido un error en el servidor', 
-                    'error'=>$e->getMessage()
+                    'message' => 'Ha ocurrido un error en el servidor',
+                    'error' => $e->getMessage()
                 ],
                 500
-            ); 
+            );
         }
     }
 
@@ -295,60 +299,60 @@ class ClassroomController extends Controller
      * @param Request $request
      * @return mixed
      */
-    private function validateClassroomDataUpdate(Request $request) 
+    private function validateClassroomDataUpdate(Request $request)
     {
         return Validator::make($request->all(), [
             'classroom_id' => 'required|int|exists:classrooms,id',
-            'capacity' => 'required|integer|min:25|max:500', 
-            'type_id' => 'required|integer|exists:classroom_types,id', 
-            'block_id' => 'required|integer|exists:blocks,id', 
+            'capacity' => 'required|integer|min:25|max:500',
+            'type_id' => 'required|integer|exists:classroom_types,id',
+            'block_id' => 'required|integer|exists:blocks,id',
             'floor_number' => 'required|integer|min:0',
             'status_id' => 'required|integer|exists:classroom_statuses,id'
         ], [
             'classroom_id' => 'El ambiente no existe',
-            'type_id.required' => 'El atributo \'tipo de ambiente\' no debe ser nulo o vacio', 
-            'block_id.required' => 'El atributo \'bloque\' no debe ser nulo o vacio', 
-            'capacity.required' => 'El atributo \'capacidad\' no debe ser nulo o vacio', 
-            'floor_number.required' => 'El atributo \'piso\' no debe ser nulo o vacio', 
-            'unique' => 'El nombre ya existe, intente con otro', 
+            'type_id.required' => 'El atributo \'tipo de ambiente\' no debe ser nulo o vacio',
+            'block_id.required' => 'El atributo \'bloque\' no debe ser nulo o vacio',
+            'capacity.required' => 'El atributo \'capacidad\' no debe ser nulo o vacio',
+            'floor_number.required' => 'El atributo \'piso\' no debe ser nulo o vacio',
+            'unique' => 'El nombre ya existe, intente con otro',
             'capacity.min' => 'Debe seleccionar una capacidad mayor o igual a 25',
             'capacity.max' => 'Debe seleccionar una capacidad menor o igual a 500',
-            'type_id.exists' => 'El \'tipo de ambiente\' debe ser una seleccion valida', 
-            'block_id.exists' => 'El \'bloque\' debe ser una seleccion valida', 
+            'type_id.exists' => 'El \'tipo de ambiente\' debe ser una seleccion valida',
+            'block_id.exists' => 'El \'bloque\' debe ser una seleccion valida',
             'floor_number.min' => 'El \'piso\' debe ser un numero positivo menor a la cantidad de pisos del bloque',
             'status_id.required' => 'El \'estado\' debe ser una opcion valida',
             'status_id.exists' => 'La opcion de \'estado\' seleccionada no existe',
         ]);
     }
 
- 
+
     /**
      * Function to retrieve disponibility status for all selected classrooms
      * @param Request $request
      * @return Response
      */
-    public function getClassroomByDisponibility(Request $request): Response 
+    public function getClassroomByDisponibility(Request $request): Response
     {
         try {
 
             $validator = $this->validateDisponibilityData($request);
             if ($validator->fails()) {
-                $message = ''; 
-                foreach ($validator->errors()->all() as $value) 
+                $message = '';
+                foreach ($validator->errors()->all() as $value)
                     $message .= $value . '\n';
                 return response()->json(['message' => $message], 400);
             }
             $data = $validator->validated();
             return response()->json(
-                $this->classroomService->getClassroomByDisponibility($data), 
+                $this->classroomService->getClassroomByDisponibility($data),
                 200
             );
         } catch (Exception $e) {
             return response()->json(
                 [
-                    'message' => 'Hubo un error en el servidor', 
-                    'error' => $e->getMessage() 
-                ], 
+                    'message' => 'Hubo un error en el servidor',
+                    'error' => $e->getMessage()
+                ],
                 500
             );
         }
@@ -359,7 +363,7 @@ class ClassroomController extends Controller
      * @param Request $request
      * @return mixed
      */
-    private function validateDisponibilityData(Request $request) 
+    private function validateDisponibilityData(Request $request)
     {
         return Validator::make($request->all(), [
             'date' => 'required|date',
@@ -377,7 +381,7 @@ class ClassroomController extends Controller
                 function ($attribute, $value, $fail) {
                     if (count($value) !== 2) {
                         $fail('Debe seleccionar exactamente dos periodos de tiempo.');
-                    }else if ($value[1] <= $value[0]) {
+                    } else if ($value[1] <= $value[0]) {
                         $fail('El segundo periodo debe ser mayor que el primero.');
                     }
                 }
@@ -394,7 +398,7 @@ class ClassroomController extends Controller
             'time_slot_id.*.exists' => 'Uno de los periodos de tiempo seleccionados no es válido.',
             'time_slot_id.required' => 'Se requieren dos periodos de tiempo.',
             'time_slot_id.array' => 'Los periodos de tiempo deben ser un arreglo.',
-        ]);    
+        ]);
     }
 
     /**
@@ -408,25 +412,24 @@ class ClassroomController extends Controller
             $validator = $this->validateSuggestionData($request);
 
             if ($validator->fails()) {
-                $message = ''; 
-                foreach ($validator->errors()->all() as $value) 
+                $message = '';
+                foreach ($validator->errors()->all() as $value)
                     $message .= $value . '\n';
                 return response()->json(['message' => $message], 400);
             }
 
-            $data = $validator->validated(); 
+            $data = $validator->validated();
 
-            return response()->json($this->classroomService->suggestClassrooms($data),200);
-
+            return response()->json($this->classroomService->suggestClassrooms($data), 200);
         } catch (Exception $e) {
             return response()->json(
                 [
-                    'message' => 'Hubo un error en el servidor', 
-                    'error' => $e->getMessage() 
-                ], 
+                    'message' => 'Hubo un error en el servidor',
+                    'error' => $e->getMessage()
+                ],
                 500
             );
-        } 
+        }
     }
 
     /**
@@ -434,7 +437,7 @@ class ClassroomController extends Controller
      * @param Request $request
      * @return mixed
      */
-    private function validateSuggestionData(Request $request) 
+    private function validateSuggestionData(Request $request)
     {
         return Validator::make($request->all(), [
             'date' => 'required|date',
@@ -447,7 +450,7 @@ class ClassroomController extends Controller
                 function ($attribute, $value, $fail) {
                     if (count($value) !== 2) {
                         $fail('Debe seleccionar exactamente dos periodos de tiempo.');
-                    }else if ($value[1] <= $value[0]) {
+                    } else if ($value[1] <= $value[0]) {
                         $fail('El segundo periodo debe ser mayor que el primero.');
                     }
                 }
@@ -463,7 +466,7 @@ class ClassroomController extends Controller
             'time_slot_id.*.exists' => 'Uno de los periodos de tiempo seleccionados no es válido.',
             'time_slot_id.required' => 'Se requieren dos periodos de tiempo.',
             'time_slot_id.array' => 'Los periodos de tiempo deben ser un arreglo.',
-        ]);    
+        ]);
     }
 
     /**
@@ -476,11 +479,11 @@ class ClassroomController extends Controller
         try {
             $validator = $this->validateRetriveLastClassroomData($request);
             if ($validator->fails()) {
-                $message = ''; 
-                foreach ($validator->errors()->all() as $value) 
+                $message = '';
+                foreach ($validator->errors()->all() as $value)
                     $message .= $value;
                 return response()->json(
-                    ['message' => $message], 
+                    ['message' => $message],
                     400
                 );
             }
@@ -488,9 +491,9 @@ class ClassroomController extends Controller
             $data = $validator->validated();
 
             $classroom = $this->classroomService->retriveLastClassroom($data);
-            if(count($classroom) <= 0) {
+            if (count($classroom) <= 0) {
                 return response()->json(
-                    ['message' => 'Aula no encontrada'], 
+                    ['message' => 'Aula no encontrada'],
                     404
                 );
             }
@@ -510,7 +513,7 @@ class ClassroomController extends Controller
      * @param Request $request
      * @return mixed
      */
-    private function validateRetriveLastClassroomData(Request $request) 
+    private function validateRetriveLastClassroomData(Request $request)
     {
         return Validator::make($request->all(), [
             'date' => 'required|date',
@@ -520,14 +523,33 @@ class ClassroomController extends Controller
             'classroom_id.required' => 'El ID del aula es obligatorio. ',
             'classroom_id.exists' => 'El aula no existe. ',
             'date.date' => 'La fecha debe ser un formato válido. ',
-        ]);    
+        ]);
     }
 
     /**
-     * @covers
-     * IDK
+     * Function for delete classroom by ID
+     * @param int $classroomId
+     * @return Response
      */
-    public function destroy($id)
+    public function destroy(int $classroomId): Response
     {
+        try {
+            $isDeleted = $this->classroomService->isDeletedClassroom($classroomId);
+            if ($isDeleted) {
+                return response()->json(
+                    ['message' => 'El aula no existe.'],
+                    404
+                );
+            }
+            return response()->json($this->classroomService->deleteByClassroomId($classroomId));
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'message' => 'Hubo un error en el servidor',
+                    'error' => $e->getMessage()
+                ],
+                500
+            );
+        }
     }
 }
