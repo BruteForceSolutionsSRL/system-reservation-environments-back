@@ -18,9 +18,6 @@ use App\Service\ServiceImplementation\{
     ClassroomServiceImpl as ClassroomService,
     BlockServiceImpl
 };
-use App\Models\Block;
-use App\Models\Classroom;
-use PhpParser\Node\Stmt\TryCatch;
 
 class ClassroomController extends Controller
 {
@@ -32,26 +29,7 @@ class ClassroomController extends Controller
         $this->blockService = new BlockServiceImpl(); 
     }
     
-    public function test(): Response
-    {
-        try {
-            return response()->json(
-                $this->classroomService->getAllAvailableClassrooms(), 
-                200
-            );
-        } catch (Exception $e) {
-            return response()->json(
-                [
-                    'message' => 'Hubo un error en el servidor',
-                    'error' => $e->getMessage()
-                ],
-                500
-            );
-        }
-    }
-
     /**
-     * Explain:
      * list function retrieves all classrooms.
      * @param none
      * @return Response
@@ -110,13 +88,14 @@ class ClassroomController extends Controller
             if ($validator->fails()) {
                 $message = ''; 
                 foreach ($validator->errors()->all() as $value) 
-                    $message = $message . $value . '\n';
+                    $message = $message . $value . '.';
                 return response()->json(
                     ['message' => $message], 
                     400
                 );
             }
             $data = $validator->validated();
+            $data['classroom_id'] = $classroomId; 
 
             $block = $this->blockService->getBlock($data['block_id']); 
             if ($block['block_maxfloor'] < $data['floor_number']) {
@@ -189,7 +168,7 @@ class ClassroomController extends Controller
             
             if ($block == []) {
                 return response()->json(
-                    ['message'=>'El ID del bloque debe ser valido'], 
+                    ['message' => 'El ID del bloque debe ser valido'], 
                     400
                 );
             }
@@ -230,7 +209,7 @@ class ClassroomController extends Controller
             if ($validator->fails()) {
                 $message = ''; 
                 foreach ($validator->errors()->all() as $value) 
-                    $message = $message . $value . '\n';
+                    $message = $message . $value . '.';
                 return response()->json(
                     ['message' => $message], 
                     400
@@ -248,7 +227,10 @@ class ClassroomController extends Controller
                 );
             }
         
-            return response()->json(['message'=> $this->classroomService->store($data)],200);
+            return response()->json(
+                ['message' => $this->classroomService->store($data)],
+                200
+            );
         } catch (Exception $e) {
             return response()->json(
                 [
@@ -335,7 +317,7 @@ class ClassroomController extends Controller
             if ($validator->fails()) {
                 $message = ''; 
                 foreach ($validator->errors()->all() as $value) 
-                    $message .= $value . '\n';
+                    $message .= $value . '.';
                 return response()->json(['message' => $message], 400);
             }
             $data = $validator->validated();
@@ -410,7 +392,7 @@ class ClassroomController extends Controller
             if ($validator->fails()) {
                 $message = ''; 
                 foreach ($validator->errors()->all() as $value) 
-                    $message .= $value . '\n';
+                    $message .= $value . '.';
                 return response()->json(['message' => $message], 400);
             }
 
@@ -478,7 +460,7 @@ class ClassroomController extends Controller
             if ($validator->fails()) {
                 $message = ''; 
                 foreach ($validator->errors()->all() as $value) 
-                    $message .= $value;
+                    $message .= $value . '.';
                 return response()->json(
                     ['message' => $message], 
                     400

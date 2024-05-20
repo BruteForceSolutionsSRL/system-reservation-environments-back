@@ -39,7 +39,7 @@ class TimeSlotServiceImpl implements TimeSlotService
      * @param array $timeSlots
      * @return array
      */
-    public function getTimeSlotsSorted(array $timeSlots): array
+    public function getTimeSlotsSorted($timeSlots): array
     {
         $array = array(); 
         foreach ($timeSlots as $timeSlot) 

@@ -211,7 +211,6 @@ class ReservationServiceImpl implements ReservationService
      */
     public function store(array $data): string
     {
-        // esto es otra funcion
         $block_id = -1;
         foreach ($data['classroom_id'] as $classroomId) {
             $classroom = Classroom::find($classroomId);

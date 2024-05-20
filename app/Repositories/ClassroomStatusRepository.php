@@ -25,10 +25,12 @@ class ClassroomStatusRepository extends Repository
         return ClassroomStatus::where('name', 'DESABILITADO')
             ->get()->pop()->id;
     } 
-    public static function deleted() {
+    public static function deleted() 
+    {
         return ClassroomStatus::where('name', 'ELIMINADO')
             ->get()->pop()->id; 
     }
+
     /**
      * Retrieve a list of all statuses for classroom except delete 
      * @param none
@@ -56,7 +58,7 @@ class ClassroomStatusRepository extends Repository
         if ($classroomStatus == null) return [];
         return [
             'classroom_status_name' => $classroomStatus->name, 
-            'classrooom_status_id' => $classroomStatus->id
+            'classroom_status_id' => $classroomStatus->id
         ];
     }
 }

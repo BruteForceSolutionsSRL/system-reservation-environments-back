@@ -14,6 +14,12 @@ class ClassroomStatusController extends Controller
     {
         $this->classroomService = new ClassroomServiceImpl(); 
     }
+    
+    /**
+     * Retrieve a JSON to list all statuses for classroom
+     * @param none
+     * @return Response
+     */
     public function list(): Response
     {
         try {

@@ -2,11 +2,14 @@
 namespace App\Repositories;
 
 use App\Models\{
-    Reservation,
-    TimeSlot
+    Reservation
 };
 
-use App\Repositories\ReservationStatusRepository as ReservationStatuses;
+use App\Models\ClassroomLogs;
+use App\Repositories\{
+    ReservationStatusRepository as ReservationStatuses,
+    ClassroomLogsRepository
+}; 
 
 use App\Service\ServiceImplementation\TimeSlotServiceImpl;
 use Carbon\Carbon;
@@ -15,12 +18,14 @@ use DateTime;
 use Illuminate\Cache\Repository;
 class ReservationRepository extends Repository
 {
-    protected $model;
+    protected $model; 
     private $timeSlotService;
-    function __construct($model)
+    private $classroomLog;  
+    function __construct($model) 
     {
-        $this->model = $model;
+        $this->model = $model; 
         $this->timeSlotService = new TimeSlotServiceImpl();
+        $this->classroomLog = new ClassroomLogsRepository(ClassroomLogs::class); 
     }
 
     /**
@@ -248,11 +253,19 @@ class ReservationRepository extends Repository
                 ];
             }),
             'block_name' => $classrooms->first()->block->name,
-            'classrooms' => $classrooms->map(function ($classroom) {
-                return [
-                    'classroom_name' => $classroom->name,
-                    'capacity' => $classroom->capacity,
-                ];
+            'classrooms' => $classrooms->map(
+                function ($classroom) use ($reservation) 
+                {
+                    $classroomData = $this->classroomLog->retriveLastClassroom(
+                        [
+                            'classroom_id' => $classroom->id,
+                            'date' => $reservation->created_at 
+                        ]
+                    );
+                    return [
+                        'classroom_name' => $classroomData['classroom_name'],
+                        'capacity' => $classroomData['capacity'],
+                    ];
             }),
             'reason_name' => $reservationReason->reason,
             'priority' => $priority,

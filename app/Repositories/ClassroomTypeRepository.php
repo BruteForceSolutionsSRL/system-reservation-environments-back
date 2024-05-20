@@ -11,6 +11,7 @@ class ClassroomTypeRepository
     {
         $this->model = $model;
     }
+    
     /**
      * Retrieve a list of all classroom types
      * @param none
