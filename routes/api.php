@@ -30,27 +30,34 @@ use App\Models\Role;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
+Route::controller(ReservationReasonController::class)->group(function() {
+    Route::get('/reservations/reasons', 'list');
+});
 
 Route::controller(ReservationController::class)->group(function() {
     Route::get('/reservations', 'list');
     Route::get('/reservations/pending', 'getPendingRequests');
     Route::get('/reservations/teacher/{teacherId}/open', 'listRequestsByTeacher');
     Route::get('/reservations/teacher/{teacherId}', 'listAllRequestsByTeacher'); 
-    Route::get('/reservations/{reservationId}', 'show');
-    Route::get('/reservations/{reservationId}/conflicts', 'getConflicts');
     Route::get('/reservations/history', 'getAllRequestsExceptPending');
     Route::get('/reservations/history/teacher/{teacherId}', 'getAllRequestsExceptPendingByTeacher');
+    Route::get('/reservations/{reservationId}', 'show');
+    Route::get('/reservations/{reservationId}/conflicts', 'getConflicts');
     Route::get('/reservations/classroom/{classroomId}','getAllReservationsByClassroom');
 
-    Route::middleware('sanitize:api')->patch('/reservations/{reservationId}/reject/', 'rejectReservation');
-    Route::middleware('sanitize:api')->patch('/reservations/{reservationId}/assign/', 'assign');
-    Route::middleware('sanitize:api')->patch('/reservations/{reservationId}/cancel/', 'cancelRequest');
+    Route::middleware('sanitize:api')->patch('/reservations/{reservationId}/reject', 'rejectReservation');
+    Route::middleware('sanitize:api')->patch('/reservations/{reservationId}/assign', 'assign');
+    Route::middleware('sanitize:api')->patch('/reservations/{reservationId}/cancel', 'cancelRequest');
     
     Route::middleware('sanitize:api')->post('/reservations', 'store');    
 });
 
-Route::controller(ReservationReasonController::class)->group(function() {
-    Route::get('/reservations/reasons', 'list');
+Route::controller(ClassroomStatusController::class)->group(function() {
+    Route::get('/classrooms/statuses', 'list');
+});
+
+Route::controller(ClassroomTypeController::class)->group(function() {
+    Route::get('/classrooms/types', 'list');
 });
 
 Route::controller(ClassroomController::class)->group(function() {
@@ -67,14 +74,6 @@ Route::controller(ClassroomController::class)->group(function() {
     Route::middleware('sanitize:api')->post('/classrooms', 'store');
     
     Route::middleware('sanitize:api')->put('/classrooms/{classroomId}', 'update');
-});
-
-Route::controller(ClassroomStatusController::class)->group(function() {
-    Route::get('/classrooms/statuses', 'list');
-});
-
-Route::controller(ClassroomTypeController::class)->group(function() {
-    Route::get('/classrooms/types', 'list');
 });
 
 Route::controller(TeacherSubjectController::class)->group(function() {

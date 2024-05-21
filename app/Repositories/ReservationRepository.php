@@ -82,6 +82,7 @@ class ReservationRepository extends Repository
      */
     public function getReservationsWithoutPendingRequest(): array
     {
+        
         return $this->model::with([
             'reservationStatus:id,status',
             'reservationReason:id,reason',
@@ -229,6 +230,7 @@ class ReservationRepository extends Repository
      */
     private function formatOutput(Reservation $reservation): array
     {
+        
         if ($reservation == null) return [];
         $reservationReason = $reservation->reservationReason;
         $reservationStatus = $reservation->reservationStatus;

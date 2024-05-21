@@ -23,8 +23,7 @@ class ClassroomLogsRepository
     public function retriveLastClassroom(array $data): array
     {
         $classroomLog = $this->model::where('classroom_id', $data['classroom_id'])
-            ->where('created_at', '<', $data['date'])
-            ->where('classroom_status_name', '!=', 'ELIMINADO')
+            ->where('created_at', '<=', $data['date'])
             ->orderBy('created_at', 'desc')
             ->first();
         
