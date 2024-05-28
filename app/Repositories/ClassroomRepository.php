@@ -190,7 +190,7 @@ class ClassroomRepository extends Repository
     {
         $classroom = $this->model::find($classroomId);
         if (($classroom != null) &&
-            ($classroom->classroom_status_id === ClassroomStatus::available())
+            ($classroom->classroom_status_id !== ClassroomStatus::deleted())
         ) {
             return $this->formatOutput($classroom);
         }
