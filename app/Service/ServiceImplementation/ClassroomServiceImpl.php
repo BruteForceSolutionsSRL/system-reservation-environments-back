@@ -152,7 +152,6 @@ class ClassroomServiceImpl implements ClassroomService
             $data['classroom_id']
         );
         $modifiedClassroom = $this->classroomRepository->update($data);
-        echo 'normla'; 
         if ($classroom['classroom_status_id'] != $modifiedClassroom['classroom_status_id']) {
             $reservations = $this->reservationService->getActiveReservationsByClassroom(
                 $classroom['classroom_id']
@@ -163,7 +162,6 @@ class ClassroomServiceImpl implements ClassroomService
                 }
             // modulo para enviar las notificaciones :V
         }
-        echo 'fin'; 
         return "El ambiente fue actualizado correctamente";
     }
 
