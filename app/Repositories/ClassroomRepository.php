@@ -5,7 +5,8 @@ namespace App\Repositories;
 use App\Models\{
     Classroom,
     ClassroomType,
-    ClassroomStatus as ClassroomStatusModel
+    ClassroomStatus as ClassroomStatusModel, 
+    Block
 };
 
 use App\Repositories\{
@@ -21,12 +22,14 @@ class ClassroomRepository extends Repository
 
     private $classroomStatusRepository; 
     private $classroomTypeRepository; 
+    private $blockRepository; 
     public function __construct($model)
     {
         $this->model = $model;
         
         $this->classroomStatusRepository = new ClassroomStatusRepository(ClassroomStatusModel::class);
         $this->classroomTypeRepository = new ClassroomTypeRepository(ClassroomType::class);
+        $this->blockRepository = new BlockRepository(Block::class);
     }
 
     /**
@@ -221,6 +224,9 @@ class ClassroomRepository extends Repository
         $classroomStatus = $this->classroomStatusRepository->getClassroomStatusById(
             $classroom->classroom_status_id
         );
+
+        $block = $this->blockRepository->getBlock($classroom->block_id);
+
         return [
             'classroom_id' => $classroom->id,
             'classroom_name' => $classroom->name,
@@ -230,7 +236,8 @@ class ClassroomRepository extends Repository
             'classroom_status_name' => $classroomStatus['classroom_status_name'],
             'capacity' => $classroom->capacity,
             'floor' => $classroom->floor,
-            'block_id' => $classroom->block_id
+            'block_id' => $classroom->block_id, 
+            'block_name' => $block['block_name']
         ];
     }
 
