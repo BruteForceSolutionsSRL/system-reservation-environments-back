@@ -34,6 +34,16 @@ class ClassroomStatusRepository extends Repository
     }
 
     /**
+     * Retrieve a single classroom status based on its ID
+     * @param int $id
+     * @return array
+     */
+    public function getClassroomStatusById(int $id) 
+    {
+        return $this->formatOutput($this->model::find($id));
+    }
+
+    /**
      * Retrieve a list of all statuses for classroom except delete 
      * @param none
      * @return array

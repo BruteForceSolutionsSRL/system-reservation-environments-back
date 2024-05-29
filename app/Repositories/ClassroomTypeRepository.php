@@ -11,6 +11,15 @@ class ClassroomTypeRepository
     {
         $this->model = $model;
     }
+
+    /**
+     * Rertieve a single classroom Type based on its id
+     * @param int $id
+     * @return array
+     */
+    public function getClassroomTypeById(int $id) {
+        return $this->formatOutput($this->model::find($id)); 
+    }
     
     /**
      * Retrieve a list of all classroom types
