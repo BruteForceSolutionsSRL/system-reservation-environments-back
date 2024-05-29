@@ -277,6 +277,7 @@ class ReservationRepository extends Repository
             'reason_name' => $reservationReason->reason,
             'priority' => $priority,
             'reservation_status' => $reservationStatus->status,
+            'repeat' => $reservation->repeat, 
         ];
     }
 

@@ -2,20 +2,34 @@
 
 namespace App\Repositories;
 
-use App\Models\Classroom;
-use Illuminate\Cache\Repository;
+use App\Models\{
+    Classroom,
+    ClassroomType,
+    ClassroomStatus as ClassroomStatusModel, 
+    Block
+};
 
 use App\Repositories\{
     ClassroomStatusRepository as ClassroomStatus,
     ReservationStatusRepository as ReservationRepository,
 };
 
+use Illuminate\Cache\Repository;
+
 class ClassroomRepository extends Repository
 {
     protected $model;
+
+    private $classroomStatusRepository; 
+    private $classroomTypeRepository; 
+    private $blockRepository; 
     public function __construct($model)
     {
         $this->model = $model;
+        
+        $this->classroomStatusRepository = new ClassroomStatusRepository(ClassroomStatusModel::class);
+        $this->classroomTypeRepository = new ClassroomTypeRepository(ClassroomType::class);
+        $this->blockRepository = new BlockRepository(Block::class);
     }
 
     /**
@@ -190,7 +204,7 @@ class ClassroomRepository extends Repository
     {
         $classroom = $this->model::find($classroomId);
         if (($classroom != null) &&
-            ($classroom->classroom_status_id === ClassroomStatus::available())
+            ($classroom->classroom_status_id !== ClassroomStatus::deleted())
         ) {
             return $this->formatOutput($classroom);
         }
@@ -204,16 +218,26 @@ class ClassroomRepository extends Repository
      */
     private function formatOutput(Classroom $classroom): array
     {
+        $classroomType = $this->classroomTypeRepository->getClassroomTypeById(
+            $classroom->classroom_type_id
+        );
+        $classroomStatus = $this->classroomStatusRepository->getClassroomStatusById(
+            $classroom->classroom_status_id
+        );
+
+        $block = $this->blockRepository->getBlock($classroom->block_id);
+
         return [
             'classroom_id' => $classroom->id,
             'classroom_name' => $classroom->name,
             'classroom_type_id' => $classroom->classroom_type_id, 
-            'classroom_type_name' => $classroom->classroom_type_id, 
+            'classroom_type_name' => $classroomType['type_name'], 
             'classroom_status_id' => $classroom->classroom_status_id,
-            'classroom_status_name' => $classroom->classroom_status_id,
+            'classroom_status_name' => $classroomStatus['classroom_status_name'],
             'capacity' => $classroom->capacity,
             'floor' => $classroom->floor,
-            'block_id' => $classroom->block_id
+            'block_id' => $classroom->block_id, 
+            'block_name' => $block['block_name']
         ];
     }
 

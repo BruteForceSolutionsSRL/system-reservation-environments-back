@@ -30,9 +30,10 @@ class ClassroomServiceImpl implements ClassroomService
     private $timeSlotRepository;
     private $blockRepository;
     private $classroomStatusRepository;
+    private $classroomLogRepository;
+
     private $reservationService;
     private $timeSlotService;
-    private $classroomLogRepository;
 
     public function __construct()
     {
@@ -54,9 +55,10 @@ class ClassroomServiceImpl implements ClassroomService
      */
     public function getAllClassrooms(string $statuses): array
     {
-        $idStatuses = $this->classroomRepository->getClassrooomsByStatus([
-            $statuses
-        ]);
+        $idStatuses = [
+            $this->classroomStatusRepository->available()//, 
+//            $this->classroomStatusRepository->disabled()
+        ];
         return $this->classroomRepository->getClassrooomsByStatus($idStatuses);
     }
 
