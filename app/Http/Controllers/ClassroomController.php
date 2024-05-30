@@ -112,8 +112,8 @@ class ClassroomController extends Controller
         try {
             $validator = $this->validateClassroomDataUpdate($request);
             if ($validator->fails()) {
-                $message = ''; 
-                foreach ($validator->errors()->all() as $value) 
+                $message = '';
+                foreach ($validator->errors()->all() as $value)
                     $message = $message . $value . '.';
                 return response()->json(
                     ['message' => $message],
@@ -121,7 +121,7 @@ class ClassroomController extends Controller
                 );
             }
             $data = $validator->validated();
-            $data['classroom_id'] = $classroomId; 
+            $data['classroom_id'] = $classroomId;
 
             $block = $this->blockService->getBlock($data['block_id']);
             if ($block['block_maxfloor'] < $data['floor_number']) {
@@ -188,13 +188,13 @@ class ClassroomController extends Controller
      * @return Response
      */
     public function classroomsByBlock(int $blockId): Response
-    {        
+    {
         try {
             $block = $this->blockService->getBlock($blockId);
 
             if ($block == []) {
                 return response()->json(
-                    ['message' => 'El ID del bloque debe ser valido'], 
+                    ['message' => 'El ID del bloque debe ser valido'],
                     400
                 );
             }
@@ -216,10 +216,10 @@ class ClassroomController extends Controller
                 [
                     'message' => 'Hubo un error en el servidor',
                     'error' => $e->getMessage()
-                ], 
+                ],
                 500
-            ); 
-        }    
+            );
+        }
     }
 
     /**
@@ -227,14 +227,14 @@ class ClassroomController extends Controller
      * @param Request $request
      * @return Response
      */
-    public function store(Request $request): Response 
+    public function store(Request $request): Response
     {
         try {
             $validator = $this->validateClassroomData($request);
 
             if ($validator->fails()) {
-                $message = ''; 
-                foreach ($validator->errors()->all() as $value) 
+                $message = '';
+                foreach ($validator->errors()->all() as $value)
                     $message = $message . $value . '.';
                 return response()->json(
                     ['message' => $message],
@@ -252,7 +252,7 @@ class ClassroomController extends Controller
                     400
                 );
             }
-        
+
             return response()->json(
                 ['message' => $this->classroomService->store($data)],
                 200
@@ -273,27 +273,50 @@ class ClassroomController extends Controller
      * @param Request $request
      * @return mixed
      */
-    private function validateClassroomData(Request $request) 
+    private function validateClassroomData(Request $request)
     {
         return Validator::make($request->all(), [
-            'classroom_name' => 'required|string|regex:/^[A-Z0-9\-\. ]+$/
-            |unique:classrooms,name', 
-            'capacity' => 'required|integer|min:25|max:500', 
-            'type_id' => 'required|integer|exists:classroom_types,id', 
-            'block_id' => 'required|integer|exists:blocks,id', 
-            'floor_number' => 'required|integer|min:0'
+            'classroom_name' => '
+                required|
+                regex:/^[A-Z0-9\-\. ]+$/|
+                unique:classrooms,name',
+            'capacity' => '
+                required|
+                integer|
+                min:25|
+                max:500',
+            'type_id' => '
+                required|
+                integer|
+                exists:classroom_types,id',
+            'block_id' => '
+                required|
+                integer|
+                exists:blocks,id',
+            'floor_number' => '
+                required|
+                integer|
+                min:0'
         ], [
-            'type_id.required' => 'El atributo \'tipo de ambiente\' no debe ser nulo o vacio', 
-            'block_id.required' => 'El atributo \'bloque\' no debe ser nulo o vacio', 
-            'classroom_name.required' => 'El atributo \'nombre\' no debe ser nulo o vacio', 
-            'classroom_name.regex' => 'El nombre solamente puede tener caracteres alfanumericos y \'-\', \'.\' y \' \'',
-            'capacity.required' => 'El atributo \'capacidad\' no debe ser nulo o vacio', 
-            'floor_number.required' => 'El atributo \'piso\' no debe ser nulo o vacio', 
-            'unique' => 'El nombre ya existe, intente con otro', 
-            'capacity.min' => 'Debe seleccionar una capacidad mayor o igual a 25',
-            'capacity.max' => 'Debe seleccionar una capacidad menor o igual a 500',
-            'type_id.exists' => 'El \'tipo de ambiente\' debe ser una seleccion valida', 
-            'block_id.exists' => 'El \'bloque\' debe ser una seleccion valida', 
+            'classroom_name.required' => 'El atributo \'nombre\' no debe ser nulo o vacio',
+            'classroom_name.regex' => 'El nombre solamente puede tener caracteres alfanumericos y \'-\', \'.\', \' \'',
+            'classroom_name.unique' => 'El nombre del ambiente ya se encuentra registrado',
+
+            'capacity.required' => 'El atributo \'capacidad\' no debe ser nulo o vacio',
+            'capacity.integer' => 'La \'capacidad\' debe ser un valor entero',
+            'capacity.min' => 'Debe seleccionar una \'capacidad\' mayor o igual a 25',
+            'capacity.max' => 'Debe seleccionar una \'capacidad\' menor o igual a 500',
+
+            'type_id.required' => 'El atributo \'tipo de ambiente\' no debe ser nulo o vacio',
+            'type_id.integer' => 'El \'tipo de ambiente\' debe ser un valor entero',
+            'type_id.exists' => 'El \'tipo de ambiente\' debe ser una seleccion valida',
+
+            'block_id.required' => 'El atributo \'bloque\' no debe ser nulo o vacio',
+            'block_id.integer' => 'El \'bloque\' debe ser un valor entero',
+            'block_id.exists' => 'El \'bloque\' debe ser una seleccion valida',
+
+            'floor_number.required' => 'El atributo \'piso\' no debe ser nulo o vacio',
+            'floor_number.integer' => 'El \'piso\' debe ser un valor entero',
             'floor_number.min' => 'El \'piso\' debe ser un numero positivo menor a la cantidad de pisos del bloque'
         ]);
     }
@@ -306,25 +329,55 @@ class ClassroomController extends Controller
     private function validateClassroomDataUpdate(Request $request)
     {
         return Validator::make($request->all(), [
-            'classroom_id' => 'required|int|exists:classrooms,id',
-            'capacity' => 'required|integer|min:25|max:500',
-            'type_id' => 'required|integer|exists:classroom_types,id',
-            'block_id' => 'required|integer|exists:blocks,id',
-            'floor_number' => 'required|integer|min:0',
-            'status_id' => 'required|integer|exists:classroom_statuses,id'
+            'classroom_id' => '
+                required|
+                integer|
+                exists:classrooms,id',
+            'capacity' => '
+                required|
+                integer|
+                min:25|
+                max:500',
+            'type_id' => '
+                required|
+                integer|
+                exists:classroom_types,id',
+            'block_id' => '
+                required|
+                integer|
+                exists:blocks,id',
+            'floor_number' => '
+                required|
+                integer|
+                min:0',
+            'status_id' => '
+                required|
+                integer|
+                exists:classroom_statuses,id'
         ], [
-            'classroom_id' => 'El ambiente no existe',
-            'type_id.required' => 'El atributo \'tipo de ambiente\' no debe ser nulo o vacio',
-            'block_id.required' => 'El atributo \'bloque\' no debe ser nulo o vacio',
+            'classroom_id.required' => 'El atributo \'ambiente\' no debe ser nulo o vacio',
+            'classroom_id.integer' => 'El \'ambiente\', debe ser un valor entero',
+            'classroom_id.exists' => 'El \'ambiente\' no existe',
+
             'capacity.required' => 'El atributo \'capacidad\' no debe ser nulo o vacio',
-            'floor_number.required' => 'El atributo \'piso\' no debe ser nulo o vacio',
-            'unique' => 'El nombre ya existe, intente con otro',
-            'capacity.min' => 'Debe seleccionar una capacidad mayor o igual a 25',
-            'capacity.max' => 'Debe seleccionar una capacidad menor o igual a 500',
+            'capacity.integer' => 'La \'capacidad\' debe ser un valor entero',
+            'capacity.min' => 'Debe seleccionar una \'capacidad\' mayor o igual a 25',
+            'capacity.max' => 'Debe seleccionar una \'capacidad\' menor o igual a 500',
+
+            'type_id.required' => 'El atributo \'tipo de ambiente\' no debe ser nulo o vacio',
+            'type_id.integer' => 'El \'tipo de ambiente\' debe ser un valor entero',
             'type_id.exists' => 'El \'tipo de ambiente\' debe ser una seleccion valida',
+
+            'block_id.required' => 'El atributo \'bloque\' no debe ser nulo o vacio',
+            'block_id.integer' => 'El \'bloque\', debe ser un valor entero',
             'block_id.exists' => 'El \'bloque\' debe ser una seleccion valida',
+
+            'floor_number.required' => 'El atributo \'piso\' no debe ser nulo o vacio',
+            'floor_number.integer' => 'El \'piso\' debe ser un valor entero',
             'floor_number.min' => 'El \'piso\' debe ser un numero positivo menor a la cantidad de pisos del bloque',
+
             'status_id.required' => 'El \'estado\' debe ser una opcion valida',
+            'status_id.integer' => 'El \'estado\' debe ser un valor entero',
             'status_id.exists' => 'La opcion de \'estado\' seleccionada no existe',
         ]);
     }
@@ -341,8 +394,8 @@ class ClassroomController extends Controller
 
             $validator = $this->validateDisponibilityData($request);
             if ($validator->fails()) {
-                $message = ''; 
-                foreach ($validator->errors()->all() as $value) 
+                $message = '';
+                foreach ($validator->errors()->all() as $value)
                     $message .= $value . '.';
                 return response()->json(['message' => $message], 400);
             }
@@ -370,18 +423,27 @@ class ClassroomController extends Controller
     private function validateDisponibilityData(Request $request)
     {
         return Validator::make($request->all(), [
-            'date' => 'required|date',
-            'block_id' => 'required|exists:blocks,id',
+            'date' => '
+                required|
+                date',
+            'block_id' => '
+                required|
+                integer|
+                exists:blocks,id',
+            'classroom_id' => 'array',
             'classroom_id.*' => [
                 'required',
+                'integer',
                 Rule::exists('classrooms', 'id')->where(function ($query) use ($request) {
                     $query->where('block_id', $request->input('block_id'));
                 }),
             ],
-            'time_slot_id.*' => 'required|exists:time_slots,id',
+            'time_slot_id' => 'array',
+            'time_slot_id.*' => '
+                required|
+                integer|
+                exists:time_slots,id',
             'time_slot_id' => [
-                'required',
-                'array',
                 function ($attribute, $value, $fail) {
                     if (count($value) !== 2) {
                         $fail('Debe seleccionar exactamente dos periodos de tiempo.');
@@ -391,17 +453,23 @@ class ClassroomController extends Controller
                 }
             ],
         ], [
-            'date.required' => 'La fecha es obligatoria.',
-            'block_id.required' => 'El bloque no debe ir vacio',
-            'block_id.exists' => 'El bloque seleccionado debe existir',
-            'date.date' => 'La fecha debe ser un formato válido.',
-            'classroom_id.*.required' => 'Se requiere al menos una aula.',
-            'classroom_id.*.exists' => 'Una de las aulas seleccionadas no es válida.',
-            'classroom:id.*.belongs' => 'Una de las aulas no pertenece al bloque seleccionado.',
-            'time_slot_id.*.required' => 'Se requieren los periodos de tiempo.',
-            'time_slot_id.*.exists' => 'Uno de los periodos de tiempo seleccionados no es válido.',
-            'time_slot_id.required' => 'Se requieren dos periodos de tiempo.',
-            'time_slot_id.array' => 'Los periodos de tiempo deben ser un arreglo.',
+            'date.required' => 'El atributo \'fecha\' no debe ser nulo y vacio',
+            'date.date' => 'La \'fecha\' debe tener un formato válido',
+
+            'block_id.required' => 'El atributo \'bloque\' no debe ser nulo o vacio',
+            'block_id.integer' => 'El \'bloque\', debe ser un valor entero',
+            'block_id.exists' => 'El \'bloque\' debe ser una seleccion valida',
+            
+            'classroom_id.array' => 'Los identificadores de los ambientes deben estar en un arreglo',
+            'classroom_id.*.required' => 'Se requiere al menos un ambiente',
+            'classroom_id.*.integer' => 'Todos los ambientes del arreglo deben ser enteros',
+            'classroom_id.*.exists' => 'Uno de los ambientes seleccionados no es válido',
+            'classroom_id.*.belongs' => 'Uno de los ambientes no pertenece al bloque seleccionado',
+
+            'time_slot_id.array' => 'Los periodos de tiempo deben estar en un arreglo',
+            'time_slot_id.*.required' => 'Se requieren los periodos de tiempo',
+            'time_slot_id.integer' => 'Todos los periodos dentro del arreglo deben ser enteros',
+            'time_slot_id.*.exists' => 'Uno de los periodos de tiempo seleccionados no es válido',         
         ]);
     }
 
@@ -416,8 +484,8 @@ class ClassroomController extends Controller
             $validator = $this->validateSuggestionData($request);
 
             if ($validator->fails()) {
-                $message = ''; 
-                foreach ($validator->errors()->all() as $value) 
+                $message = '';
+                foreach ($validator->errors()->all() as $value)
                     $message .= $value . '.';
                 return response()->json(['message' => $message], 400);
             }
@@ -444,13 +512,22 @@ class ClassroomController extends Controller
     private function validateSuggestionData(Request $request)
     {
         return Validator::make($request->all(), [
-            'date' => 'required|date',
-            'quantity' => 'required|integer',
-            'block_id' => 'required|exists:blocks,id',
-            'time_slot_id.*' => 'required|exists:time_slots,id',
+            'date' => '
+                required|
+                date',
+            'quantity' => '
+                required|
+                integer',
+            'block_id' => '
+                required|
+                integer|
+                exists:blocks,id',
+            'time_slot_id' => 'array',
+            'time_slot_id.*' => '
+                required|
+                integer|
+                exists:time_slots,id',
             'time_slot_id' => [
-                'required',
-                'array',
                 function ($attribute, $value, $fail) {
                     if (count($value) !== 2) {
                         $fail('Debe seleccionar exactamente dos periodos de tiempo.');
@@ -460,16 +537,20 @@ class ClassroomController extends Controller
                 }
             ],
         ], [
-            'date.required' => 'La fecha es obligatoria.',
+            'date.required' => 'El atributo \'fecha\' no debe ser nulo y vacio',
+            'date.date' => 'La \'fecha\' debe tener un formato válido',
+
             'quantity.required' => 'El número de estudiantes es obligatorio.',
             'quantity.integer' => 'El número de estudiantes debe ser un valor entero.',
-            'block_id.required' => 'El bloque no debe ir vacio',
-            'block_id.exists' => 'El bloque seleccionado debe existir',
-            'date.date' => 'La fecha debe ser un formato válido.',
-            'time_slot_id.*.required' => 'Se requieren los periodos de tiempo.',
-            'time_slot_id.*.exists' => 'Uno de los periodos de tiempo seleccionados no es válido.',
-            'time_slot_id.required' => 'Se requieren dos periodos de tiempo.',
-            'time_slot_id.array' => 'Los periodos de tiempo deben ser un arreglo.',
+
+            'block_id.required' => 'El atributo \'bloque\' no debe ser nulo o vacio',
+            'block_id.integer' => 'El \'bloque\', debe ser un valor entero',
+            'block_id.exists' => 'El \'bloque\' debe ser una seleccion valida',
+            
+            'time_slot_id.array' => 'Los periodos de tiempo deben estar en un arreglo',
+            'time_slot_id.*.required' => 'Se requieren los periodos de tiempo',
+            'time_slot_id.integer' => 'Todos los periodos dentro del arreglo deben ser enteros',
+            'time_slot_id.*.exists' => 'Uno de los periodos de tiempo seleccionados no es válido',
         ]);
     }
 
@@ -483,8 +564,8 @@ class ClassroomController extends Controller
         try {
             $validator = $this->validateRetriveLastClassroomData($request);
             if ($validator->fails()) {
-                $message = ''; 
-                foreach ($validator->errors()->all() as $value) 
+                $message = '';
+                foreach ($validator->errors()->all() as $value)
                     $message .= $value . '.';
                 return response()->json(
                     ['message' => $message],
@@ -520,13 +601,20 @@ class ClassroomController extends Controller
     private function validateRetriveLastClassroomData(Request $request)
     {
         return Validator::make($request->all(), [
-            'date' => 'required|date',
-            'classroom_id' => 'required|exists:classrooms,id',
+            'date' => '
+                required|
+                date',
+            'classroom_id' => '
+                required|
+                integer|
+                exists:classrooms,id',
         ], [
-            'date.required' => 'La fecha es obligatoria. ',
-            'classroom_id.required' => 'El ID del aula es obligatorio. ',
-            'classroom_id.exists' => 'El aula no existe. ',
-            'date.date' => 'La fecha debe ser un formato válido. ',
+            'date.required' => 'La fecha es obligatoria',
+            'date.date' => 'La fecha debe ser un formato válido',
+
+            'classroom_id.required' => 'El atributo \'ambiente\' no debe ser nulo o vacio',
+            'classroom_id.integer' => 'El \'ambiente\', debe ser un valor entero',
+            'classroom_id.exists' => 'El \'ambiente\' no existe',
         ]);
     }
 
@@ -541,7 +629,7 @@ class ClassroomController extends Controller
             $isDeleted = $this->classroomService->isDeletedClassroom($classroomId);
             if ($isDeleted) {
                 return response()->json(
-                    ['message' => 'El aula no existe.'],
+                    ['message' => 'El ambiente ya fue eliminado o no existe'],
                     404
                 );
             }

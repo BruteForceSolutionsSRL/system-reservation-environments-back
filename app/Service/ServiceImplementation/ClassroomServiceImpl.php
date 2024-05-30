@@ -56,8 +56,8 @@ class ClassroomServiceImpl implements ClassroomService
     public function getAllClassrooms(string $statuses): array
     {
         $idStatuses = [
-            $this->classroomStatusRepository->available()//, 
-//            $this->classroomStatusRepository->disabled()
+            $this->classroomStatusRepository->available(), 
+            $this->classroomStatusRepository->disabled()
         ];
         return $this->classroomRepository->getClassrooomsByStatus($idStatuses);
     }
