@@ -23,13 +23,13 @@ class ClassroomRepository extends Repository
     private $classroomStatusRepository; 
     private $classroomTypeRepository; 
     private $blockRepository; 
-    public function __construct($model)
+    public function __construct()
     {
-        $this->model = $model;
+        $this->model = Classroom::class;
         
-        $this->classroomStatusRepository = new ClassroomStatusRepository(ClassroomStatusModel::class);
-        $this->classroomTypeRepository = new ClassroomTypeRepository(ClassroomType::class);
-        $this->blockRepository = new BlockRepository(Block::class);
+        $this->classroomStatusRepository = new ClassroomStatusRepository();
+        $this->classroomTypeRepository = new ClassroomTypeRepository();
+        $this->blockRepository = new BlockRepository();
     }
 
     /**

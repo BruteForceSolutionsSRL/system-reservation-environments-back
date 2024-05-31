@@ -6,13 +6,14 @@ use App\Models\{
     ClassroomLogs,
 };
 use DateTime;
+use Illuminate\Database\Eloquent\Model; 
 
 class ClassroomLogsRepository
 {
     protected $model;
-    function __construct($model)
+    function __construct()
     {
-        $this->model = $model;
+        $this->model = ClassroomLogs::class;
     }
     /**
      * Function to retrieve the last matching classroom

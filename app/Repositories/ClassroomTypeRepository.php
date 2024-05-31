@@ -4,12 +4,15 @@ namespace App\Repositories;
 use App\Models\{
     ClassroomType
 }; 
+
+use Illuminate\Database\Eloquent\Model; 
+
 class ClassroomTypeRepository 
 {
     protected $model; 
-    public function __construct($model)
+    public function __construct()
     {
-        $this->model = $model;
+        $this->model = ClassroomType::class;
     }
 
     /**

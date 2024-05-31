@@ -4,15 +4,14 @@ namespace App\Repositories;
 use App\Models\ReservationStatus; 
 
 use Illuminate\Cache\Repository; 
-use Illuminate\Database\Eloquent\Model; 
 
 class ReservationStatusRepository extends Repository
 {
      
     protected $model; 
-    function __construct(Model $model) 
+    function __construct() 
     {
-        $this->model = $model;
+        $this->model = ReservationStatus::class;
     }
 
     /**

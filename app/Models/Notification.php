@@ -9,7 +9,7 @@ class Notification extends Model
 {
     use HasFactory;
 
-    public function person()
+    public function personTransmitter()
     {
         return $this->belongsTo(Person::class);
     }
@@ -17,5 +17,10 @@ class Notification extends Model
     public function notificationType()
     {
         return $this->belongsTo(NotificationType::class);
+    }
+
+    public function receptors() 
+    {
+        return $this->hasMany(NotificationPersons::class); 
     }
 }

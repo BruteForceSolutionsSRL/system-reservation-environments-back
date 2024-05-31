@@ -4,13 +4,14 @@ namespace App\Repositories;
 use App\Models\TimeSlot; 
 
 use Illuminate\Cache\Repository; 
+use Illuminate\Database\Eloquent\Model; 
 
 class TimeSlotRepository extends Repository
 {
     protected $model;
-    public function __construct($model)
+    public function __construct()
     {
-        $this->model = $model;
+        $this->model = TimeSlot::class;
     }
 
     /**

@@ -4,12 +4,15 @@ namespace App\Repositories;
 use App\Models\{
     ReservationReason
 };
+
+use Illuminate\Database\Eloquent\Model; 
+
 class ReservationReasonRepository
 {
     protected $model; 
-    public function __construct($model)
+    public function __construct()
     {
-        $this->model = $model;
+        $this->model = ReservationReason::class;
     }
     /**
      * Retrieve a list of all reservation reasons formatted

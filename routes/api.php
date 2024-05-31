@@ -82,7 +82,8 @@ Route::controller(TeacherSubjectController::class)->group(function() {
 });
 
 Route::controller(NotificationController::class)->group(function() {
-    Route::middleware('sanitize:api')->post('/notifications', 'store');
+    Route::get('/notifications/inbox/{personId}', 'list');
+    Route::get('/notifications/inbox/{personId}/{notificationId}', 'show'); 
 });
 
 Route::controller(BlockController::class)->group(function() {

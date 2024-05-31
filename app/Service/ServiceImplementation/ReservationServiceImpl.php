@@ -24,8 +24,8 @@ class ReservationServiceImpl implements ReservationService
     private $timeSlotService;
     function __construct()
     {
-        $this->personRepository = new PersonRepository(Person::class);
-        $this->reservationRepository = new ReservationRepository(Reservation::class);
+        $this->personRepository = new PersonRepository();
+        $this->reservationRepository = new ReservationRepository();
         $this->timeSlotService = new TimeSlotServiceImpl();
     }
     /**
@@ -75,7 +75,7 @@ class ReservationServiceImpl implements ReservationService
     public function listRequestsByTeacher(int $teacherId): array
     {
         $teacher = $this->personRepository->getPerson($teacherId);
-        if ($teacher == null) {
+        if ($teacher === []) {
             return ['message' => 'No existe el docente'];
         }
         return $this->reservationRepository->getRequestByTeacher($teacherId);
@@ -89,7 +89,7 @@ class ReservationServiceImpl implements ReservationService
     public function listAllRequestsByTeacher(int $teacherId): array
     {
         $teacher = $this->personRepository->getPerson($teacherId);
-        if ($teacher == null) {
+        if ($teacher === []) {
             return ['message' => 'No existe el docente'];
         }
         return $this->reservationRepository->getAllRequestByTeacher($teacherId);

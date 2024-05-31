@@ -18,16 +18,19 @@ use Carbon\Carbon;
 use DateTime;
 
 use Illuminate\Cache\Repository;
+
 class ReservationRepository extends Repository
 {
     protected $model; 
     private $timeSlotService;
     private $classroomLog;  
-    function __construct($model) 
+    function __construct() 
     {
-        $this->model = $model; 
+        $this->model = Reservation::class; 
+
         $this->timeSlotService = new TimeSlotServiceImpl();
-        $this->classroomLog = new ClassroomLogsRepository(ClassroomLogs::class); 
+        
+        $this->classroomLog = new ClassroomLogsRepository(); 
     }
 
     /**
@@ -358,7 +361,7 @@ class ReservationRepository extends Repository
         return $refinedReservationSet;
     }
 
-    /**
+    /** 
      * Store a new Reservation request
      * @param array $data
      * @return Reservation

@@ -14,9 +14,7 @@ class ClassroomTypeServiceImpl implements ClassroomTypeService
     private $classroomTypeRepository; 
     public function __construct()
     {
-        $this->classroomTypeRepository = new ClassroomTypeRepository(
-            ClassroomType::class
-        );
+        $this->classroomTypeRepository = new ClassroomTypeRepository();
     }
     
     /**

@@ -10,10 +10,11 @@ class TeacherSubjectRepository
 {
     protected $model;
     private $personRepository; 
-    public function __construct($model)
+    public function __construct()
     {
-        $this->model = $model; 
-        $this->personRepository = new PersonRepository(Person::class);
+        $this->model = TeacherSubject::class; 
+        
+        $this->personRepository = new PersonRepository();
     }
 
     /**
@@ -82,9 +83,9 @@ class TeacherSubjectRepository
     private function formatOutputTeacher(Person $teacher): array
     {
         return [
-            'person_id' => $teacher->id,
-            'teacher_name' => $teacher->name,
-            'teacher_last_name' => $teacher->last_name,
+            'person_id' => $teacher['person_id'],
+            'teacher_name' => $teacher['person_name'],
+            'teacher_last_name' => $teacher['person_lastname'],
         ];
     }
 }
