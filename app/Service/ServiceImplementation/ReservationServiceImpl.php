@@ -154,6 +154,8 @@ class ReservationServiceImpl implements ReservationService
                 ]
             );
 
+            $this->mailService->rejectReservation($emailData);
+
             return 'La solicitud de reserva fue rechazada.';
         } else {
             return 'Esta solicitud ya fue atendida';
@@ -201,6 +203,8 @@ class ReservationServiceImpl implements ReservationService
             ]
         );    
 
+        $this->mailService->cancelReservation($emailData);
+
         return 'La solicitud de reserva fue cancelada.';
     }
 
@@ -243,7 +247,6 @@ class ReservationServiceImpl implements ReservationService
                 $message .= $this->reject($reservationIterable->id);
         }
 
-        // aqui viene modulo para envio de notificaciones reservas aceptadas
         $reservationSerialized = implode('<br>', $this->reservationRepository->formatOutput($reservation));
 
         $emailData = $this->notificationService->store(
@@ -260,6 +263,7 @@ class ReservationServiceImpl implements ReservationService
                 )
             ]
         );    
+        $this->mailService->acceptReservation($emailData);
 
         return 'La reserva fue aceptada correctamente';
     }
@@ -285,6 +289,25 @@ class ReservationServiceImpl implements ReservationService
         }
 
         $reservation = $this->reservationRepository->save($data);
+
+        $reservationSerialized = implode('<br>', $this->reservationRepository->formatOutput($reservation));
+
+        $emailData = $this->notificationService->store(
+            [
+                'title' => 'SOLICITUD DE RESERVA #'.$reservation->id.' PENDIENTE', 
+                'body' => 'Se envio la solicitud #'.$reservation->id.' '.$reservationSerialized,
+                'type' => NotificationTypeRepository::accepted(),
+                'sendBy' => $this->personRepository->system(), 
+                'to' => $reservation->teacherSubjects->map(
+                    function ($teacher) 
+                    {
+                        return $teacher->id;
+                    }
+                )
+            ]
+        );
+
+        $this->mailService->createReservation($emailData);
 
         if ($this->checkAvailibility($reservation)) {
             if ($this->alertReservation($reservation)['ok'] != 0) {

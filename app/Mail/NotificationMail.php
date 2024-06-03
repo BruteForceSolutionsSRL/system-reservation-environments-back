@@ -17,10 +17,9 @@ class NotificationMail extends Mailable
      *
      * @return void
      */
-    public function __construct($details, $tipo)
+    public function __construct($details)
     {
         $this->details = $details; 
-        $this->tipo = $tipo;
     }
 
     /**
@@ -30,8 +29,6 @@ class NotificationMail extends Mailable
      */
     public function build()
     {
-        if ($this->tipo === 1)
-        return $this->subject('Mail de test')->view('myMail');
-        else return $this->subject('Mail de test2')->view('templateSolicitudRechazo');
+        return $this->subject($this->details['title'])->view('mail/templates/notification');
     }
 }

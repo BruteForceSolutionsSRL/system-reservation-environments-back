@@ -8,13 +8,13 @@ class NotificationServiceImpl implements NofiticationService
 {
     private $notificationRepository;
 
-    private $mailServiceImpl; 
+    private $mailService; 
 
     public function __construct() 
     {
         $this->notificationRepository = new NotificationRepository();
         
-        $this->mailServiceImpl = new MailerServiceImpl();
+        $this->mailService = new MailerServiceImpl();
     }
 
     /**
@@ -44,7 +44,9 @@ class NotificationServiceImpl implements NofiticationService
      */
     public function store(array $data): array 
     {
-        return $this->notificationRepository->save($data); 
+        $emailData = $this->notificationRepository->save($data);
+        $this->mailService->sendSimpleEmail($emailData);
+        return  $emailData;
     }
 
     /**
@@ -55,6 +57,8 @@ class NotificationServiceImpl implements NofiticationService
      */
     public function update(array $data, int $id): array
     {
-        return $this->notificationRepository->update($data, $id);
+        $emailData = $this->notificationRepository->update($data, $id);
+        $this->mailService->sendSimpleEmail($emailData);
+        return $emailData;
     } 
 }

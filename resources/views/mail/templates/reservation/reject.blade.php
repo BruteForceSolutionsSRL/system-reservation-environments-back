@@ -107,9 +107,8 @@
             <p>**Estado:** Rechazado</p>
             <i class="fa-solid fa-circle-xmark"></i>
         </div>
-        <p>**Fecha de última edición:** {{ $details['updated_at'] }}</p>
-        <p>**Fecha de eliminación:** {{ $details['updated_at'] }}</p>
         <p>{{$details['body']}}</p>
+        <p>Aqui debe venir el personalizado de un notificacion</p>
         <p>Para ver el historial de cambios, haga clic en el siguiente enlace:</p>
         <a href="#">Ver historial de cambios</a>
     </div>

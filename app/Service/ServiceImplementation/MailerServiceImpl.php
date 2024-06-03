@@ -2,6 +2,7 @@
 
 namespace App\Service\ServiceImplementation; 
 
+use App\Mail\NotificationMail;
 use App\Service\MailerService;
 
 use Illuminate\Mail\Mailable;
@@ -53,7 +54,7 @@ class MailerServiceImpl implements MailerService
 		);
 	}
 
-	public function __rejectReservation($data): void
+	public function rejectReservation($data): void
 	{
 		$addresses = $this->getAddresses($data['to']); 
 		$this->sendMail(
@@ -73,6 +74,15 @@ class MailerServiceImpl implements MailerService
 				$data, 
 				ReservationStatus::cancelled()
 			), 
+			$addresses
+		);
+	}
+
+	public function sendSimpleEmail($data): void 
+	{
+		$addresses = $this->getAddresses($data['to']);
+		$this->sendMail(
+			new NotificationMail($data), 
 			$addresses
 		);
 	}
