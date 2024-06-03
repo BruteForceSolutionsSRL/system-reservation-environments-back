@@ -3,7 +3,7 @@ namespace App\Repositories;
 
 use App\Models\ClassroomStatus; 
 
-use Illuminate\Cache\Repository; 
+use Illuminate\Cache\Repository;
 
 use Illuminate\Database\Eloquent\Model; 
 
@@ -60,6 +60,30 @@ class ClassroomStatusRepository extends Repository
                     return $this->formatOutput($classroomStatus); 
                 }
             )->toArray();
+    }
+
+    
+    /**
+     * Transform 'ClassroomStatus' name into an array of IDs
+     * @param string $status
+     * @return array
+     */
+    public function getStatusesIdByName(string $status): array
+    {
+        if($status === 'ENABLED') {
+            return [
+                $this->available() 
+            ];
+        } else if ($status === 'DISABLED') {
+            return [
+                $this->disabled() 
+            ];
+        } else {
+            return [
+                $this->available(),
+                $this->disabled() 
+            ];
+        }
     }
     
     /**

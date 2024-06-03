@@ -16,5 +16,6 @@ interface ClassroomService
     function update(array $data): string; 
     function retriveLastClassroom(array $data): array;
     function deleteByClassroomId(int $classroomId): array;
+    function getClassroomStats(array $data): array;
 }
 

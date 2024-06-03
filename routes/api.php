@@ -12,11 +12,9 @@ use App\Http\Controllers\{
     NotificationController,
     ReservationController,
     ReservationReasonController,
-    ClassroomStatusController, 
-    PersonController
+    ClassroomStatusController,
+    ReservationStatusController
 };
-
-use App\Models\Role;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,6 +32,10 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 Route::controller(ReservationReasonController::class)->group(function() {
     Route::get('/reservations/reasons', 'list');
+});
+
+Route::controller(ReservationStatusController::class)->group(function() {
+    Route::get('/reservations/statuses', 'list');
 });
 
 Route::controller(ReservationController::class)->group(function() {
@@ -68,6 +70,7 @@ Route::controller(ClassroomController::class)->group(function() {
     Route::get('/classrooms/block/{blockId}/available', 'availableClassroomsByBlock');
     Route::get('/classrooms/last-validated', 'retriveLastClassroom');
     Route::get('/classrooms/statistics/list','getAllClassroomsWithStatistics');
+    Route::get('/classrooms/stats', 'getClassroomStats');
 
     Route::delete('/classroom/delete/{classroomId}','destroy');
 

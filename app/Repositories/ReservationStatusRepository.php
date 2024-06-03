@@ -21,7 +21,9 @@ class ReservationStatusRepository extends Repository
      */
     public static function accepted(): int 
     {   
-        return ReservationStatus::where('status', 'ACCEPTED')->get()->pop()->id; 
+        return ReservationStatus::where('status', 'ACCEPTED')
+            ->orWhere('status', 'ACEPTADO')
+            ->first()->id;
     }
     
     /**
@@ -32,7 +34,8 @@ class ReservationStatusRepository extends Repository
     public static function rejected(): int 
     {
         return ReservationStatus::where('status', 'REJECTED')
-            ->get()->pop()->id;
+            ->orWhere('status', 'RECHAZADO')
+            ->first()->id;
     } 
 
     /**
@@ -43,7 +46,8 @@ class ReservationStatusRepository extends Repository
     public static function pending() : int
     {
         return ReservationStatus::where('status', 'PENDING')
-            ->get()->pop()->id; 
+            ->orWhere('status', 'PENDIENTE')
+            ->first()->id; 
     }
 
     /**
@@ -54,6 +58,37 @@ class ReservationStatusRepository extends Repository
     public static function cancelled(): int 
     {
         return ReservationStatus::where('status', 'CANCELLED')
-            ->get()->pop()->id;
+            ->orWhere('status', 'CANCELADO')
+            ->first()->id;
+    }
+
+    /**
+     * Retrieve a list of all reservation statuses
+     * @param none
+     * @return array
+     */
+    public function getAllReservationStatuses(): array
+    {
+        return ReservationStatus::select('status', 'id')
+                ->get()->map(
+                    function ($reservationStatus) 
+                    {
+                        return $this->formatOutput($reservationStatus);
+                    }
+                )->toArray();
+
+    }
+
+    /**
+     * Transform ReservationStatus to array
+     * @param ReservationStatus $reservationStatus
+     * @return array
+     */
+    private function formatOutput(ReservationStatus $reservationStatus): array
+    {
+        return [
+            'reservation_status_id' => $reservationStatus->id,
+            'reservation_status_name' => $reservationStatus->status,
+        ];
     }
 }

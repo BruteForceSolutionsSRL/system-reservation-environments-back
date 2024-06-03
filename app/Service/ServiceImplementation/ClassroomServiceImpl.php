@@ -55,10 +55,7 @@ class ClassroomServiceImpl implements ClassroomService
      */
     public function getAllClassrooms(string $statuses): array
     {
-        $idStatuses = [
-            $this->classroomStatusRepository->available()//, 
-//            $this->classroomStatusRepository->disabled()
-        ];
+        $idStatuses = $this->classroomStatusRepository->getStatusesIdByName($statuses);
         return $this->classroomRepository->getClassrooomsByStatus($idStatuses);
     }
 
@@ -366,5 +363,15 @@ class ClassroomServiceImpl implements ClassroomService
         $this->reservationService->cancelAndRejectReservationsByClassroom($classroomId);
         $this->classroomRepository->deleteByClassroomId($classroomId); 
         return ['message' => 'Ambiente eliminado exitosamente.'];
+    }
+
+    /**
+     * 
+     * @param array $data
+     * @return array
+     */
+    public function getClassroomStats(array $data): array
+    {
+        return $this->classroomRepository->getClassroomStats($data);
     }
 }

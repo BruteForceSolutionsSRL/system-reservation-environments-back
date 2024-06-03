@@ -248,7 +248,7 @@ class ReservationController extends Controller
             if ($validator->fails()) {
                 $message = '';
                 foreach ($validator->errors()->all() as $value)
-                    $message .= $value . '\n';
+                    $message .= $value . ' ';
                 return response()->json(['message' => $message], 400);
             }
 
