@@ -152,7 +152,7 @@ class ReservationServiceImpl implements ReservationService
                         }
                     )
                 ]
-            );    
+            );
 
             return 'La solicitud de reserva fue rechazada.';
         } else {

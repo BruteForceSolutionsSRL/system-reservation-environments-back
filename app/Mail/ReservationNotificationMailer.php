@@ -6,6 +6,8 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
+use App\Repositories\ReservationStatusRepository as ReservationStatus;
+
 class ReservationNotificationMailer extends Mailable
 {
     use Queueable, SerializesModels;
@@ -33,18 +35,19 @@ class ReservationNotificationMailer extends Mailable
     {
         $dir = 'mail/templates/reservation/';
         switch ($this->type) {
-            case 1:
+            case ReservationStatus::pending():
                 return $this->subject('SOLICITUD DE RESERVA ENVIADA')
                     ->view($dir.'create');
-            case 2: 
+            case ReservationStatus::accepted(): 
                 return $this->subject('SOLICITUD DE RESERVA ACEPTADA')
                     ->view($dir.'accept');
-            case 3: 
+            case ReservationStatus::rejected(): 
                 return $this->subject('SOLICITUD DE RESERVA RECHAZADA')
                     ->view($dir.'reject');
-            default: 
+            case ReservationStatus::cancelled(): 
                 return $this->subject('SOLICITUD DE RESERVA CANCELADA')
                     ->view($dir.'cancel');
+            default: 
         }
     }
 }

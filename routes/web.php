@@ -25,8 +25,6 @@ Route::get('/send', function () {
         'status' => 'Rechazado' 
     ];
    
-    \Mail::to('202103261@est.umss.edu')->send(new \App\Mail\NotificationMail($details, 2));
-
     dd('Email is sent. BD');
 });
 
