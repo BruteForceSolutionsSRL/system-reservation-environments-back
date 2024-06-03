@@ -10,6 +10,15 @@ class PersonRepository extends Repository
 {
     protected $model; 
 
+    public function system()
+    {
+        echo $this->model::where('name', 'SISTEMA')->get();
+        return $this->model::where('name', 'SISTEMA')
+            ->get()
+            ->pop()
+            ->id;
+    }
+
     public function __construct()
     {
         $this->model = Person::class;
@@ -18,16 +27,33 @@ class PersonRepository extends Repository
     /**
      * Retrieve a Person by its ID
      * @param int $personId
-     * @return Person
+     * @return array
      */
     public function getPerson(int $personId): array 
     {
-        return $this->formatOutput($this->model::find($personId)); 
+        $person = $this->model::find($personId); 
+        if ($person === null) return [];
+        return $this->formatOutput($person); 
     }
 
-    private function formatOutput(Person $person): array
+    /**
+     * Retrieve all users
+     * @param none
+     * @return array
+     */
+    public function getAllPersons(): array
     {
-        if ($person === null) return [];
+        return $this->model::where('name', '!=', 'SISTEMA')
+            ->get()->map(
+                function ($person) 
+                {
+                    return $this->formatOutput($person);
+                }
+            )->toArray();
+    }
+
+    public function formatOutput($person): array
+    {
         return [
             'person_id' => $person->id, 
             'person_name' => $person->name, 

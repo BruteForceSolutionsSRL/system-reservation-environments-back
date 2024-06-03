@@ -5,7 +5,7 @@ interface NofiticationService
 {
     function getNotification(int $id): array;
     function getNotifications(int $personId): array; 
-    function send(array $data): void; 
-    function update(array $data, int $id): void; 
+    function store(array $data): array; 
+    function update(array $data, int $id): array; 
 }
 

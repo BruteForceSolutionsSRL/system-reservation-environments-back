@@ -3,12 +3,8 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
-
-use Illuminate\Mail\Mailables\Content;
-use Illuminate\Mail\Mailables\Envelope;
 
 class NotificationMail extends Mailable
 {
@@ -21,9 +17,10 @@ class NotificationMail extends Mailable
      *
      * @return void
      */
-    public function __construct($details)
+    public function __construct($details, $tipo)
     {
         $this->details = $details; 
+        $this->tipo = $tipo;
     }
 
     /**
@@ -33,6 +30,8 @@ class NotificationMail extends Mailable
      */
     public function build()
     {
-        return $this->subject('Mail de test')->view('mails.myMail');
+        if ($this->tipo === 1)
+        return $this->subject('Mail de test')->view('myMail');
+        else return $this->subject('Mail de test2')->view('templateSolicitudRechazo');
     }
 }

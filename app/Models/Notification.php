@@ -19,8 +19,13 @@ class Notification extends Model
         return $this->belongsTo(NotificationType::class);
     }
 
+    public function personsNotifications()
+    {
+        return $this->hasMany(NotificationPerson::class);
+    }
+
     public function receptors() 
     {
-        return $this->hasMany(NotificationPersons::class); 
+        return $this->belongsToMany(Person::class); 
     }
 }

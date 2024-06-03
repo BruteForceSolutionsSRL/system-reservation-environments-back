@@ -18,9 +18,10 @@ class NotificationController extends Controller
     {
         $this->notificationService = new NotificationServiceImpl();
     }
+    
     /**
      * Display a listing of the resource.
-     *
+     * @param int $personId
      * @return Response
      */
     public function list($personId): Response

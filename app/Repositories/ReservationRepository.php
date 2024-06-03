@@ -231,7 +231,7 @@ class ReservationRepository extends Repository
      * @param Reservation $reservation
      * @return array
      */
-    private function formatOutput(Reservation $reservation): array
+    public function formatOutput(Reservation $reservation): array
     {
         
         if ($reservation == null) return [];

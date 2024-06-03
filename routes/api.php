@@ -12,8 +12,10 @@ use App\Http\Controllers\{
     NotificationController,
     ReservationController,
     ReservationReasonController,
-    ClassroomStatusController
+    ClassroomStatusController, 
+    PersonController
 };
+
 use App\Models\Role;
 
 /*
@@ -92,4 +94,9 @@ Route::controller(BlockController::class)->group(function() {
 
 Route::controller(TimeSlotController::class)->group(function() {
     Route::get('/timeslots', 'list');
+});
+
+Route::controller(PersonController::class)->group(function() {
+    Route::get('/users', 'list');
+    Route::get('/users/{personId}', 'show');
 });

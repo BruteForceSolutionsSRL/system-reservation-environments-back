@@ -6,33 +6,55 @@ use App\Service\NofiticationService;
 
 class NotificationServiceImpl implements NofiticationService
 {
-    private $notificationRepository; 
+    private $notificationRepository;
+
+    private $mailServiceImpl; 
 
     public function __construct() 
     {
         $this->notificationRepository = new NotificationRepository();
+        
+        $this->mailServiceImpl = new MailerServiceImpl();
     }
 
+    /**
+     * Retrieve a single notification within its ID
+     * @param int $id
+     * @return array
+     */
     public function getNotification(int $id): array 
     {
         return $this->notificationRepository->getNotification($id);
     }
 
+    /**
+     * Retrieve a list of all notifications based on which user 
+     * @param int $personId
+     * @return array
+     */
     public function getNotifications(int $personId): array
     {
         return $this->notificationRepository->getNotifications($personId);
     }
 
-    public function send(array $data): void 
+    /**
+     * Store a new notification
+     * @param array $data
+     * @return array
+     */
+    public function store(array $data): array 
     {
-        $notification = $this->notificationRepository->save($data); 
-        // send email controller
-
-        $this->update($notification, $notification['id']);
+        return $this->notificationRepository->save($data); 
     }
 
-    public function update(array $data, int $id): void
+    /**
+     * Update a notification based on its ID
+     * @param array $data
+     * @param int $id
+     * @return array
+     */
+    public function update(array $data, int $id): array
     {
-        $this->notificationRepository->update($data, $id);
+        return $this->notificationRepository->update($data, $id);
     } 
 }

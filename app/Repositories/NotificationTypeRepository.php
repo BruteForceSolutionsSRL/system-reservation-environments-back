@@ -19,31 +19,31 @@ class NotificationTypeRepository
     public static function informative(): int
     {
         return NotificationType::where('description', 'INFORMATIVO')
-            ->get()
+            ->get()->pop()
             ->id; 
     }
     public static function accepted(): int
     {
         return NotificationType::where('description', 'ACEPTADA')
-            ->get()
+            ->get()->pop()
             ->id; 
     }
     public static function rejected(): int
     {
         return NotificationType::where('description', 'RECHAZADA')
-            ->get()
+            ->get()->pop()
             ->id; 
     }
     public static function cancelled(): int
     {
         return NotificationType::where('description', 'CANCELADA')
-            ->get()
+            ->get()->pop()
             ->id; 
     }
     public static function warning(): int
     {
         return NotificationType::where('description', 'ADVERTENCIA')
-            ->get()
+            ->get()->pop()
             ->id; 
     }
 
