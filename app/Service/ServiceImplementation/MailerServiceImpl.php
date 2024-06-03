@@ -75,6 +75,6 @@ class MailerServiceImpl implements MailerService
 		foreach ($data as $user) 
 			array_push($addresses, $user['person_email']);
 
-		return $addressses; 
+		return $addresses; 
 	}
 }

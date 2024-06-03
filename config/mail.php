@@ -1,5 +1,4 @@
 <?php
-dd('entra a este apartado');
 return [
 
     /*

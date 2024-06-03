@@ -24,6 +24,7 @@ class NotificationRepository
 		$this->notificationTypeRepository = new NotificationTypeRepository();
 	}
 
+	// aqui falta ver quien es el que esta leendo la notificacion para cambiarla de estado.
 	public function getNotification(int $id) 
 	{
 		return $this->formatOutput($this->model::find($id));
@@ -80,21 +81,27 @@ class NotificationRepository
 		);
 		$receptors = $notification->receptors;
 
-
-
 		$result = [
 			'id' => $notification->id,
 			'title' => $notification->title, 
 			'type' => $notificationType['notification_type_name'], 
 			'sendBy' => $transmissor['person_fullname'], 
 			'to' => $receptors->map(
-				function ($user) 
+				function ($user) use ($notification)
 				{
-					return $this->personRepository->formatOutput($user);
+					$person = \DB::table('notification_person')
+						->where('notification_id', $notification->id)
+						->where('person_id', $user->id)
+						->get()
+						->first(); 
+					
+					return array_merge(
+						$this->personRepository->formatOutput($user), 
+						['readed' => $person->readed]
+					);
 				}
 			), 
 			'body' => $notification->description, 
-			'readed' => $notification->readed
 		];
 
 		if (!in_array($notificationType['notification_type_id'], [

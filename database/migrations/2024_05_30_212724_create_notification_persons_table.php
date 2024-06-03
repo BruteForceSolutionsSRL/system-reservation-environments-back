@@ -17,6 +17,7 @@ class CreateNotificationPersonsTable extends Migration
             $table->id();
             $table->unsignedBigInteger('person_id'); 
             $table->unsignedBigInteger('notification_id'); 
+            $table->integer('readed')->default(DB::raw('0'));
             $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
             $table->timestamp('updated_at')->default(DB::raw('CURRENT_TIMESTAMP'));
         

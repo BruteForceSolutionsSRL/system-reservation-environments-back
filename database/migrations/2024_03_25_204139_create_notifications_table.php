@@ -18,7 +18,6 @@ class CreateNotificationsTable extends Migration
             $table->id();
             $table->string('title');
             $table->longText('description');
-            $table->boolean('readed');
             $table->unsignedBigInteger('person_id'); 
             $table->unsignedBigInteger('notification_type_id');
             $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
