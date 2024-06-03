@@ -52,7 +52,6 @@ class NotificationRepository
 		$notification->description = $data['body'];
 		$notification->notification_type_id = $data['type']; 
 		$notification->person_id = $data['sendBy'];
-		$notification->readed = 1;
 
 		$notification->save(); 
 
@@ -66,7 +65,6 @@ class NotificationRepository
 		$notification->title = $data['title']; 
 		$notification->description = $data['body'];
 		$notification->type = $data['type']; 
-		$notification->readed = $data['readed'];
 		$notification->save();
 
 		return $this->formatOutput($notification);

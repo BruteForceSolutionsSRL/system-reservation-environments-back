@@ -12,7 +12,6 @@ class PersonRepository extends Repository
 
     public function system()
     {
-        echo $this->model::where('name', 'SISTEMA')->get();
         return $this->model::where('name', 'SISTEMA')
             ->get()
             ->pop()
