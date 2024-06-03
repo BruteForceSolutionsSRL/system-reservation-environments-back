@@ -5,7 +5,6 @@ namespace App\Repositories;
 use App\Models\{
     ClassroomLogs,
 };
-use DateTime;
 
 class ClassroomLogsRepository
 {
@@ -16,8 +15,7 @@ class ClassroomLogsRepository
     }
     /**
      * Function to retrieve the last matching classroom
-     * @param DateTime $dateTime
-     * @param int $classroomId
+     * @param array $data
      * @return array
      */
     public function retriveLastClassroom(array $data): array

@@ -5,31 +5,39 @@ namespace App\Repositories;
 use App\Models\{
     Classroom,
     ClassroomType,
-    ClassroomStatus as ClassroomStatusModel, 
-    Block
+    ClassroomStatus as ClassroomStatusModel,
+    Block,
+    ReservationReason as ReservationReasonModel,
 };
 
 use App\Repositories\{
     ClassroomStatusRepository as ClassroomStatus,
-    ReservationStatusRepository as ReservationRepository,
+    ReservationStatusRepository as ReservationStatus,
+    ReservationReasonRepository as ReservationReason,
 };
 
 use Illuminate\Cache\Repository;
+
+use Illuminate\Support\Facades\DB;
 
 class ClassroomRepository extends Repository
 {
     protected $model;
 
-    private $classroomStatusRepository; 
-    private $classroomTypeRepository; 
-    private $blockRepository; 
+    private $classroomStatusRepository;
+    private $classroomTypeRepository;
+    private $blockRepository;
+
+    private $reservationReasonRepository;
     public function __construct($model)
     {
         $this->model = $model;
-        
+
         $this->classroomStatusRepository = new ClassroomStatusRepository(ClassroomStatusModel::class);
         $this->classroomTypeRepository = new ClassroomTypeRepository(ClassroomType::class);
         $this->blockRepository = new BlockRepository(Block::class);
+
+        $this->reservationReasonRepository = new ReservationReason(ReservationReasonModel::class);
     }
 
     /**
@@ -77,23 +85,22 @@ class ClassroomRepository extends Repository
             'classroomStatus:id,name',
             'reservations' => function ($query) {
                 $query->select(
-                    'reservations.id', 
+                    'reservations.id',
                     'reservations.reservation_status_id',
                     'classroom_reservation.classroom_id'
                 );
             }
         ])->where('classroom_status_id', '!=', ClassroomStatus::deleted())
             ->select(
-                'id', 
-                'name', 
-                'capacity', 
-                'floor', 
-                'block_id', 
-                'classroom_type_id', 
+                'id',
+                'name',
+                'capacity',
+                'floor',
+                'block_id',
+                'classroom_type_id',
                 'classroom_status_id'
             )->get()->map(
-                function ($classroom) 
-                {
+                function ($classroom) {
                     return $this->formatOutputNamesAndStatistics($classroom);
                 }
             )->toArray();
@@ -230,13 +237,13 @@ class ClassroomRepository extends Repository
         return [
             'classroom_id' => $classroom->id,
             'classroom_name' => $classroom->name,
-            'classroom_type_id' => $classroom->classroom_type_id, 
-            'classroom_type_name' => $classroomType['type_name'], 
+            'classroom_type_id' => $classroom->classroom_type_id,
+            'classroom_type_name' => $classroomType['type_name'],
             'classroom_status_id' => $classroom->classroom_status_id,
             'classroom_status_name' => $classroomStatus['classroom_status_name'],
             'capacity' => $classroom->capacity,
             'floor' => $classroom->floor,
-            'block_id' => $classroom->block_id, 
+            'block_id' => $classroom->block_id,
             'block_name' => $block['block_name']
         ];
     }
@@ -249,13 +256,13 @@ class ClassroomRepository extends Repository
     private function formatOutputNamesAndStatistics(Classroom $classroom): array
     {
         $acceptedCount = $classroom->reservations
-            ->where('reservation_status_id', ReservationRepository::accepted())
+            ->where('reservation_status_id', ReservationStatus::accepted())
             ->count();
         $rejectedCount = $classroom->reservations
-            ->where('reservation_status_id', ReservationRepository::rejected())
+            ->where('reservation_status_id', ReservationStatus::rejected())
             ->count();
         $pendingCount = $classroom->reservations
-            ->where('reservation_status_id', ReservationRepository::pending())
+            ->where('reservation_status_id', ReservationStatus::pending())
             ->count();
         return [
             'id' => $classroom->id,
@@ -284,5 +291,99 @@ class ClassroomRepository extends Repository
         $classroom->classroom_status_id = ClassroomStatus::deleted();
         $classroom->save();
         return $this->formatOutput($classroom);
+    }
+
+    /**
+     * 
+     * @param array $data
+     * @return array
+     */
+    public function getClassroomStats(array $data): array
+    {
+        $statuses = [
+            'accepted'  => ReservationStatus::accepted(),
+            'rejected'  => ReservationStatus::rejected(),
+            'pending'   => ReservationStatus::pending(),
+            'cancelled' => ReservationStatus::cancelled()
+        ];
+        $chart = $this->getClassroomStatsReservations($data, $statuses);
+        $reasons = $this->reservationReasonRepository->getAllReservationReason();
+        $table = $this->getClassroomStatsReason($data, $reasons);
+        return [
+            'chart' => $chart,
+            'table' => $table,
+        ];
+    }
+
+    /**
+     * 
+     * @param array $data
+     * @param array $reasons
+     * @return array
+     */
+    private function getClassroomStatsReason(array $data, array $reasons): array
+    {
+        $reasonsIds = array_column($reasons, 'reason_id');
+        $stats = DB::table('classroom_reservation')
+            ->join('reservations', 'classroom_reservation.reservation_id', '=', 'reservations.id')
+            ->join('reservation_reasons', 'reservations.reservation_reason_id', '=', 'reservation_reasons.id')  
+            ->select(
+                'reservations.reservation_reason_id',
+                'reservation_reasons.reason',
+                DB::raw('COUNT(*) as total_reservations'),
+                DB::raw('AVG(reservations.number_of_students) as average_students')
+            )
+            ->where('classroom_reservation.classroom_id', $data['classroom_id'])
+            ->whereBetween('reservations.date',[$data['date_start'], $data['date_end']])
+            ->whereIn('reservations.reservation_reason_id', $reasonsIds)
+            ->groupBy('reservations.reservation_reason_id', 'reservation_reasons.reason')
+            ->get();
+
+        $statsArray = $stats->keyBy('reason')->toArray();
+        
+        foreach ($reasons as $reason) {
+            $reasonName = $reason['reason_name'];
+            if (isset($statsArray[$reasonName])) {
+                $statsArray[$reasonName] = [
+                    'reservation_reason_id' => $reason['reason_id'],
+                    'reservation_reason_name' => $reason['reason_name'],
+                    'total_reservations' => $statsArray[$reasonName]->total_reservations,
+                    'average_students' => $statsArray[$reasonName]->average_students
+                ];
+            } else {
+                $statsArray[$reasonName] = [
+                    'reservation_reason_id' => $reason['reason_id'],
+                    'reservation_reason_name' => $reason['reason_name'],
+                    'total_reservations' => 0,
+                    'average_students' => 0
+                ];
+            }
+        }
+        return $statsArray;
+    }
+
+    /**
+     * 
+     * @param array $data
+     * @param array $statuses
+     * @return array
+     */
+    private function getClassroomStatsReservations(array $data, array $statuses): array
+    {
+        $stats = DB::table('classroom_reservation')
+            ->join('reservations', 'classroom_reservation.reservation_id', '=', 'reservations.id')
+            ->select(
+                DB::raw('DATE(reservations.date) as date'),
+                DB::raw("SUM(CASE WHEN reservations.reservation_status_id = {$statuses['accepted']} THEN 1 ELSE 0 END) as accepted"),
+                DB::raw("SUM(CASE WHEN reservations.reservation_status_id = {$statuses['rejected']} THEN 1 ELSE 0 END) as rejected"),
+                DB::raw("SUM(CASE WHEN reservations.reservation_status_id = {$statuses['pending']} THEN 1 ELSE 0 END) as pending"),
+                DB::raw("SUM(CASE WHEN reservations.reservation_status_id = {$statuses['cancelled']} THEN 1 ELSE 0 END) as cancelled")
+            )
+            ->where('classroom_reservation.classroom_id', $data['classroom_id'])
+            ->whereBetween('reservations.date', [$data['date_start'], $data['date_end']])
+            ->groupBy(DB::raw('DATE(reservations.date)'))
+            ->get()
+            ->toArray();
+        return $stats;
     }
 }

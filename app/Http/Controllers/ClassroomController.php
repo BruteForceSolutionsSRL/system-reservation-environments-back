@@ -644,4 +644,64 @@ class ClassroomController extends Controller
             );
         }
     }
-}
+
+    /**
+     * 
+     * @param Request $request
+     * @return Response
+     */
+    function getClassroomStats(Request $request): Response
+    {
+        try {
+            $validator = $this->validateGetClassroomStatsData($request);
+            if ($validator->fails()) {
+                $message = '';
+                foreach ($validator->errors()->all() as $value)
+                    $message .= $value . '.';
+                return response()->json(
+                    ['message' => $message],
+                    400
+                );
+            }
+            $data = $validator->validated();
+            $classroomStats = $this->classroomService->getClassroomStats($data);
+            return response()->json($classroomStats);
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'message' => 'Hubo un error en el servidor',
+                    'error' => $e->getMessage()
+                ],
+                500
+            );
+        }
+    }
+
+    private function validateGetClassroomStatsData(Request $request)
+    {
+        return Validator::make($request->all(), [
+            'classroom_id' => '
+                required|
+                integer|
+                exists:classrooms,id',
+            'date_start' => '
+                required|
+                date',
+            'date_end' => '
+                required|
+                date|
+                after_or_equal:date_start'
+        ], [
+            'classroom_id.required' => 'El atributo \'classroom_id\' no debe ser nulo o vacio',
+            'classroom_id.integer' => 'El atributo \'classroom_id\', debe ser un valor entero',
+            'classroom_id.exists' => 'El atributo \'classroom_id\' no existe',
+
+            'date_start.required' => 'La fecha de inicio es obligatoria',
+            'date_start.date' => 'La fecha de incio debe tener un formato válido',
+            
+            'date_end.required' => 'La fecha de fin es obligatoria',
+            'date_end.date' => 'La fecha de fin debe tener un formato válido',
+            'date_end.after_or_equal' => 'La fecha de fin debe ser mayor o igual a la fecha de inicio'          
+        ]);
+    }
+}   
