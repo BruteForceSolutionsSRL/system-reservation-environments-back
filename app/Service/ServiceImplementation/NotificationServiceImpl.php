@@ -45,7 +45,12 @@ class NotificationServiceImpl implements NofiticationService
     public function store(array $data): array 
     {
         $emailData = $this->notificationRepository->save($data);
-        $this->mailService->sendSimpleEmail($emailData);
+        if (
+            ($emailData['type'] == 'INFORMATIVO') 
+            || ($emailData['type'] == 'ADVERTENCIA')
+        ) {
+            $this->mailService->sendSimpleEmail($emailData);
+        }
         return  $emailData;
     }
 

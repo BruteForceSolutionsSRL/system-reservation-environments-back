@@ -18,11 +18,9 @@ class MailerServiceImpl implements MailerService
 {
 	public function sendMail(Mailable $mail, array $addresses): void
 	{
-		$promise = new \React\Promise\Promise(
-			function () use ($addresses, $mail) {
-				\Mail::to($addresses)->send($mail);
-			}
-		);
+		dispatch(function () use ($mail, $addresses) {
+			\Mail::to($addresses)->send($mail);
+		});
 	}
 
 	public function createReservation($data): void 
