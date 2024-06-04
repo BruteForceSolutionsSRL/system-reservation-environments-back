@@ -7,6 +7,8 @@ use App\Service\MailerService;
 
 use Illuminate\Mail\Mailable;
 
+use App\Jobs\MailSenderJob;
+
 use App\Mail\{
 	ClassroomNotificationMailer,
 	ReservationNotificationMailer
@@ -18,9 +20,7 @@ class MailerServiceImpl implements MailerService
 {
 	public function sendMail(Mailable $mail, array $addresses): void
 	{
-		dispatch(function () use ($mail, $addresses) {
-			\Mail::to($addresses)->send($mail);
-		});
+		MailSenderJob::dispatch($addresses, $mail);
 	}
 
 	public function createReservation($data): void 
