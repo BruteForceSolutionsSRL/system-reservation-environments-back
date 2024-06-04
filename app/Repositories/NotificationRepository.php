@@ -30,6 +30,11 @@ class NotificationRepository
 		return $this->formatOutput($this->model::find($id));
 	}
 
+	/**
+	 * Retrieve all notifications inbox by person id
+	 * @param int $personId
+	 * @return array
+	 */
 	public function getNotifications(int $personId): array
 	{
 		return $this->model::whereHas('receptors', 
@@ -45,6 +50,11 @@ class NotificationRepository
 		)->toArray();
 	}
 
+	/**
+	 * Save data for notification file
+	 * @param array $data
+	 * @return array
+	 */
 	public function save(array $data): array
 	{
 		$notification = new Notification(); 
@@ -59,6 +69,12 @@ class NotificationRepository
 		return $this->formatOutput($notification);
 	}
 
+	/**
+	 * Update a single notification by its ID
+	 * @param array $data
+	 * @param int $notificationId
+	 * @return array
+	 */
 	public function update(array $data, int $notificationId): array
 	{
 		$notification = $this->model::find($notificationId); 
@@ -70,13 +86,22 @@ class NotificationRepository
 		return $this->formatOutput($notification);
 	} 
 
-	private function formatOutput($notification) 
+	/**
+	 * Transform notification to array
+	 * @param Notification $notification
+	 * @return array
+	 */
+	private function formatOutput($notification): array 
 	{
 		if ($notification === null) return [];
-		$transmissor = $this->personRepository->getPerson($notification->person_id); 
-		$notificationType = $this->notificationTypeRepository->getNotificationType(
-			$notification->notification_type_id
-		);
+		$transmissor = $this->personRepository
+			->getPerson($notification->person_id); 
+		
+		$notificationType = $this->notificationTypeRepository
+			->getNotificationType(
+				$notification->notification_type_id
+			);
+		
 		$receptors = $notification->receptors;
 
 		$result = [

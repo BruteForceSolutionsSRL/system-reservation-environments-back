@@ -47,11 +47,21 @@ class NotificationTypeRepository
             ->id; 
     }
 
+    /**
+     * Retrieve a single notification by ID
+     * @param int $id
+     * @return array
+     */
     public function getNotificationType(int $id): array
     {
         return $this->formatOutput($this->model::find($id));
     }
     
+    /**
+     * Transform Notification Type to array
+     * @param NotificationType $notificationType
+     * @return array
+     */
     private function formatOutput(NotificationType $notificationType): array
     {
         return [

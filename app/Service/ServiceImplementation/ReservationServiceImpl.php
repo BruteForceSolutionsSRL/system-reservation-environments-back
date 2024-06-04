@@ -481,7 +481,8 @@ class ReservationServiceImpl implements ReservationService
         array $times
     ): bool {
         if ($date == $reservation->date) {
-            $time = $this->timeSlotService->getTimeSlotsSorted($reservation->timeSlots);
+            $time = $this->timeSlotService
+                ->getTimeSlotsSorted($reservation->timeSlots);
             if (!($time[1] <= $times[0] || $time[0] >= $times[1])) {
                 return true;
             }
@@ -493,8 +494,9 @@ class ReservationServiceImpl implements ReservationService
 
                 $difference = $initialDate->diff($goalDate)->days;
                 if ($difference % $repeat == 0) {
-                    $time = $this->timeSlotService->getTimeSlotsSorted($reservation->timeSlots);
-                    if (!($time[1] <= $times[0] || $time[0] >= $times[1])) {
+                    $time = $this->timeSlotService
+                        ->getTimeSlotsSorted($reservation->timeSlots);
+                    if (!(($time[1] <= $times[0]) || ($time[0] >= $times[1]))) {
                         return true;
                     }
                 }
@@ -547,7 +549,8 @@ class ReservationServiceImpl implements ReservationService
      */
     public function cancelAndRejectReservationsByClassroom(int $classroomId): array
     {
-        $reservations = $this->reservationRepository->getAcceptedAndPendingReservationsByClassroom($classroomId);
+        $reservations = $this->reservationRepository
+            ->getAcceptedAndPendingReservationsByClassroom($classroomId);
 
         $acceptedReservations = $reservations['accepted'];
         $pendingReservations = $reservations['pending'];
@@ -574,14 +577,15 @@ class ReservationServiceImpl implements ReservationService
      */
     public function getAllReservationsByClassroom(int $classromId): array
     {
-        $reservations = $this->reservationRepository->getReservationsByClassroomAndStatuses(
-            $classromId,
-            [
-                ReservationStatuses::accepted(),
-                ReservationStatuses::pending(),
-                ReservationStatuses::rejected()
-            ]
-        );
+        $reservations = $this->reservationRepository
+            ->getReservationsByClassroomAndStatuses(
+                $classromId,
+                [
+                    ReservationStatuses::accepted(),
+                    ReservationStatuses::pending(),
+                    ReservationStatuses::rejected()
+                ]
+            );
         return $this->reservationRepository->formatOutputGARBC($reservations);
     }
 }
