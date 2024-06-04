@@ -87,7 +87,8 @@ Route::controller(TeacherSubjectController::class)->group(function() {
 });
 
 Route::controller(NotificationController::class)->group(function() {
-    Route::middleware('sanitize:api')->post('/notifications', 'store');
+    Route::get('/notifications/inbox/{personId}', 'list');
+    Route::get('/notifications/inbox/{personId}/{notificationId}', 'show'); 
 });
 
 Route::controller(BlockController::class)->group(function() {
@@ -96,4 +97,9 @@ Route::controller(BlockController::class)->group(function() {
 
 Route::controller(TimeSlotController::class)->group(function() {
     Route::get('/timeslots', 'list');
+});
+
+Route::controller(PersonController::class)->group(function() {
+    Route::get('/users', 'list');
+    Route::get('/users/{personId}', 'show');
 });

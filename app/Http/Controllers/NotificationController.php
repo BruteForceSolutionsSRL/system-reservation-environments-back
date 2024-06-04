@@ -2,74 +2,57 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Notification;
-use App\Models\NotificationType;
-use App\Models\Person;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse as Response; 
+
+use App\Service\ServiceImplementation\{
+    NotificationServiceImpl
+};
 
 class NotificationController extends Controller
 {
+    private $notificationService; 
+
+    public function __construct()
+    {
+        $this->notificationService = new NotificationServiceImpl();
+    }
+    
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * @param int $personId
+     * @return Response
      */
-    public function index()
+    public function list($personId): Response
     {
-        $notifications = Notification::all();
-        return $notifications;
+        try {
+            return response()->json(
+                $this->notificationService->getNotifications($personId),
+                200
+            );
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'message' => 'Hubo un error en el servidor', 
+                    'error' => $e->getMessage()
+                ], 
+                500
+            );
+        }
     }
 
     /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
-    public function store(Request $request)
+    public function store(Request $request): Response
     {   
-        if (strlen($request->title) == 4) {
-            return response()->json(['error'
-                    => 'The title must be more than 4 characteres'], 500);
-        }
-
-        if (strlen($request->description) >= 10
-                and strlen($request->description) <= 40) {
-            return response()->json(['error'
-                    => 'The title must be more than 4 characteres'], 500);
-        }
-
-        $person = Person::findOrFail($request->person_id);
-
-        if ($person == null) {
-            return response()->json(['error'
-                    => 'There is no person with this ID'], 404);
-        }
-
-        $notificationType = NotificationType::findOrFail(
-                $request->notification_type_id);
-
-        if ($notificationType == null) {
-            return response()->json(['error'
-                    => 'Use a correct notification type'], 500);
-        }
-
         try {
-            DB::beginTransaction();
-
-            $notification = Notification::create([
-                'title' => $request->title,
-                'description' => $request->description,
-                'created_at' => now(),
-                'readed' => 0,
-                'person_id' => $request->person_id,
-                'notification_type_id' => $request->notification_type_id
-            ]);
-
-            DB::commit();
+            return response()->json(200);
         } catch (Exception $e) {
-            DB::rollBack();
             return response()->json(
                 [
                     'message' => 'Hubo un error en el servidor',
@@ -78,24 +61,28 @@ class NotificationController extends Controller
                 500
             );
         }
-
-        return response()->json($notification, 201);
     }
     
     /**
      * Display the specified resource.
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
-    public function show($notificationId)
+    public function show(int $personId, int $notificationId): Response
     {
-        $notification = Notification::find($notificationId);
-
-        if ($notification == null) {
-            return response()->json(['meesage'
-                    => 'No existe una notificacion con el ID'], 404);
+        try {
+            return response()->json(
+                $this->notificationService->getNotification($notificationId),
+                200
+            );
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'message' => 'Hubo un error en el servidor', 
+                    'error' => $e->getMessage()
+                ], 
+                500
+            );
         }
-
-        return $notification;
     }
 }

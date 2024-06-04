@@ -33,11 +33,11 @@ class ClassroomRepository extends Repository
     {
         $this->model = $model;
 
-        $this->classroomStatusRepository = new ClassroomStatusRepository(ClassroomStatusModel::class);
-        $this->classroomTypeRepository = new ClassroomTypeRepository(ClassroomType::class);
-        $this->blockRepository = new BlockRepository(Block::class);
+        $this->classroomStatusRepository = new ClassroomStatusRepository();
+        $this->classroomTypeRepository = new ClassroomTypeRepository();
+        $this->blockRepository = new BlockRepository();
 
-        $this->reservationReasonRepository = new ReservationReason(ReservationReasonModel::class);
+        $this->reservationReasonRepository = new ReservationReason();
     }
 
     /**

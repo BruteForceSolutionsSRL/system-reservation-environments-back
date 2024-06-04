@@ -9,9 +9,9 @@ class ReservationStatusRepository extends Repository
 {
      
     protected $model; 
-    function __construct($model) 
+    function __construct() 
     {
-        $this->model = $model;
+        $this->model = ReservationStatus::class;
     }
 
     /**

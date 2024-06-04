@@ -2,12 +2,15 @@
 namespace App\Repositories;
 
 use App\Models\Block; 
+
+use Illuminate\Database\Eloquent\Model;
+
 class BlockRepository
 {
     protected $model; 
-    public function __construct($model)
+    public function __construct()
     {
-        $this->model = $model;
+        $this->model = Block::class;
     }
     
     /**

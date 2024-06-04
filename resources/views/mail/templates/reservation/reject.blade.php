@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitud para Elementos de programación y estructura de datos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css">
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 20px;
+        }
+
+        .header img {
+            width: 150px;
+            height: auto;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin: 0;
+            color: #333;
+        }
+
+        .content {
+            line-height: 1.5;
+        }
+
+        .content p {
+            margin: 0;
+            color: #555;
+        }
+
+        .content .status {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .content .status p {
+            margin-right: 10px;
+        }
+
+        .content .status i {
+            font-size: 20px;
+            color: #dc3545; /* Color rojo para indicar rechazo */
+        }
+
+        .content table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .content th,
+        .content td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .content a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .footer p {
+            margin: 0;
+            color: #999;
+        }
+
+        .footer a {
+            color: #007bff;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>{{ $details['title'] }}</h1>
+    </div>
+    <div class="content">
+        <div class="status">
+            <p>**Estado:** Rechazado</p>
+            <i class="fa-solid fa-circle-xmark"></i>
+        </div>
+        <p>{{$details['body']}}</p>
+        <p>Aqui debe venir el personalizado de un notificacion</p>
+        <p>Para ver el historial de cambios, haga clic en el siguiente enlace:</p>
+        <a href="#">Ver historial de cambios</a>
+    </div>
+    <div class="footer">
+        <p>**Enviado por:** Federico Lopez</p>
+        <p>&copy; 2024 SURA. Todos los derechos reservados.</p>
+        <p>**Redes sociales:**</
+        <a href="#">Facebook</a> |
+        <a href="#">Twitter</a> |
+        <a href="#">LinkedIn</a>
+    </div>
+</div>
+</body>
+</html>

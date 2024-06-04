@@ -16,3 +16,25 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/send', function () {
+    $details = [
+        'title' => 'Mail desde el backend XD',
+        'body' => 'Hola este seria mi cuerpo de algun tipo',
+        'updated_at' => '02/06/2024', 
+        'status' => 'Rechazado' 
+    ];
+   
+    dd('Email is sent. BD');
+});
+
+Route::get('/test', function ()
+{
+    $details = [
+        'title' => 'ESTE ES MI TITULO', 
+        'status' => 'Rechazado', 
+        'updated_at' => '12/05/2023', 
+        'body' => 'este es mi body'
+    ];
+    return view('mail/templates/templateSolicitudRechazo', $details);
+});

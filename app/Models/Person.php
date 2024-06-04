@@ -11,7 +11,7 @@ class Person extends Model
 
     public function notifications()
     {
-        return $this->hasMany(Notification::class);
+        return $this->hasMany(NotificationPersons::class);
     }
 
     public function roles()
