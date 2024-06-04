@@ -103,19 +103,41 @@
         <h1>{{ $details['title'] }}</h1>
     </div>
     <div class="content">
+        <p>{{$details['body']}}</p>
+        <h3>Detalle de la solicitud</h3>
         <div class="status">
-            <p>**Estado:** Cancelado</p>
+            <p><b>Estado:</b> Cancelado</p>
             <i class="fa-solid fa-circle-xmark"></i>
         </div>
-        <p>{{$details['body']}}</p>
-        <p>Este es el ultimo F </p>
-        <p>Para ver el historial de cambios, haga clic en el siguiente enlace:</p>
-        <a href="#">Ver historial de cambios</a>
+        <p><b>Fecha:</b> {{ $details['date'] }}</p>
+        <p><b>Hora de inicio:</b> {{ $details['time_slot'][0] }}</p>
+        <p><b>Hora de fin:</b> {{ $details['time_slot'][1] }}</p>
+        <p><b>Materia:</b> {{ $details['subject_name'] }} </p>
+        <p><b>Profesores/Grupos:</b></p>
+        <ul>
+            @for ($i = 0; $i<count($details['groups']); $i++)
+                <li>
+                    <b>{{ $details['groups'][$i]['teacher_name'] }} :</b> {{ $details['groups'][$i]['group_number'] }}
+                </li>
+            @endfor
+        </ul>
+        <p><b>Bloque:</b> {{ $details['block_name'] }} </p>
+        <p><b>Ambientes/capacidad:</b> </p>
+        <ul>
+            @for ($i = 0; $i<count($details['classrooms']); $i++)
+                <li>
+                    <b>{{ $details['classrooms'][$i]['classroom_name'] }}:</b> {{ $details['classrooms'][$i]['capacity'] }}
+                </li>
+            @endfor
+        </ul>
+        <p><b>Motivo:</b> {{ $details['reason_name'] }} </p>
+        <p><b>Cantidad de estudiantes:</b> {{ $details['quantity'] }} </p>
     </div>
+    <hr>
     <div class="footer">
-        <p>**Enviado por:** Federico Lopez</p>
+        <p><b>Enviado por:</b> {{ $details['sendBy'] }}</p>
         <p>&copy; 2024 SURA. Todos los derechos reservados.</p>
-        <p>**Redes sociales:**</
+        <p>**Redes sociales:**</h
         <a href="#">Facebook</a> |
         <a href="#">Twitter</a> |
         <a href="#">LinkedIn</a>

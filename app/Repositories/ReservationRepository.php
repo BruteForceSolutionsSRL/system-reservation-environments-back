@@ -233,7 +233,6 @@ class ReservationRepository extends Repository
      */
     public function formatOutput(Reservation $reservation): array
     {
-        
         if ($reservation == null) return [];
         $reservationReason = $reservation->reservationReason;
         $reservationStatus = $reservation->reservationStatus;
@@ -281,6 +280,7 @@ class ReservationRepository extends Repository
             'priority' => $priority,
             'reservation_status' => $reservationStatus->status,
             'repeat' => $reservation->repeat, 
+            'date' => $reservation->date,
         ];
     }
 
