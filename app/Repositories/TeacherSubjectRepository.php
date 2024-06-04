@@ -80,7 +80,7 @@ class TeacherSubjectRepository
      * @param Person $teacher
      * @return array
      */
-    private function formatOutputTeacher(Person $teacher): array
+    private function formatOutputTeacher($teacher): array
     {
         return [
             'person_id' => $teacher['person_id'],
