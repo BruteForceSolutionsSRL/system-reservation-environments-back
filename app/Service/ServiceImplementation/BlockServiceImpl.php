@@ -18,7 +18,7 @@ class BlockServiceImpl implements BlockService
     private $blockRepository; 
     public function __construct()
     {
-        $this->blockRepository = new BlockRepository(Block::class);
+        $this->blockRepository = new BlockRepository();
     }
 
     /**

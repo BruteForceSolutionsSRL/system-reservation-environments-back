@@ -137,12 +137,10 @@ class ReservationServiceImpl implements ReservationService
             $reservation->reservation_status_id = ReservationStatuses::rejected();
             $reservation->save();
 
-            $reservationSerialized = implode('<br>', $this->reservationRepository->formatOutput($reservation));
-
             $emailData = $this->notificationService->store(
                 [
                     'title' => 'SOLICITUD DE RESERVA #'.$reservation->id.' RECHAZADA', 
-                    'body' => 'Se rechazo la solicitud #'.$reservation->id.' '.$reservationSerialized,
+                    'body' => 'Se rechazo la solicitud #'.$reservation->id,
                     'type' => NotificationTypeRepository::accepted(),
                     'sendBy' => $this->personRepository->system(), 
                     'to' => $reservation->teacherSubjects->map(
@@ -153,6 +151,7 @@ class ReservationServiceImpl implements ReservationService
                     )
                 ]
             );
+            $emailData = array_merge($emailData, $this->reservationRepository->formatOutput($reservation));
 
             $this->mailService->rejectReservation($emailData);
 
@@ -186,12 +185,10 @@ class ReservationServiceImpl implements ReservationService
         $reservation->reservation_status_id = ReservationStatuses::cancelled();
         $reservation->save();
 
-        $reservationSerialized = implode('<br>', $this->reservationRepository->formatOutput($reservation));
-
         $emailData = $this->notificationService->store(
             [
                 'title' => 'SOLICITUD DE RESERVA #'.$reservation->id.' CANCELADA', 
-                'body' => 'Se cancela la solicitud #'.$reservation->id.' '.$reservationSerialized,
+                'body' => 'Se cancela la solicitud #'.$reservation->id,
                 'type' => NotificationTypeRepository::cancelled(),
                 'sendBy' => $this->personRepository->system(), 
                 'to' => $reservation->teacherSubjects->map(
@@ -202,6 +199,7 @@ class ReservationServiceImpl implements ReservationService
                 )
             ]
         );    
+        $emailData = array_merge($emailData, $this->reservationRepository->formatOutput($reservation));
 
         $this->mailService->cancelReservation($emailData);
 
@@ -290,12 +288,10 @@ class ReservationServiceImpl implements ReservationService
 
         $reservation = $this->reservationRepository->save($data);
 
-        $reservationSerialized = implode('<br>', $this->reservationRepository->formatOutput($reservation));
-
         $emailData = $this->notificationService->store(
             [
                 'title' => 'SOLICITUD DE RESERVA #'.$reservation->id.' PENDIENTE', 
-                'body' => 'Se envio la solicitud #'.$reservation->id.' '.$reservationSerialized,
+                'body' => 'Se envio la solicitud #'.$reservation->id,
                 'type' => NotificationTypeRepository::accepted(),
                 'sendBy' => $this->personRepository->system(), 
                 'to' => $reservation->teacherSubjects->map(
@@ -307,6 +303,8 @@ class ReservationServiceImpl implements ReservationService
             ]
         );
 
+        $emailData = array_merge($emailData, $this->reservationRepository->formatOutput($reservation));
+
         $this->mailService->createReservation($emailData);
 
         if ($this->checkAvailibility($reservation)) {
@@ -316,12 +314,10 @@ class ReservationServiceImpl implements ReservationService
             $reservation->reservation_status_id = ReservationStatuses::accepted();
             $reservation->save();
 
-            $reservationSerialized = implode('<br>', $this->reservationRepository->formatOutput($reservation));
-
             $emailData = $this->notificationService->store(
                 [
                     'title' => 'SOLICITUD DE RESERVA #'.$reservation->id.' ACEPTADA', 
-                    'body' => 'Se acepto la solicitud #'.$reservation->id.' '.$reservationSerialized,
+                    'body' => 'Se acepto la solicitud #'.$reservation->id,
                     'type' => NotificationTypeRepository::accepted(),
                     'sendBy' => $this->personRepository->system(), 
                     'to' => $reservation->teacherSubjects->map(
@@ -332,6 +328,8 @@ class ReservationServiceImpl implements ReservationService
                     )
                 ]
             );    
+
+            $emailData = array_merge($emailData, $this->reservationRepository->formatOutput($reservation));
 
             $this->mailService->acceptReservation($emailData);
             return 'Tu solicitud de reserva fue aceptada';
@@ -391,10 +389,6 @@ class ReservationServiceImpl implements ReservationService
                 'message' => '',
                 'list' => array()
             ],
-            'teacher' => [
-                'message' => '',
-                'list' => array()
-            ],
             'ok' => 0
         ];
         $totalCapacity = $this->getTotalCapacity($reservation->classrooms);
@@ -429,29 +423,7 @@ class ReservationServiceImpl implements ReservationService
             }
         }
 
-        foreach ($reservation->teacherSubjects as $teacherSubject) {
-            $teacher = $teacherSubject->person;
-            $fullname = $teacher->name . ' ' . $teacher->last_name;
-            $count = 0;
-
-            foreach ($teacherSubject->reservations as $item)
-                if (($item->reservation_status_id == ReservationStatuses::accepted())
-                    && $this->isInside(
-                        $item,
-                        $reservation->date,
-                        $this->timeSlotService->getTimeSlotsSorted($reservation->timeSlots)
-                    )
-                )
-                    $count++;
-
-            if (($count > 3) && (!array_key_exists($fullname, $set))) {
-                $result['ok'] = 1;
-                array_push($result['teacher']['list'], $fullname);
-                $set[$fullname] = 1;
-            }
-        }
         $result['classroom']['list'] = array_unique($result['classroom']['list']);
-        $result['teacher']['list'] = array_unique($result['teacher']['list']);
         return $result;
     }
 

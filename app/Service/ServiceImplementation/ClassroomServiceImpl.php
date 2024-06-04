@@ -38,14 +38,14 @@ class ClassroomServiceImpl implements ClassroomService
     public function __construct()
     {
         $this->classroomRepository = new ClassroomRepository(Classroom::class);
-        $this->reservationRepository = new ReservationRepository(Reservation::class);
-        $this->timeSlotRepository = new TimeSlotRepository(TimeSlot::class);
-        $this->blockRepository = new BlockRepository(Block::class);
-        $this->classroomStatusRepository = new ClassroomStatusRepository(ClassroomStatus::class);
+        $this->reservationRepository = new ReservationRepository();
+        $this->timeSlotRepository = new TimeSlotRepository();
+        $this->blockRepository = new BlockRepository();
+        $this->classroomStatusRepository = new ClassroomStatusRepository();
 
         $this->timeSlotService = new TimeSlotServiceImpl();
         $this->reservationService = new ReservationServiceImpl();
-        $this->classroomLogRepository = new ClassroomLogsRepository(ClassroomLogs::class);
+        $this->classroomLogRepository = new ClassroomLogsRepository();
     }
 
     /**
