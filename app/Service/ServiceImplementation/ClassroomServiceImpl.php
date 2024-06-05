@@ -366,7 +366,7 @@ class ClassroomServiceImpl implements ClassroomService
     }
 
     /**
-     * 
+     * Function to retrive statistics through start and end dates, along with classroom ID
      * @param array $data
      * @return array
      */

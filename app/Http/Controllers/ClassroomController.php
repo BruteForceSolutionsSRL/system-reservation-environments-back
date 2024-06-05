@@ -646,7 +646,7 @@ class ClassroomController extends Controller
     }
 
     /**
-     * 
+     * Function to retrive statistics through start and end dates, along with classroom ID
      * @param Request $request
      * @return Response
      */
@@ -677,6 +677,11 @@ class ClassroomController extends Controller
         }
     }
 
+    /**
+     * Function to validate all input for retrieving statistics for a classroom
+     * @param Request $request
+     * @return mixed
+     */
     private function validateGetClassroomStatsData(Request $request)
     {
         return Validator::make($request->all(), [

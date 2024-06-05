@@ -294,7 +294,7 @@ class ClassroomRepository extends Repository
     }
 
     /**
-     * 
+     * Function to retrive statistics through start and end dates, along with classroom ID
      * @param array $data
      * @return array
      */
@@ -316,7 +316,7 @@ class ClassroomRepository extends Repository
     }
 
     /**
-     * 
+     * Function to retrieve data from a table for statistics
      * @param array $data
      * @param array $reasons
      * @return array
@@ -340,18 +340,19 @@ class ClassroomRepository extends Repository
             ->get();
 
         $statsArray = $stats->keyBy('reason')->toArray();
-        
+        $result = [];
+
         foreach ($reasons as $reason) {
             $reasonName = $reason['reason_name'];
             if (isset($statsArray[$reasonName])) {
-                $statsArray[$reasonName] = [
+                $result[] = [
                     'reservation_reason_id' => $reason['reason_id'],
                     'reservation_reason_name' => $reason['reason_name'],
                     'total_reservations' => $statsArray[$reasonName]->total_reservations,
                     'average_students' => $statsArray[$reasonName]->average_students
                 ];
             } else {
-                $statsArray[$reasonName] = [
+                $result[] = [
                     'reservation_reason_id' => $reason['reason_id'],
                     'reservation_reason_name' => $reason['reason_name'],
                     'total_reservations' => 0,
@@ -359,11 +360,11 @@ class ClassroomRepository extends Repository
                 ];
             }
         }
-        return $statsArray;
+        return $result;
     }
 
     /**
-     * 
+     * Function to retrieve data from a chart for statistics
      * @param array $data
      * @param array $statuses
      * @return array
