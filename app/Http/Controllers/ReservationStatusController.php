@@ -1,21 +1,23 @@
 <?php
+
 namespace App\Http\Controllers;
 
+use App\Service\ServiceImplementation\ReservationStatusServiceImpl;
+
 use Illuminate\Http\JsonResponse as Response;
+
 use Exception;
 
-use App\Service\ServiceImplementation\BlockServiceImpl; 
-
-class BlockController extends Controller
+class ReservationStatusController extends Controller
 {
-    private $blockService; 
+    private $reservationStatusService; 
     public function __construct()
     {
-        $this->blockService = new BlockServiceImpl();
+        $this->reservationStatusService = new ReservationStatusServiceImpl(); 
     }
 
     /**
-     * Retrieve a list of all blocks registered
+     * Retrieve a list of all time-slots
      * @param none
      * @return Response
      */
@@ -23,7 +25,7 @@ class BlockController extends Controller
     {
         try {
             return response()->json(
-                $this->blockService->getAllBlocks(), 
+                $this->reservationStatusService->getAllReservationStatuses(), 
                 200
             );
         } catch (Exception $e) {
@@ -34,6 +36,7 @@ class BlockController extends Controller
                 ],
                 500
             );
-        }
+        } 
     }
+
 }
