@@ -41,6 +41,11 @@ class PersonController extends Controller
         }
     }
 
+    /**
+     * Retrieve a response about a list of all persons
+     * @param none
+     * @return Response
+     */
     public function list(): Response
     {
         try {
@@ -57,5 +62,28 @@ class PersonController extends Controller
                 500
             );
         }
+    }
+
+    /**
+     * Retrieve a response of all list teachers 
+     * @param none
+     * @return Reponse
+     */
+    public function listTeachers(): Response 
+    {
+        try {
+            return response()->json(
+                $this->personService->getAllTeachers(),
+                200
+            );
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'message' => 'Hubo un error en el servidor', 
+                    'error' => $e->getMessage()
+                ], 
+                500
+            );
+        }        
     }
 }

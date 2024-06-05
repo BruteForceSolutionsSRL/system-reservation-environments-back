@@ -27,8 +27,8 @@ class ClassroomRepository extends Repository
     private $classroomStatusRepository;
     private $classroomTypeRepository;
     private $blockRepository;
-
     private $reservationReasonRepository;
+
     public function __construct($model)
     {
         $this->model = $model;
@@ -79,7 +79,7 @@ class ClassroomRepository extends Repository
      */
     public function getAllClassroomsWithStatistics(): array
     {
-        $classrooms = $this->model::with([
+        return $this->model::with([
             'block:id,name',
             'classroomType:id,description',
             'classroomStatus:id,name',
@@ -104,7 +104,6 @@ class ClassroomRepository extends Repository
                     return $this->formatOutputNamesAndStatistics($classroom);
                 }
             )->toArray();
-        return $classrooms;
     }
 
     /**
@@ -280,6 +279,7 @@ class ClassroomRepository extends Repository
             ]
         ];
     }
+
     /**
      * Function to change the status of the classroom to deleted
      * @param int $classroomId
@@ -363,7 +363,7 @@ class ClassroomRepository extends Repository
     }
 
     /**
-     * 
+     * Retrieve a list of all reservations classrooms statuses
      * @param array $data
      * @param array $statuses
      * @return array

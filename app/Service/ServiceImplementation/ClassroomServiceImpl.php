@@ -38,14 +38,14 @@ class ClassroomServiceImpl implements ClassroomService
     public function __construct()
     {
         $this->classroomRepository = new ClassroomRepository(Classroom::class);
-        $this->reservationRepository = new ReservationRepository(Reservation::class);
-        $this->timeSlotRepository = new TimeSlotRepository(TimeSlot::class);
-        $this->blockRepository = new BlockRepository(Block::class);
-        $this->classroomStatusRepository = new ClassroomStatusRepository(ClassroomStatus::class);
+        $this->reservationRepository = new ReservationRepository();
+        $this->timeSlotRepository = new TimeSlotRepository();
+        $this->blockRepository = new BlockRepository();
+        $this->classroomStatusRepository = new ClassroomStatusRepository();
 
         $this->timeSlotService = new TimeSlotServiceImpl();
         $this->reservationService = new ReservationServiceImpl();
-        $this->classroomLogRepository = new ClassroomLogsRepository(ClassroomLogs::class);
+        $this->classroomLogRepository = new ClassroomLogsRepository();
     }
 
     /**
@@ -86,7 +86,7 @@ class ClassroomServiceImpl implements ClassroomService
     }
 
     /**
-     * 
+     * Retrieve a single classroom by its id
      * @param int $id
      * @return array
      * 
@@ -103,8 +103,9 @@ class ClassroomServiceImpl implements ClassroomService
      */
     public function isDeletedClassroom(int $classroomId): bool
     {
-        $isdeleted = $this->classroomRepository->isDeletedClassroom($classroomId);
-        return $isdeleted;
+        return $this->classroomRepository->isDeletedClassroom(
+            $classroomId
+        );
     }
 
     /**
@@ -114,7 +115,8 @@ class ClassroomServiceImpl implements ClassroomService
      */
     public function getDisponibleClassroomsByBlock(int $blockId): array
     {
-        return $this->classroomRepository->getDisponibleClassroomsByBlock($blockId);
+        return $this->classroomRepository
+            ->getDisponibleClassroomsByBlock($blockId);
     }
 
     /**
@@ -124,7 +126,8 @@ class ClassroomServiceImpl implements ClassroomService
      */
     public function getClassroomsByBlock(int $blockId): array
     {
-        return $this->classroomRepository->getClassroomsByBlock($blockId);
+        return $this->classroomRepository
+            ->getClassroomsByBlock($blockId);
     }
 
     /**
@@ -212,7 +215,8 @@ class ClassroomServiceImpl implements ClassroomService
                     $timeSlotId <= min($times[1], $timesReservation[1]);
                     $timeSlotId++
                 ) {
-                    $index = $this->timeSlotRepository->getTimeSlotById($timeSlotId)['time'];
+                    $index = $this->timeSlotRepository
+                        ->getTimeSlotById($timeSlotId)['time'];
 
                     if ($element[$index]['valor'] == 1) continue;
                     if ($isAccepted) {
@@ -239,7 +243,8 @@ class ClassroomServiceImpl implements ClassroomService
         $classroomSet = $this->classroomRepository
             ->getClassroomsByBlock($data['block_id']);
         $classroomSets = [];
-        $max_floor = $this->blockRepository->getBlock($data['block_id'])['block_maxfloor'];
+        $max_floor = $this->blockRepository
+            ->getBlock($data['block_id'])['block_maxfloor'];
 
         for ($i = 0; $i <= $max_floor; $i++) {
             $classroomSets[$i] = [
@@ -360,7 +365,9 @@ class ClassroomServiceImpl implements ClassroomService
      */
     public function deleteByClassroomId(int $classroomId): array
     {
-        $this->reservationService->cancelAndRejectReservationsByClassroom($classroomId);
+        $this->reservationService->cancelAndRejectReservationsByClassroom(
+            $classroomId
+        );
         $this->classroomRepository->deleteByClassroomId($classroomId); 
         return ['message' => 'Ambiente eliminado exitosamente.'];
     }

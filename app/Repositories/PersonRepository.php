@@ -51,6 +51,32 @@ class PersonRepository extends Repository
             )->toArray();
     }
 
+    /**
+     * Retrieve a list of users based on roles specified
+     * @param array $roles
+     * @return array
+     */
+    public function getUsersByRole(array $roles): array 
+    {
+        return $this->model::whereHas('roles', 
+            function ($query) use ($roles) 
+            {
+                foreach ($roles as $rol)
+                    $query->orWhere('roles.id', $rol);
+            }
+        )->get()->map(
+            function ($user) 
+            {
+                return $this->formatOutput($user);
+            }
+        )->toArray();
+    }
+
+    /**
+     * Transform Person to array
+     * @param Person $person
+     * @return array
+     */
     public function formatOutput($person): array
     {
         return [

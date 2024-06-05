@@ -13,7 +13,8 @@ use App\Http\Controllers\{
     ReservationController,
     ReservationReasonController,
     ClassroomStatusController,
-    ReservationStatusController
+    ReservationStatusController,
+    PersonController
 };
 
 /*
@@ -100,6 +101,7 @@ Route::controller(TimeSlotController::class)->group(function() {
 });
 
 Route::controller(PersonController::class)->group(function() {
+    Route::get('/users/teachers', 'listTeachers');
     Route::get('/users', 'list');
     Route::get('/users/{personId}', 'show');
 });

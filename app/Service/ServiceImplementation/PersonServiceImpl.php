@@ -3,15 +3,21 @@ namespace App\Service\ServiceImplementation;
 
 use App\Service\PersonService; 
 
-use App\Repositories\PersonRepository; 
+use App\Repositories\{
+	PersonRepository,
+	RoleRepository
+}; 
 
 class PersonServiceImpl implements PersonService 
 {
 	private $personRepository; 
 
+	private $roleRepository;
+
 	public function __construct() 
 	{
 		$this->personRepository = new PersonRepository();
+		$this->roleRepository = new RoleRepository();
 	}
 
 	/**
@@ -32,5 +38,19 @@ class PersonServiceImpl implements PersonService
 	public function getAllUsers(): array
 	{
 		return $this->personRepository->getAllPersons(); 
+	}
+
+	/**
+	 * Retrieve all teachers 
+	 * @param none
+	 * @return array
+	 */
+	public function getAllTeachers(): array 
+	{
+		return $this->personRepository->getUsersByRole(
+			[
+				$this->roleRepository->teacher()
+			]
+		);
 	}
 }
