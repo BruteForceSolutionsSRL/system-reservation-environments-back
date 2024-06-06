@@ -646,7 +646,7 @@ class ClassroomController extends Controller
     }
 
     /**
-     * 
+     * Function to retrieve statistics from a classroom by start and end date, along with a classroom ID
      * @param Request $request
      * @return Response
      */
@@ -664,8 +664,10 @@ class ClassroomController extends Controller
                 );
             }
             $data = $validator->validated();
-            $classroomStats = $this->classroomService->getClassroomStats($data);
-            return response()->json($classroomStats);
+            return response()->json(
+                $this->classroomService->getClassroomStats($data),
+                200
+            );
         } catch (Exception $e) {
             return response()->json(
                 [
@@ -677,6 +679,11 @@ class ClassroomController extends Controller
         }
     }
 
+    /**
+     * Function to validate data from the function "getClassroomStats"
+     * @param Request $request
+     * @return mixed
+     */
     private function validateGetClassroomStatsData(Request $request)
     {
         return Validator::make($request->all(), [
