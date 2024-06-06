@@ -3,11 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\{
-    Classroom,
-    ClassroomType,
-    ClassroomStatus as ClassroomStatusModel,
-    Block,
-    ReservationReason as ReservationReasonModel,
+    Classroom
 };
 
 use App\Repositories\{
@@ -294,7 +290,7 @@ class ClassroomRepository extends Repository
     }
 
     /**
-     * 
+     * Function to retrieve statistics from a classroom by start and end date, along with a classroom ID
      * @param array $data
      * @return array
      */
@@ -316,7 +312,7 @@ class ClassroomRepository extends Repository
     }
 
     /**
-     * 
+     * Function to retrieve statistics from a table for a classroom
      * @param array $data
      * @param array $reasons
      * @return array
@@ -331,7 +327,7 @@ class ClassroomRepository extends Repository
                 'reservations.reservation_reason_id',
                 'reservation_reasons.reason',
                 DB::raw('COUNT(*) as total_reservations'),
-                DB::raw('AVG(reservations.number_of_students) as average_students')
+                DB::raw('CAST(AVG(reservations.number_of_students) AS FLOAT) as average_students')
             )
             ->where('classroom_reservation.classroom_id', $data['classroom_id'])
             ->whereBetween('reservations.date',[$data['date_start'], $data['date_end']])
@@ -340,18 +336,19 @@ class ClassroomRepository extends Repository
             ->get();
 
         $statsArray = $stats->keyBy('reason')->toArray();
+        $table = [];
         
         foreach ($reasons as $reason) {
             $reasonName = $reason['reason_name'];
             if (isset($statsArray[$reasonName])) {
-                $statsArray[$reasonName] = [
+                $table[] = [
                     'reservation_reason_id' => $reason['reason_id'],
                     'reservation_reason_name' => $reason['reason_name'],
                     'total_reservations' => $statsArray[$reasonName]->total_reservations,
                     'average_students' => $statsArray[$reasonName]->average_students
                 ];
             } else {
-                $statsArray[$reasonName] = [
+                $table[] = [
                     'reservation_reason_id' => $reason['reason_id'],
                     'reservation_reason_name' => $reason['reason_name'],
                     'total_reservations' => 0,
@@ -359,31 +356,31 @@ class ClassroomRepository extends Repository
                 ];
             }
         }
-        return $statsArray;
+        return $table;
     }
 
     /**
-     * Retrieve a list of all reservations classrooms statuses
+     * Function to retrieve statistics from a chart for a classroom
      * @param array $data
      * @param array $statuses
      * @return array
      */
     private function getClassroomStatsReservations(array $data, array $statuses): array
     {
-        $stats = DB::table('classroom_reservation')
+        $ClassroomStats = DB::table('classroom_reservation')
             ->join('reservations', 'classroom_reservation.reservation_id', '=', 'reservations.id')
             ->select(
                 DB::raw('DATE(reservations.date) as date'),
-                DB::raw("SUM(CASE WHEN reservations.reservation_status_id = {$statuses['accepted']} THEN 1 ELSE 0 END) as accepted"),
-                DB::raw("SUM(CASE WHEN reservations.reservation_status_id = {$statuses['rejected']} THEN 1 ELSE 0 END) as rejected"),
-                DB::raw("SUM(CASE WHEN reservations.reservation_status_id = {$statuses['pending']} THEN 1 ELSE 0 END) as pending"),
-                DB::raw("SUM(CASE WHEN reservations.reservation_status_id = {$statuses['cancelled']} THEN 1 ELSE 0 END) as cancelled")
+                DB::raw("CAST(SUM(CASE WHEN reservations.reservation_status_id = {$statuses['accepted']} THEN 1 ELSE 0 END) as UNSIGNED) as accepted"),
+                DB::raw("CAST(SUM(CASE WHEN reservations.reservation_status_id = {$statuses['rejected']} THEN 1 ELSE 0 END) as UNSIGNED) as rejected"),
+                DB::raw("CAST(SUM(CASE WHEN reservations.reservation_status_id = {$statuses['pending']} THEN 1 ELSE 0 END) as UNSIGNED) as pending"),
+                DB::raw("CAST(SUM(CASE WHEN reservations.reservation_status_id = {$statuses['cancelled']} THEN 1 ELSE 0 END) as UNSIGNED) as cancelled")
             )
             ->where('classroom_reservation.classroom_id', $data['classroom_id'])
             ->whereBetween('reservations.date', [$data['date_start'], $data['date_end']])
             ->groupBy(DB::raw('DATE(reservations.date)'))
             ->get()
             ->toArray();
-        return $stats;
+        return $ClassroomStats;
     }
 }
