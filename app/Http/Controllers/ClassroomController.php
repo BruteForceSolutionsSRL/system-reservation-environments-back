@@ -664,8 +664,10 @@ class ClassroomController extends Controller
                 );
             }
             $data = $validator->validated();
-            $classroomStats = $this->classroomService->getClassroomStats($data);
-            return response()->json($classroomStats);
+            return response()->json(
+                $this->classroomService->getClassroomStats($data),
+                200
+            );
         } catch (Exception $e) {
             return response()->json(
                 [
