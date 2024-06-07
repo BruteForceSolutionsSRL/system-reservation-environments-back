@@ -18,4 +18,5 @@ interface ReservationService
     function getConflict(int $reservationId): array;
     function cancelAndRejectReservationsByClassroom(int $classroomId): array;
     function getAllReservationsByClassroom(int $classromId): array;
+    function getReports(array $data): array;
 }

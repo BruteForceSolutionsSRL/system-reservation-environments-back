@@ -560,4 +560,14 @@ class ReservationServiceImpl implements ReservationService
             );
         return $this->reservationRepository->formatOutputGARBC($reservations);
     }
+
+    /**
+     *
+     * @param array $data
+     * @return array
+     */
+    public function getReports(array $data): array
+    {
+        return $this->reservationRepository->getReports($data);
+    }
 }

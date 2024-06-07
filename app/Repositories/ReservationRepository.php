@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Repositories;
 
 use App\Models\{
@@ -11,7 +12,7 @@ use App\Models\{
 use App\Repositories\{
     ReservationStatusRepository as ReservationStatuses,
     ClassroomLogsRepository
-}; 
+};
 
 use App\Service\ServiceImplementation\TimeSlotServiceImpl;
 use Carbon\Carbon;
@@ -21,16 +22,16 @@ use Illuminate\Cache\Repository;
 
 class ReservationRepository extends Repository
 {
-    protected $model; 
+    protected $model;
     private $timeSlotService;
-    private $classroomLog;  
-    function __construct() 
+    private $classroomLog;
+    function __construct()
     {
-        $this->model = Reservation::class; 
+        $this->model = Reservation::class;
 
         $this->timeSlotService = new TimeSlotServiceImpl();
-        
-        $this->classroomLog = new ClassroomLogsRepository(); 
+
+        $this->classroomLog = new ClassroomLogsRepository();
     }
 
     /**
@@ -71,8 +72,7 @@ class ReservationRepository extends Repository
             'classrooms.block:id,name',
             'classrooms.classroomType:id,description'
         ])->orderBy('date')->get()->map(
-            function ($reservation)
-            {
+            function ($reservation) {
                 return $this->formatOutput($reservation);
             }
         )->toArray();
@@ -85,7 +85,7 @@ class ReservationRepository extends Repository
      */
     public function getReservationsWithoutPendingRequest(): array
     {
-        
+
         return $this->model::with([
             'reservationStatus:id,status',
             'reservationReason:id,reason',
@@ -99,8 +99,7 @@ class ReservationRepository extends Repository
         ])->where('reservation_status_id', '!=', ReservationStatuses::pending())
             ->orderBy('date')
             ->get()->map(
-                function ($reservation)
-                {
+                function ($reservation) {
                     return $this->formatOutput($reservation);
                 }
             )->toArray();
@@ -126,8 +125,7 @@ class ReservationRepository extends Repository
         ])->where('date', '>=', Carbon::now()->format('Y-m-d'))
             ->where('reservation_status_id', ReservationStatuses::pending())
             ->orderBy('date')->get()->map(
-                function ($reservation)
-                {
+                function ($reservation) {
                     return $this->formatOutput($reservation);
                 }
             )->toArray();
@@ -159,13 +157,11 @@ class ReservationRepository extends Repository
                 ]
             )->whereHas(
                 'teacherSubjects',
-                function ($query) use ($teacherId) 
-                {
+                function ($query) use ($teacherId) {
                     $query->where('person_id', $teacherId);
                 }
             )->orderBy('date')->get()->map(
-                function ($reservation)
-                {
+                function ($reservation) {
                     return $this->formatOutput($reservation);
                 }
             )->toArray();
@@ -189,13 +185,12 @@ class ReservationRepository extends Repository
             'classrooms.block:id,name',
             'classrooms.classroomType:id,description'
         ])->whereHas('teacherSubjects', function ($query) use ($teacherId) {
-                $query->where('person_id', $teacherId);
-            })->orderBy('date')->get()->map(
-                function ($reservation)
-                {
-                    return $this->formatOutput($reservation);
-                }
-            )->toArray();
+            $query->where('person_id', $teacherId);
+        })->orderBy('date')->get()->map(
+            function ($reservation) {
+                return $this->formatOutput($reservation);
+            }
+        )->toArray();
     }
 
     /**
@@ -219,8 +214,7 @@ class ReservationRepository extends Repository
             ->whereHas('teacherSubjects', function ($query) use ($teacherId) {
                 $query->where('person_id', $teacherId);
             })->orderBy('date')->get()->map(
-                function ($reservation)
-                {
+                function ($reservation) {
                     return $this->formatOutput($reservation);
                 }
             )->toArray();
@@ -263,23 +257,23 @@ class ReservationRepository extends Repository
             }),
             'block_name' => $classrooms->first()->block->name,
             'classrooms' => $classrooms->map(
-                function ($classroom) use ($reservation) 
-                {
+                function ($classroom) use ($reservation) {
                     $classroomData = $this->classroomLog->retriveLastClassroom(
                         [
                             'classroom_id' => $classroom->id,
-                            'date' => $reservation->created_at 
+                            'date' => $reservation->created_at
                         ]
                     );
                     return [
                         'classroom_name' => $classroomData['classroom_name'],
                         'capacity' => $classroomData['capacity'],
                     ];
-            }),
+                }
+            ),
             'reason_name' => $reservationReason->reason,
             'priority' => $priority,
             'reservation_status' => $reservationStatus->status,
-            'repeat' => $reservation->repeat, 
+            'repeat' => $reservation->repeat,
             'date' => $reservation->date,
         ];
     }
@@ -295,28 +289,24 @@ class ReservationRepository extends Repository
         array $statuses,
         string $date,
         int $classroomId
-    ): array
-    {
+    ): array {
         $reservationSet = $this->model::whereHas(
-                'classrooms',
-                function ($query) use ($classroomId)
-                {
-                    $query -> where ('classroom_id', $classroomId);
-                }
-            )->where(
-                function ($query) use ($statuses)
-                {
-                    foreach ($statuses as $status)
-                        $query->orWhere('reservation_status_id', $status);
-                }
-            )->where(
-                function ($query) use ($date)
-                {
-                    $query->where('date', '>=', date('Y-m-d'));
-                    $query->where('date', $date);
-                    $query->orWhere('repeat', '>', 0);
-                }
-            )->get();
+            'classrooms',
+            function ($query) use ($classroomId) {
+                $query->where('classroom_id', $classroomId);
+            }
+        )->where(
+            function ($query) use ($statuses) {
+                foreach ($statuses as $status)
+                    $query->orWhere('reservation_status_id', $status);
+            }
+        )->where(
+            function ($query) use ($date) {
+                $query->where('date', '>=', date('Y-m-d'));
+                $query->where('date', $date);
+                $query->orWhere('repeat', '>', 0);
+            }
+        )->get();
         $result = [];
         foreach ($reservationSet as $reservation) {
             $initialDate = new DateTime($date);
@@ -392,33 +382,28 @@ class ReservationRepository extends Repository
     public function getReservationsByClassroomAndStatuses(
         int $classroomId,
         array $statuses
-    ): array
-    {
+    ): array {
         return $this->model::whereHas(
             'classrooms',
-            function ($query) use ($classroomId)
-            {
-                $query -> where ('classroom_id', $classroomId);
+            function ($query) use ($classroomId) {
+                $query->where('classroom_id', $classroomId);
             }
         )->where(
-            function ($query) use ($statuses)
-            {
+            function ($query) use ($statuses) {
                 foreach ($statuses as $status)
                     $query->orWhere('reservation_status_id', $status);
             }
         )->get()
-        ->map(
-            function ($reservation)
-            {
-                return $this->formatOutput($reservation);
-            }
-        )->toArray();
+            ->map(
+                function ($reservation) {
+                    return $this->formatOutput($reservation);
+                }
+            )->toArray();
     }
 
     /**
      * Function to retrive reservations accepted and rejected by classroom
      * @param int $classroomId
-     * @param array $statuses
      * @return array
      */
     public function getAcceptedAndPendingReservationsByClassroom(int $classroomId): array
@@ -469,7 +454,7 @@ class ReservationRepository extends Repository
         if (empty($reservations)) return [];
         $formatReservations = [];
         foreach ($reservations as $reservation) {
-            
+
             $formatReservations[] = [
                 'reservation_id' => $reservation['reservation_id'],
                 'subject_name' => $reservation['subject_name'],
@@ -480,5 +465,105 @@ class ReservationRepository extends Repository
             ];
         }
         return $formatReservations;
+    }
+
+    /**
+     * Retrieve a list of reports based on the given data.
+     * 
+     * @param array $data
+     * @return array
+     */
+    public function getReports(array $data): array
+    {
+        $query = $this->model::with([
+            'teacherSubjects.person',
+            'reservationTeacherSubjects',
+            'classrooms',
+            'classrooms.block',
+            'timeSlots',
+        ])->whereBetween('date', [$data['date_start'], $data['date_end']])
+            ->whereIn('reservation_status_id', [ReservationStatuses::accepted(), ReservationStatuses::rejected()]);
+
+        if (!empty($data['block_id'])) {
+            $query->whereHas('classrooms', function ($query) use ($data) {
+                $query->where('block_id', $data['block_id']);
+            });
+        }
+
+        if (!empty($data['classroom_id'])) {
+            $query->whereHas('classrooms', function ($query) use ($data) {
+                $query->where('classroom_id', $data['classroom_id']);
+            });
+        }
+
+        if (!empty($data['reservation_status_id'])) {
+            $query->where('reservation_status_id', $data['reservation_status_id']);
+        }
+
+        if (!empty($data['university_subject_id'])) {
+            $query->whereHas('teacherSubjects', function ($query) use ($data) {
+                $query->where('university_subject_id', $data['university_subject_id']);
+            });
+        }
+
+        if (!empty($data['person_id'])) {
+            $query->whereHas('reservationTeacherSubjects', function ($query) use ($data) {
+                $query->where('teacher_subject_id', $data['person_id']);
+            });
+        }
+
+        $rejectedCount = clone $query;
+        $rejectedQuery = clone $query;
+
+        $counts = $this->formatOutputGetReportsCounts($rejectedCount, $rejectedQuery);
+
+        $results = $query->orderBy('date')->get();
+
+        $formattedResults = $results->map(function ($report) {
+            return $this->formatOutputGetReports($report);
+        })->toArray();
+
+        return [
+            'report' => $formattedResults,
+            'counts' => $counts,
+        ];
+    }
+
+    public function formatOutputGetReportsCounts($approvedQuery, $rejectedQuery): array
+    {
+        $approvedCount = $approvedQuery->where('reservation_status_id', ReservationStatuses::accepted())->count();
+        $rejectedCount = $rejectedQuery->where('reservation_status_id', ReservationStatuses::rejected())->count();
+        $totalCount = $approvedCount + $rejectedCount;
+
+        return [
+            'approved' => $approvedCount,
+            'rejected' => $rejectedCount,
+            'total' => $totalCount,
+        ];
+    }
+
+    /**
+     * Format the output of a single report.
+     * @param Reservation $report
+     * @return array
+     */
+    public function formatOutputGetReports(Reservation $report): array
+    {
+        if ($report == null) return [];
+
+        $teacherSubjects = $report->teacherSubjects->first();
+        $person = $teacherSubjects ? $teacherSubjects->person : null;
+        $classroom = $report->classrooms->first();
+        $block = $classroom ? $classroom->block : null;
+
+        return [
+            'date' => $report->date,
+            'teacher' => $person ? $person->name . ' ' . $person->last_name : 'N/A',
+            'block' => $block ? $block->name : 'N/A',
+            'classroom' => $classroom ? $classroom->name : 'N/A',
+            'time_slots' => $report->timeSlots->pluck('time')->toArray(),
+            'date_send' => Carbon::parse($report->created_at)->format('Y-m-d'),
+            'date_approval' => $report->reservation_status_id === ReservationStatuses::accepted() ? Carbon::parse($report->updated_at)->format('Y-m-d') : 'N/A',
+        ];
     }
 }
