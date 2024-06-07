@@ -120,7 +120,7 @@ class ReservationServiceImpl implements ReservationService
      * @param int $reservationId
      * @return string
      */
-    public function reject(int $reservationId): string
+    public function reject(int $reservationId, string $message): string
     {
         $reservation = Reservation::find($reservationId);
 
@@ -140,7 +140,7 @@ class ReservationServiceImpl implements ReservationService
             $emailData = $this->notificationService->store(
                 [
                     'title' => 'SOLICITUD DE RESERVA #'.$reservation->id.' RECHAZADA', 
-                    'body' => 'Se rechazo la solicitud #'.$reservation->id,
+                    'body' => 'Se rechazo la solicitud #'.$reservation->id.' '.$message,
                     'type' => NotificationTypeRepository::accepted(),
                     'sendBy' => $this->personRepository->system(), 
                     'to' => $reservation->teacherSubjects->map(
@@ -151,7 +151,10 @@ class ReservationServiceImpl implements ReservationService
                     )
                 ]
             );
-            $emailData = array_merge($emailData, $this->reservationRepository->formatOutput($reservation));
+            $emailData = array_merge(
+                $emailData, 
+                $this->reservationRepository->formatOutput($reservation)
+            );
 
             $this->mailService->rejectReservation($emailData);
 

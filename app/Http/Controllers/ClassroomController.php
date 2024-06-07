@@ -492,7 +492,16 @@ class ClassroomController extends Controller
 
             $data = $validator->validated();
 
-            return response()->json($this->classroomService->suggestClassrooms($data), 200);
+            $response = $this->classroomService->suggestClassrooms($data);
+
+            $status = 200; 
+            if (
+                (array_key_exists('message', $response)) && 
+                ($response['message'] == 'No existe una sugerencia apropiada')
+            ) 
+                $status = 404;
+
+            return response()->json($response, $status);
         } catch (Exception $e) {
             return response()->json(
                 [
