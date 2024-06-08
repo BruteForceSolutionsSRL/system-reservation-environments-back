@@ -37,7 +37,6 @@ class MailerServiceImpl implements MailerService
 	 */
 	public function createReservation($data): void 
 	{
-		echo serialize($data['date']);
 		$addresses = $this->getAddresses($data['to']); 
 		$this->sendMail(
 			new ReservationNotificationMailer(

@@ -409,8 +409,15 @@ class ReservationController extends Controller
             } 
 
             $data = $validator->validated();
+            $report = $this->reservationService->getReports($data);
+            if (empty($report['report'])) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'No data found',
+                ], 404);
+            }
             return response()->json(
-                $this->reservationService->getReports($data), 
+                $report, 
                 200
             );
         } catch (Exception $e) {

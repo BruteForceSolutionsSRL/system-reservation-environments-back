@@ -146,7 +146,7 @@ class ReservationServiceImpl implements ReservationService
                     'to' => $reservation->teacherSubjects->map(
                         function ($teacher) 
                         {
-                            return $teacher->id;
+                            return $teacher->person_id;
                         }
                     )
                 ]
@@ -226,7 +226,10 @@ class ReservationServiceImpl implements ReservationService
             return 'Esta solicitud ya fue atendida';
         }
         if (!$this->checkAvailibility($reservation)) {
-            $this->reject($reservation->id);
+            $this->reject(
+                $reservation->id,
+                'Se rechazo su solicitud, contacte con un administrador'
+            );
             return  'La solicitud no puede aceptarse, existen ambientes ocupados';
         }
 
@@ -245,7 +248,10 @@ class ReservationServiceImpl implements ReservationService
                     $times
                 );
             foreach ($reservationSet as $reservationIterable)
-                $message .= $this->reject($reservationIterable->id);
+                $message .= $this->reject(
+                    $reservationIterable->id,
+                    'Se rechazo su solicitud, contacte con un administrador'
+                );
         }
 
         $reservationSerialized = implode('<br>', $this->reservationRepository->formatOutput($reservation));
@@ -300,7 +306,7 @@ class ReservationServiceImpl implements ReservationService
                 'to' => $reservation->teacherSubjects->map(
                     function ($teacher) 
                     {
-                        return $teacher->id;
+                        return $teacher->person_id;
                     }
                 )
             ]
@@ -326,7 +332,7 @@ class ReservationServiceImpl implements ReservationService
                     'to' => $reservation->teacherSubjects->map(
                         function ($teacher) 
                         {
-                            return $teacher->id;
+                            return $teacher->person_id;
                         }
                     )
                 ]
@@ -337,7 +343,10 @@ class ReservationServiceImpl implements ReservationService
             $this->mailService->acceptReservation($emailData);
             return 'Tu solicitud de reserva fue aceptada';
         } else {
-            return $this->reject($reservation->id);
+            return $this->reject(
+                $reservation->id,
+                'Se rechazo su solicitud, contacte con un administrador'
+            );
         }
     }
 
@@ -536,7 +545,10 @@ class ReservationServiceImpl implements ReservationService
             }
 
             foreach ($pendingReservations as $reservationId) {
-                $this->reject($reservationId);
+                $this->reject(
+                    $reservationId,
+                    'Se rechazo su solicitud, contacte con un administrador'
+                );
             }
 
             return ['Todas las solicitudes asociadas al ambiente fueron canceladas/rechazadas.'];

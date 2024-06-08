@@ -19,6 +19,7 @@ use Carbon\Carbon;
 use DateTime;
 
 use Illuminate\Cache\Repository;
+use Illuminate\Support\Facades\DB;
 
 class ReservationRepository extends Repository
 {
@@ -475,95 +476,139 @@ class ReservationRepository extends Repository
      */
     public function getReports(array $data): array
     {
-        $query = $this->model::with([
-            'teacherSubjects.person',
-            'reservationTeacherSubjects',
-            'classrooms',
-            'classrooms.block',
-            'timeSlots',
-        ])->whereBetween('date', [$data['date_start'], $data['date_end']])
-            ->whereIn('reservation_status_id', [ReservationStatuses::accepted(), ReservationStatuses::rejected()]);
+        $query = DB::table('reservations')
+            ->join('reservation_teacher_subject', 'reservations.id', '=', 'reservation_teacher_subject.reservation_id')
+            ->join('teacher_subjects', 'reservation_teacher_subject.teacher_subject_id', '=', 'teacher_subjects.id')
+            ->join('people', 'teacher_subjects.person_id', '=', 'people.id')
+            ->join('classroom_reservation', 'reservations.id', '=', 'classroom_reservation.reservation_id')
+            ->join('classrooms', 'classroom_reservation.classroom_id', '=', 'classrooms.id')
+            ->join('blocks', 'classrooms.block_id', '=', 'blocks.id')
+            ->join('reservation_time_slot', 'reservations.id', '=', 'reservation_time_slot.reservation_id')
+            ->join('time_slots', 'reservation_time_slot.time_slot_id', '=', 'time_slots.id')
+            ->select(
+                'reservations.id as reservation_id',
+                'reservations.date',
+                DB::raw('CONCAT(people.name, " ", people.last_name) as teacher_name'),
+                'blocks.name as block_name',
+                'classrooms.name as classroom_name',
+                'time_slots.time as time_slot_time',
+                'reservations.created_at as date_send',
+                'reservations.updated_at as date_approval',
+                'reservations.reservation_status_id'
+            )
+            ->whereBetween('reservations.date', [$data['date_start'], $data['date_end']])
+            ->whereIn('reservations.reservation_status_id', [
+                ReservationStatuses::accepted(), 
+                ReservationStatuses::rejected(), 
+                ReservationStatuses::cancelled()]
+            );
+
+        if (!empty($data['person_id'])) {
+            $query->where('people.id', $data['person_id']);
+        }
 
         if (!empty($data['block_id'])) {
-            $query->whereHas('classrooms', function ($query) use ($data) {
-                $query->where('block_id', $data['block_id']);
-            });
+            $query->where('blocks.id', $data['block_id']);
         }
 
         if (!empty($data['classroom_id'])) {
-            $query->whereHas('classrooms', function ($query) use ($data) {
-                $query->where('classroom_id', $data['classroom_id']);
-            });
+            $query->where('classrooms.id', $data['classroom_id']);
         }
 
         if (!empty($data['reservation_status_id'])) {
-            $query->where('reservation_status_id', $data['reservation_status_id']);
+            $query->where('reservations.reservation_status_id', $data['reservation_status_id']);
         }
 
         if (!empty($data['university_subject_id'])) {
-            $query->whereHas('teacherSubjects', function ($query) use ($data) {
-                $query->where('university_subject_id', $data['university_subject_id']);
-            });
+            $query->where('teacher_subjects.university_subject_id', $data['university_subject_id']);
         }
 
-        if (!empty($data['person_id'])) {
-            $query->whereHas('reservationTeacherSubjects', function ($query) use ($data) {
-                $query->where('teacher_subject_id', $data['person_id']);
-            });
+        $acceptedCount = 0;
+        $rejectedCount = 0;
+        $canceledCount = 0;
+
+        $results = $query->orderBy('reservations.date')->get()->toArray();
+
+        if (empty($results)) {
+            return [
+                'accepted_reservations' => 0,
+                'rejected_reservations' => 0,
+                'canceled_reservations' => 0,
+                'total_reservations' => 0,
+                'report' => []
+            ];
         }
 
-        $rejectedCount = clone $query;
-        $rejectedQuery = clone $query;
+        /* return $results; */
 
-        $counts = $this->formatOutputGetReportsCounts($rejectedCount, $rejectedQuery);
+        $formattedResults = [];
+        foreach ($results as $result) {
+            $reservationId = $result->reservation_id;
+            if (!isset($formattedResults[$reservationId])) {
+                $formattedResults[$reservationId] = [
+                    'reservation_id' => $result->reservation_id,
+                    'date' => Carbon::parse($result->date)->format('Y-m-d'),
+                    'date_send' => Carbon::parse($result->date_send)->format('Y-m-d'),
+                    'date_approval' => '',
+                    'block_name' => $result->block_name,
+                    'teachers' => [],
+                    'classrooms' => [],
+                    'time_slots' => [],
+                ];
+                if ($result->reservation_status_id === ReservationStatuses::accepted()) {
+                    $acceptedCount++;
+                    $formattedResults[$reservationId]['date_approval'] = $result->date_approval;               
+                } else if ($result->reservation_status_id === ReservationStatuses::cancelled()) {
+                    $canceledCount++;
+                    $formattedResults[$reservationId]['date_approval'] = Carbon::parse($result->date_approval)->format('Y-m-d'); 
+                } else if ($result->reservation_status_id === ReservationStatuses::rejected()) {
+                    $rejectedCount++;
+                    $formattedResults[$reservationId]['date_approval'] = 'N/A';
+                }
+            }
 
-        $results = $query->orderBy('date')->get();
+            if (!in_array($result->teacher_name, $formattedResults[$reservationId]['teachers'])) {
+                $formattedResults[$reservationId]['teachers'][] = $result->teacher_name;
+            }
 
-        $formattedResults = $results->map(function ($report) {
-            return $this->formatOutputGetReports($report);
-        })->toArray();
+            if (!in_array($result->classroom_name, $formattedResults[$reservationId]['classrooms'])) {
+                $formattedResults[$reservationId]['classrooms'][] = $result->classroom_name;
+            }
+
+            if (!in_array($result->time_slot_time, $formattedResults[$reservationId]['time_slots'])) {
+                $formattedResults[$reservationId]['time_slots'][] = $result->time_slot_time;
+            }
+        }
+
+        $finalResults = [];
+        foreach ($formattedResults as $formattedResult) {
+            $classrooms = implode(', ', $formattedResult['classrooms']);
+            $timeSlots = $formattedResult['time_slots'];
+            $timeSlots = ($timeSlots[0]).'-'.($timeSlots[count($timeSlots)-1]);
+            foreach ($formattedResult['teachers'] as $teacher) {
+                $finalResults [] = [
+                    'reservation_id' => $formattedResult['reservation_id'],
+                    'date' => $formattedResult['date'],
+                    'date_send' => $formattedResult['date_send'],
+                    'date_approval' => $formattedResult['date_approval'],
+                    'block_name' => $formattedResult['block_name'],
+                    'teacher' => $teacher,
+                    'classrooms' => $classrooms,
+                    'time_slots' => $timeSlots
+                ];
+            }
+        }
+
+        $totalCount = $acceptedCount + $rejectedCount + $canceledCount;
+
+        //$formattedResults = array_values($formattedResults);
 
         return [
-            'report' => $formattedResults,
-            'counts' => $counts,
-        ];
-    }
-
-    public function formatOutputGetReportsCounts($approvedQuery, $rejectedQuery): array
-    {
-        $approvedCount = $approvedQuery->where('reservation_status_id', ReservationStatuses::accepted())->count();
-        $rejectedCount = $rejectedQuery->where('reservation_status_id', ReservationStatuses::rejected())->count();
-        $totalCount = $approvedCount + $rejectedCount;
-
-        return [
-            'approved' => $approvedCount,
-            'rejected' => $rejectedCount,
-            'total' => $totalCount,
-        ];
-    }
-
-    /**
-     * Format the output of a single report.
-     * @param Reservation $report
-     * @return array
-     */
-    public function formatOutputGetReports(Reservation $report): array
-    {
-        if ($report == null) return [];
-
-        $teacherSubjects = $report->teacherSubjects->first();
-        $person = $teacherSubjects ? $teacherSubjects->person : null;
-        $classroom = $report->classrooms->first();
-        $block = $classroom ? $classroom->block : null;
-
-        return [
-            'date' => $report->date,
-            'teacher' => $person ? $person->name . ' ' . $person->last_name : 'N/A',
-            'block' => $block ? $block->name : 'N/A',
-            'classroom' => $classroom ? $classroom->name : 'N/A',
-            'time_slots' => $report->timeSlots->pluck('time')->toArray(),
-            'date_send' => Carbon::parse($report->created_at)->format('Y-m-d'),
-            'date_approval' => $report->reservation_status_id === ReservationStatuses::accepted() ? Carbon::parse($report->updated_at)->format('Y-m-d') : 'N/A',
+            'accepted_reservations' => $acceptedCount,
+            'rejected_reservations' => $rejectedCount,
+            'canceled_reservations' => $canceledCount,
+            'total_reservations' => $totalCount,
+            'report' => $finalResults
         ];
     }
 }
