@@ -73,7 +73,7 @@ Route::controller(ClassroomController::class)->group(function() {
     Route::get('/classrooms/statistics/list','getAllClassroomsWithStatistics');
     Route::get('/classrooms/stats', 'getClassroomStats');
 
-    Route::delete('/classroom/delete/{classroomId}','destroy');
+    Route::delete('/classrooms/delete/{classroomId}','destroy');
 
     Route::middleware('sanitize:api')->post('/classrooms/disponibility', 'getClassroomByDisponibility');
     Route::middleware('sanitize:api')->post('/classrooms/reservation/suggest', 'suggestClassrooms');

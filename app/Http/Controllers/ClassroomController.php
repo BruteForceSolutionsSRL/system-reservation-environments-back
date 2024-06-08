@@ -38,7 +38,7 @@ class ClassroomController extends Controller
     public function list(Request $request): Response
     {
         try {
-            $classroomStatus = $request->query('status', 'ENABLED');
+            $classroomStatus = $request->query('status', 'ALL');
             return response()->json(
                 $this->classroomService->getAllClassrooms($classroomStatus),
                 200

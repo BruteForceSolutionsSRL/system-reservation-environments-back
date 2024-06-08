@@ -78,7 +78,7 @@ class ClassroomStatusRepository extends Repository
             return [
                 $this->disabled() 
             ];
-        } else {
+        } else if ($status === 'ALL'){
             return [
                 $this->available(),
                 $this->disabled() 
