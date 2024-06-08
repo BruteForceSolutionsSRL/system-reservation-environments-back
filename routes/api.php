@@ -46,6 +46,7 @@ Route::controller(ReservationController::class)->group(function() {
     Route::get('/reservations/teacher/{teacherId}', 'listAllRequestsByTeacher'); 
     Route::get('/reservations/history', 'getAllRequestsExceptPending');
     Route::get('/reservations/history/teacher/{teacherId}', 'getAllRequestsExceptPendingByTeacher');
+    Route::get('/reservations/reports', 'getReports');
     Route::get('/reservations/{reservationId}', 'show');
     Route::get('/reservations/{reservationId}/conflicts', 'getConflicts');
     Route::get('/reservations/classroom/{classroomId}','getAllReservationsByClassroom');
