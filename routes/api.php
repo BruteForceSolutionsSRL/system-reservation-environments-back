@@ -71,13 +71,13 @@ Route::controller(ClassroomController::class)->group(function() {
     Route::get('/classrooms/block/{blockId}/available', 'availableClassroomsByBlock');
     Route::get('/classrooms/last-validated', 'retriveLastClassroom');
     Route::get('/classrooms/statistics/list','getAllClassroomsWithStatistics');
-    Route::get('/classrooms/stats', 'getClassroomStats');
 
     Route::delete('/classrooms/delete/{classroomId}','destroy');
 
     Route::middleware('sanitize:api')->post('/classrooms/disponibility', 'getClassroomByDisponibility');
     Route::middleware('sanitize:api')->post('/classrooms/reservation/suggest', 'suggestClassrooms');
     Route::middleware('sanitize:api')->post('/classrooms', 'store');
+    Route::middleware('sanitize:api')->post('/classrooms/stats', 'getClassroomStats');
     
     Route::middleware('sanitize:api')->put('/classrooms/{classroomId}', 'update');
 });
