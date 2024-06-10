@@ -158,7 +158,9 @@ class ClassroomServiceImpl implements ClassroomService
             );
             foreach ($reservations as $reservation)
                 if ($reservation['repeat'] == 0) {
-                    $this->reservationService->reject($reservation['reservation_id']);
+                    $this->reservationService->reject($reservation['reservation_id'],
+                    "Su reserva ha sido rechazada"
+                );
                 }
             // modulo para enviar las notificaciones :V
         }
@@ -373,7 +375,7 @@ class ClassroomServiceImpl implements ClassroomService
     }
 
     /**
-     * 
+     * Function to retrieve statistics from a classroom by start and end date, along with a classroom ID
      * @param array $data
      * @return array
      */

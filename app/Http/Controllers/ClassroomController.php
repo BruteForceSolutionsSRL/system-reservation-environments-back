@@ -38,7 +38,7 @@ class ClassroomController extends Controller
     public function list(Request $request): Response
     {
         try {
-            $classroomStatus = $request->query('status', 'ENABLED');
+            $classroomStatus = $request->query('status', 'ALL');
             return response()->json(
                 $this->classroomService->getAllClassrooms($classroomStatus),
                 200
@@ -492,7 +492,16 @@ class ClassroomController extends Controller
 
             $data = $validator->validated();
 
-            return response()->json($this->classroomService->suggestClassrooms($data), 200);
+            $response = $this->classroomService->suggestClassrooms($data);
+
+            $status = 200; 
+            if (
+                (array_key_exists('message', $response)) && 
+                ($response['message'] == 'No existe una sugerencia apropiada')
+            ) 
+                $status = 404;
+
+            return response()->json($response, $status);
         } catch (Exception $e) {
             return response()->json(
                 [
@@ -646,7 +655,7 @@ class ClassroomController extends Controller
     }
 
     /**
-     * 
+     * Function to retrieve statistics from a classroom by start and end date, along with a classroom ID
      * @param Request $request
      * @return Response
      */
@@ -664,8 +673,10 @@ class ClassroomController extends Controller
                 );
             }
             $data = $validator->validated();
-            $classroomStats = $this->classroomService->getClassroomStats($data);
-            return response()->json($classroomStats);
+            return response()->json(
+                $this->classroomService->getClassroomStats($data),
+                200
+            );
         } catch (Exception $e) {
             return response()->json(
                 [
@@ -677,6 +688,11 @@ class ClassroomController extends Controller
         }
     }
 
+    /**
+     * Function to validate data from the function "getClassroomStats"
+     * @param Request $request
+     * @return mixed
+     */
     private function validateGetClassroomStatsData(Request $request)
     {
         return Validator::make($request->all(), [

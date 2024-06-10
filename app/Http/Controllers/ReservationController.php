@@ -200,10 +200,13 @@ class ReservationController extends Controller
      * @param int $reservationId
      * @return Response
      */
-    public function rejectReservation(int $reservationId): Response
+    public function rejectReservation(int $reservationId, Request $request): Response
     {
         try {
-            $message = $this->reservationService->reject($reservationId); 
+            $message = $this->reservationService->reject(
+                $reservationId, 
+                $request->input('message')
+            ); 
             if ($message == 'No existe una solicitud con este ID') {
                 return response()->json(['message' => $message], 404);
             }
