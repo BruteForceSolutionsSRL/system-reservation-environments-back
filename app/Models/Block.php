@@ -13,4 +13,9 @@ class Block extends Model
     {
         return $this->hasMany(Classroom::class);
     }
+    public function blockStatus()
+    {
+        return $this->belongsTo(BlockStatus::class);
+    }
+
 }
