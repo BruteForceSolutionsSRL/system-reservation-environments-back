@@ -64,7 +64,7 @@ class NotificationRepository
 		$notification->person_id = $data['sendBy'];
 
 		$notification->save(); 
-
+		$data['to'] = array_unique($data['to']->toArray());
 		$notification->receptors()->attach($data['to']);
 		return $this->formatOutput($notification);
 	}
@@ -127,7 +127,7 @@ class NotificationRepository
 			'body' => $notification->description, 
 		];
 
-		if (!in_array($notificationType['notification_type_id'], [
+		if (in_array($notificationType['notification_type_id'], [
 			$this->notificationTypeRepository->accepted(), 
 			$this->notificationTypeRepository->cancelled(), 
 			$this->notificationTypeRepository->rejected()

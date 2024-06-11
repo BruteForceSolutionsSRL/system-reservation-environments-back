@@ -22,16 +22,14 @@ class ClassroomRepository extends Repository
 
     private $classroomStatusRepository;
     private $classroomTypeRepository;
-    private $blockRepository;
     private $reservationReasonRepository;
 
-    public function __construct($model)
+    public function __construct()
     {
-        $this->model = $model;
+        $this->model = Classroom::class;
 
         $this->classroomStatusRepository = new ClassroomStatusRepository();
         $this->classroomTypeRepository = new ClassroomTypeRepository();
-        $this->blockRepository = new BlockRepository();
 
         $this->reservationReasonRepository = new ReservationReason();
     }
@@ -107,9 +105,8 @@ class ClassroomRepository extends Repository
      * @param array $statuses
      * @return array
      */
-    public function getClassrooomsByStatus(array $idStatuses): array
+    public function getClassroomsByStatus(array $idStatuses): array
     {
-
         return $this->model::where(
             function ($query) use ($idStatuses) {
                 foreach ($idStatuses as $status)
@@ -120,6 +117,18 @@ class ClassroomRepository extends Repository
                 return $this->formatOutput($classroom);
             }
         )->toArray();
+    }
+
+    public function getAllClassroomByBlock(int $blockId): array 
+    {
+        return $this->model::where('block_id', $blockId)
+            ->where('classroom_status_id', '!=', $this->classroomStatusRepository->deleted())
+            ->get()->map(
+                function ($classroom) 
+                {
+                    return $this->formatOutput($classroom);
+                }
+            )->toArray();
     }
 
     /**
@@ -218,7 +227,7 @@ class ClassroomRepository extends Repository
      * @param Classroom $classroom
      * @return array
      */
-    private function formatOutput(Classroom $classroom): array
+    private function formatOutput($classroom): array
     {
         $classroomType = $this->classroomTypeRepository->getClassroomTypeById(
             $classroom->classroom_type_id
@@ -227,8 +236,9 @@ class ClassroomRepository extends Repository
             $classroom->classroom_status_id
         );
 
-        $block = $this->blockRepository->getBlock($classroom->block_id);
-
+        //$block = $this->blockRepository->getBlock($classroom->block_id);
+        $block = $classroom->block;
+        //echo serialize($block);
         return [
             'classroom_id' => $classroom->id,
             'classroom_name' => $classroom->name,
@@ -239,7 +249,7 @@ class ClassroomRepository extends Repository
             'capacity' => $classroom->capacity,
             'floor' => $classroom->floor,
             'block_id' => $classroom->block_id,
-            'block_name' => $block['block_name']
+            'block_name' => $block->name
         ];
     }
 

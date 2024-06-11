@@ -197,7 +197,7 @@ class ReservationServiceImpl implements ReservationService
                 'to' => $reservation->teacherSubjects->map(
                     function ($teacher) 
                     {
-                        return $teacher->id;
+                        return $teacher->person_id;
                     }
                 )
             ]
@@ -254,18 +254,16 @@ class ReservationServiceImpl implements ReservationService
                 );
         }
 
-        $reservationSerialized = implode('<br>', $this->reservationRepository->formatOutput($reservation));
-
         $emailData = $this->notificationService->store(
             [
                 'title' => 'SOLICITUD DE RESERVA #'.$reservation->id.' ACEPTADA', 
-                'body' => 'Se acepto la solicitud #'.$reservation->id.' '.$reservationSerialized,
+                'body' => 'Se acepto la solicitud #'.$reservation->id,
                 'type' => NotificationTypeRepository::accepted(),
                 'sendBy' => $this->personRepository->system(), 
                 'to' => $reservation->teacherSubjects->map(
                     function ($teacher) 
                     {
-                        return $teacher->id;
+                        return $teacher->person_id;
                     }
                 )
             ]
@@ -312,7 +310,10 @@ class ReservationServiceImpl implements ReservationService
             ]
         );
 
-        $emailData = array_merge($emailData, $this->reservationRepository->formatOutput($reservation));
+        $emailData = array_merge(
+            $emailData, 
+            $this->reservationRepository->formatOutput($reservation)
+        );
 
         $this->mailService->createReservation($emailData);
 

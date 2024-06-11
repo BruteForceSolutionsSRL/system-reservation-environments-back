@@ -37,7 +37,7 @@ class ClassroomServiceImpl implements ClassroomService
 
     public function __construct()
     {
-        $this->classroomRepository = new ClassroomRepository(Classroom::class);
+        $this->classroomRepository = new ClassroomRepository();
         $this->reservationRepository = new ReservationRepository();
         $this->timeSlotRepository = new TimeSlotRepository();
         $this->blockRepository = new BlockRepository();
@@ -47,7 +47,7 @@ class ClassroomServiceImpl implements ClassroomService
         $this->reservationService = new ReservationServiceImpl();
         $this->classroomLogRepository = new ClassroomLogsRepository();
     }
-
+ 
     /**
      * Retrieve a list of classrooms through a status
      * @param string $statuses
@@ -56,7 +56,7 @@ class ClassroomServiceImpl implements ClassroomService
     public function getAllClassrooms(string $statuses): array
     {
         $idStatuses = $this->classroomStatusRepository->getStatusesIdByName($statuses);
-        return $this->classroomRepository->getClassrooomsByStatus($idStatuses);
+        return $this->classroomRepository->getClassroomsByStatus($idStatuses);
     }
 
     /**
@@ -244,7 +244,7 @@ class ClassroomServiceImpl implements ClassroomService
     {
         $classroomSet = $this->classroomRepository
             ->getClassroomsByBlock($data['block_id']);
-        $classroomSets = [];
+        $classroomSets = []; 
         $max_floor = $this->blockRepository
             ->getBlock($data['block_id'])['block_maxfloor'];
 
@@ -372,6 +372,18 @@ class ClassroomServiceImpl implements ClassroomService
         );
         $this->classroomRepository->deleteByClassroomId($classroomId); 
         return ['message' => 'Ambiente eliminado exitosamente.'];
+    }
+
+    /**
+     * delete a set of classrooms all in one 
+     * @param array $classroomIds
+     * @return array
+     */
+    public function deleteClassroomsByIds(array $classroomIds): array 
+    {
+        foreach ($classroomIds as $classroomId)
+            $this->deleteByClassroomId($classroomId);
+        // aqui falta las notificaciones para que los admins vean las modificaciones sobre aulas
     }
 
     /**
