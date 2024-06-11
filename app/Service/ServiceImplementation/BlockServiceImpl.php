@@ -4,7 +4,8 @@ namespace App\Service\ServiceImplementation;
 use App\Repositories\{
     BlockRepository,
     BlockLogRepository,
-    BlockStatusRepository
+    BlockStatusRepository,
+    ReservationStatusRepository as ReservationStatus
 };
 
 use App\Models\{
@@ -14,6 +15,8 @@ use App\Models\{
 use App\Service\{
     BlockService
 };
+
+use Carbon\Carbon;
 
 class BlockServiceImpl implements BlockService
 {
@@ -53,7 +56,33 @@ class BlockServiceImpl implements BlockService
 
     public function getBlockStatistics(int $block_id): array 
     {
-        return $this->blockRepository->getStatistics($block_id); 
+        $result = [
+            'accepted' => 0, 
+            'rejected' => 0, 
+            'cancelled' => 0, 
+            'pending' => 0
+        ];
+        $classrooms = $this->classroomService->getClassroomsByBlock($block_id); 
+
+        $data = [
+            'date_start' => Carbon::parse('0001-01-01'),
+            'date_end' => Carbon::now()->addMonths(6),
+            'classroom_id' => -1,
+        ];
+
+        foreach ($classrooms as $classroom) {
+            $data['classroom_id'] = $classroom['classroom_id'];
+            $chart = $this->classroomService
+                ->getClassroomStats($data)['chart'];
+            for ($i = 0; $i<count($chart); $i++) {
+                $set = (array)$chart[$i];
+                $result['accepted'] += $set['accepted'];
+                $result['rejected'] += $set['rejected']; 
+                $result['cancelled'] += $set['cancelled'];
+                $result['pending'] += $set['pending']; 
+            }
+        }
+        return array_merge($result, $this->getBlock($block_id));
     }
 
     public function findByName(string $name): array 
@@ -85,7 +114,6 @@ class BlockServiceImpl implements BlockService
             $this->classroomService
                 ->getClassroomsByBlock($block['block_id'])
         );
-        echo serialize($classrooms);
         return 'Se elimino el bloque '.$block['block_name']; 
     }
 }

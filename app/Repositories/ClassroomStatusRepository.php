@@ -83,7 +83,7 @@ class ClassroomStatusRepository extends Repository
                 $this->available(),
                 $this->disabled() 
             ];
-        }
+        } else return [$this->available()];
     }
     
     /**

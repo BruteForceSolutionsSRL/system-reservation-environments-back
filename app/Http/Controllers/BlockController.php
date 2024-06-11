@@ -12,6 +12,8 @@ use App\Service\ServiceImplementation\{
     ClassroomServiceImpl
 }; 
 
+use Illuminate\Support\Facades\Validator;
+
 class BlockController extends Controller
 {
     private $blockService; 
@@ -113,14 +115,14 @@ class BlockController extends Controller
 
             $data = $validator->validated();
 
-            if (count($this->blockService->findByName($data['block_name']))==0)
+            if (count($this->blockService->findByName($data['block_name']))!=0)
                 return response()->json(
                     ['message' => 'El nombre del bloque ya existe'], 
                     400
                 );
 
             return response()->json(
-                $this->blockService->save($data), 
+                $this->blockService->store($data), 
                 200
             );
         } catch (Exception $e) {
@@ -165,7 +167,7 @@ class BlockController extends Controller
                     400
                 );
 
-            if (count($block['classrooms']) > $data['block_maxclassrooms'])
+            if (count($block['block_classrooms']) > $data['block_maxclassrooms'])
                 return response()->json(
                     ['message' => 'La capacidad de ambientes no debe ser menor a la cantidad actual'], 
                     400
@@ -182,7 +184,7 @@ class BlockController extends Controller
                 );
 
             return response()->json(
-                $this->blockService->update($data), 
+                $this->blockService->update($data, $block_id), 
                 200
             );
         } catch (Exception $e) {

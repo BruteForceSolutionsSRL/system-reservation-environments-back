@@ -51,12 +51,6 @@ class BlockRepository
         return $this->formatOutput($block);
     }
 
-    public function getStatistics(int $block_id): array 
-    {
-        $block = $this->model::find($id);
-
-    }
-
     public function findByName(string $name): array 
     {
         return $this->model::where('name', $name)
@@ -108,7 +102,6 @@ class BlockRepository
     private function formatOutput($block): array 
     {
         if ($block == null) return [];
-        //$classrooms = $this->classroomRepository->getAllClassroomsByBlock($block->id); 
         return [
             'block_id' => $block->id, 
             'block_name' => $block->name, 
@@ -116,7 +109,7 @@ class BlockRepository
             'block_maxclassrooms' => $block->max_classrooms,
             'block_status_id' => $block->block_status_id, 
             'block_status_name' => $block->blockStatus->name,
-            'block_classrooms' => $block->classrooms
+            'block_classrooms' => $this->classroomRepository->getClassroomsByBlock($block->id)
         ];
     }
 }

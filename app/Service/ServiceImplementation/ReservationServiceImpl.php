@@ -226,14 +226,10 @@ class ReservationServiceImpl implements ReservationService
             return 'Esta solicitud ya fue atendida';
         }
         if (!$this->checkAvailibility($reservation)) {
-<<<<<<< Updated upstream
             $this->reject(
                 $reservation->id,
                 'Se rechazo su solicitud, contacte con un administrador'
             );
-=======
-            $this->reject($reservation->id,'Su solicitud ha sido rechazada');
->>>>>>> Stashed changes
             return  'La solicitud no puede aceptarse, existen ambientes ocupados';
         }
 
@@ -252,14 +248,10 @@ class ReservationServiceImpl implements ReservationService
                     $times
                 );
             foreach ($reservationSet as $reservationIterable)
-<<<<<<< Updated upstream
                 $message .= $this->reject(
                     $reservationIterable->id,
                     'Se rechazo su solicitud, contacte con un administrador'
                 );
-=======
-                $message .= $this->reject($reservationIterable->id, 'Su reserva ha sido rechazada');
->>>>>>> Stashed changes
         }
 
         $emailData = $this->notificationService->store(
@@ -554,14 +546,10 @@ class ReservationServiceImpl implements ReservationService
             }
 
             foreach ($pendingReservations as $reservationId) {
-<<<<<<< Updated upstream
                 $this->reject(
                     $reservationId,
                     'Se rechazo su solicitud, contacte con un administrador'
                 );
-=======
-                $this->reject($reservationId,'Su solicitud ha sido rechazada');
->>>>>>> Stashed changes
             }
 
             return ['Todas las solicitudes asociadas al ambiente fueron canceladas/rechazadas.'];
