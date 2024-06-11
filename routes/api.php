@@ -14,7 +14,8 @@ use App\Http\Controllers\{
     ReservationReasonController,
     ClassroomStatusController,
     ReservationStatusController,
-    PersonController
+    PersonController,
+    UniversitySubjectController
 };
 
 /*
@@ -43,7 +44,7 @@ Route::controller(ReservationController::class)->group(function() {
     Route::get('/reservations', 'list');
     Route::get('/reservations/pending', 'getPendingRequests');
     Route::get('/reservations/teacher/{teacherId}/open', 'listRequestsByTeacher');
-    Route::get('/reservations/teacher/{teacherId}', 'listAllRequestsByTeacher'); 
+    Route::get('/reservations/teacher/{teacherId}', 'listAllRequestsByTeacher');
     Route::get('/reservations/history', 'getAllRequestsExceptPending');
     Route::get('/reservations/history/teacher/{teacherId}', 'getAllRequestsExceptPendingByTeacher');
     Route::get('/reservations/reports', 'getReports');
@@ -54,8 +55,8 @@ Route::controller(ReservationController::class)->group(function() {
     Route::middleware('sanitize:api')->patch('/reservations/{reservationId}/reject', 'rejectReservation');
     Route::middleware('sanitize:api')->patch('/reservations/{reservationId}/assign', 'assign');
     Route::middleware('sanitize:api')->patch('/reservations/{reservationId}/cancel', 'cancelRequest');
-    
-    Route::middleware('sanitize:api')->post('/reservations', 'store');    
+
+    Route::middleware('sanitize:api')->post('/reservations', 'store');
 });
 
 Route::controller(ClassroomStatusController::class)->group(function() {
@@ -92,7 +93,7 @@ Route::controller(TeacherSubjectController::class)->group(function() {
 
 Route::controller(NotificationController::class)->group(function() {
     Route::get('/notifications/inbox/{personId}', 'list');
-    Route::get('/notifications/inbox/{personId}/{notificationId}', 'show'); 
+    Route::get('/notifications/inbox/{personId}/{notificationId}', 'show');
 });
 
 Route::controller(BlockController::class)->group(function() {
@@ -115,4 +116,8 @@ Route::controller(PersonController::class)->group(function() {
     Route::get('/users/teachers', 'listTeachers');
     Route::get('/users', 'list');
     Route::get('/users/{personId}', 'show');
+});
+
+Route::controller(UniversitySubjectController::class)->group(function() {
+    Route::get('/university-subjects', 'list');
 });
