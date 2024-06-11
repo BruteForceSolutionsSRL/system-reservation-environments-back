@@ -14,7 +14,8 @@ use App\Http\Controllers\{
     ReservationReasonController,
     ClassroomStatusController,
     ReservationStatusController,
-    PersonController
+    PersonController,
+    UniversitySubjectController
 };
 
 /*
@@ -43,7 +44,7 @@ Route::controller(ReservationController::class)->group(function() {
     Route::get('/reservations', 'list');
     Route::get('/reservations/pending', 'getPendingRequests');
     Route::get('/reservations/teacher/{teacherId}/open', 'listRequestsByTeacher');
-    Route::get('/reservations/teacher/{teacherId}', 'listAllRequestsByTeacher'); 
+    Route::get('/reservations/teacher/{teacherId}', 'listAllRequestsByTeacher');
     Route::get('/reservations/history', 'getAllRequestsExceptPending');
     Route::get('/reservations/history/teacher/{teacherId}', 'getAllRequestsExceptPendingByTeacher');
     Route::get('/reservations/reports', 'getReports');
@@ -54,8 +55,8 @@ Route::controller(ReservationController::class)->group(function() {
     Route::middleware('sanitize:api')->patch('/reservations/{reservationId}/reject', 'rejectReservation');
     Route::middleware('sanitize:api')->patch('/reservations/{reservationId}/assign', 'assign');
     Route::middleware('sanitize:api')->patch('/reservations/{reservationId}/cancel', 'cancelRequest');
-    
-    Route::middleware('sanitize:api')->post('/reservations', 'store');    
+
+    Route::middleware('sanitize:api')->post('/reservations', 'store');
 });
 
 Route::controller(ClassroomStatusController::class)->group(function() {
@@ -73,13 +74,15 @@ Route::controller(ClassroomController::class)->group(function() {
     Route::get('/classrooms/last-validated', 'retriveLastClassroom');
     Route::get('/classrooms/statistics/list','getAllClassroomsWithStatistics');
 
+    Route::middleware('sanitize:api')->post('/classrooms/stats', 'getClassroomStats');
+
     Route::delete('/classrooms/delete/{classroomId}','destroy');
 
     Route::middleware('sanitize:api')->post('/classrooms/disponibility', 'getClassroomByDisponibility');
     Route::middleware('sanitize:api')->post('/classrooms/reservation/suggest', 'suggestClassrooms');
     Route::middleware('sanitize:api')->post('/classrooms', 'store');
     Route::middleware('sanitize:api')->post('/classrooms/stats', 'getClassroomStats');
-    
+
     Route::middleware('sanitize:api')->put('/classrooms/{classroomId}', 'update');
 });
 
@@ -90,11 +93,19 @@ Route::controller(TeacherSubjectController::class)->group(function() {
 
 Route::controller(NotificationController::class)->group(function() {
     Route::get('/notifications/inbox/{personId}', 'list');
-    Route::get('/notifications/inbox/{personId}/{notificationId}', 'show'); 
+    Route::get('/notifications/inbox/{personId}/{notificationId}', 'show');
 });
 
 Route::controller(BlockController::class)->group(function() {
     Route::get('/blocks', 'list');
+    Route::get('/blocks/{block_id}', 'show'); 
+    Route::get('/blocks/{block_id}/statistics', 'getBlockStatistics'); 
+
+    Route::middleware('sanitize:api')->post('/blocks', 'store'); 
+
+    Route::middleware('sanitize:api')->put('/blocks/{block_id}', 'update');
+
+    Route::put('/blocks/{block_id}/delete', 'destroy');  
 });
 
 Route::controller(TimeSlotController::class)->group(function() {
@@ -105,4 +116,8 @@ Route::controller(PersonController::class)->group(function() {
     Route::get('/users/teachers', 'listTeachers');
     Route::get('/users', 'list');
     Route::get('/users/{personId}', 'show');
+});
+
+Route::controller(UniversitySubjectController::class)->group(function() {
+    Route::get('/university-subjects', 'list');
 });
