@@ -104,7 +104,7 @@ Route::controller(BlockController::class)->group(function() {
 
     Route::middleware('sanitize:api')->put('/blocks/{block_id}', 'update');
 
-    Route::put('/blocks/{block_id}/delete', 'destroy');  
+    Route::delete('/blocks/{block_id}', 'destroy');  
 });
 
 Route::controller(TimeSlotController::class)->group(function() {
