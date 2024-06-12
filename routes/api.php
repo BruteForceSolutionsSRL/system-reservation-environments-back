@@ -18,7 +18,6 @@ use App\Http\Controllers\{
     AuthController,
     UniversitySubjectController
 };
-use App\Models\Role;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,15 +40,11 @@ Route::controller(AuthController::class)->group(function() {
     Route::post('/register', 'register');
 });
 
-Route::group(['middleware' => ['jwt.verify']], function() {
+Route::group(['middleware' => ['jwt.verify:blocks']], function() {
     //Todo lo que este dentro de este grupo requiere verificación de usuario.
     Route::controller(AuthController::class)->group(function() {
         Route::post('/logout', 'logout');
         Route::post('/get-user', 'getUser');
-    });
-
-    Route::controller(BlockController::class)->group(function() {
-        Route::get('/blocks', 'list');
     });
 });
 

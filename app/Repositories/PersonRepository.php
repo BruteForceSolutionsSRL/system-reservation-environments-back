@@ -4,7 +4,8 @@ namespace App\Repositories;
 use App\Models\Person;
 
 use Illuminate\Cache\Repository; 
-use Illuminate\Database\Eloquent\Model; 
+
+use Illuminate\Support\Facades\DB;
 
 class PersonRepository extends Repository
 {
@@ -87,4 +88,24 @@ class PersonRepository extends Repository
             'person_fullname' => $person->name.' '.$person->last_name
         ]; 
     }
+
+    /**
+	 * Retrieve all permissions of a person
+	 * @param array $data
+	 * @return array
+	 */
+	public function havePermission(array $data):array 
+	{
+        $permissions = DB::table('permissions')
+            ->join('role_permission', 'permissions.id', '=', 'role_permission.permission_id')
+            ->join('roles', 'role_permission.role_id', '=', 'roles.id')
+            ->join('person_role', 'roles.id', '=', 'person_role.role_id')
+            ->join('people', 'person_role.person_id', '=', 'people.id')
+            ->where('people.id', $data['person_id'])
+            ->select('permissions.name')
+            ->distinct()
+            ->get()
+            ->toArray();
+        return $permissions;
+	}
 }
