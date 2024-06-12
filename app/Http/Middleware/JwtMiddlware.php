@@ -75,7 +75,7 @@ class JwtMiddlware
                 );
             }
         }
-        
+        $request->merge(['person_id' => $person->id]);
         return $next($request);
     }
 }
