@@ -686,8 +686,15 @@ class ClassroomController extends Controller
                 );
             }
             $data = $validator->validated();
+            $report = $this->classroomService->getClassroomStats($data);
+            if (empty($report)) {
+                return response()->json(
+                    ['message' => 'No existen datos'],
+                    404
+                );
+            }
             return response()->json(
-                $this->classroomService->getClassroomStats($data),
+                $report,
                 200
             );
         } catch (Exception $e) {

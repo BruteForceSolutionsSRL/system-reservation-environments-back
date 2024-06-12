@@ -313,6 +313,9 @@ class ClassroomRepository extends Repository
             'cancelled' => ReservationStatus::cancelled()
         ];
         $chart = $this->getClassroomStatsReservations($data, $statuses);
+        if (empty($chart)) {
+            return [];
+        }
         $reasons = $this->reservationReasonRepository->getAllReservationReason();
         $table = $this->getClassroomStatsReason($data, $reasons);
         return [
@@ -337,7 +340,7 @@ class ClassroomRepository extends Repository
                 'reservations.reservation_reason_id',
                 'reservation_reasons.reason',
                 DB::raw('COUNT(*) as total_reservations'),
-                DB::raw('CAST(AVG(reservations.number_of_students) AS FLOAT) as average_students')
+                DB::raw('CEIL(AVG(reservations.number_of_students)) as average_students')
             )
             ->where('classroom_reservation.classroom_id', $data['classroom_id'])
             ->whereBetween('reservations.date',[$data['date_start'], $data['date_end']])
@@ -388,6 +391,7 @@ class ClassroomRepository extends Repository
             )
             ->where('classroom_reservation.classroom_id', $data['classroom_id'])
             ->whereBetween('reservations.date', [$data['date_start'], $data['date_end']])
+            ->orderBy(DB::raw('DATE(reservations.date)'))
             ->groupBy(DB::raw('DATE(reservations.date)'))
             ->get()
             ->toArray();
