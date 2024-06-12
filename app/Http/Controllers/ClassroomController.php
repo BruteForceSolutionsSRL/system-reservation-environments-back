@@ -132,6 +132,13 @@ class ClassroomController extends Controller
                 );
             }
 
+            if ($block['block_maxclassrooms'] == count($block['block_classrooms'])) {
+                return response()->json(
+                    ['message' => 'El bloque llego a su maxima cantidad de ambientes registrados'],
+                    400
+                );
+            }
+
             return response()->json(
                 ['message' => $this->classroomService->update($data)],
                 200
@@ -252,6 +259,12 @@ class ClassroomController extends Controller
                     400
                 );
             }
+
+            if ($block['block_maxclassrooms'] == count($block['block_classrooms']))
+                return response()->json(
+                    ['message' => 'El bloque llego a su maxima cantidad de ambientes registrados'],
+                    404
+                );
 
             return response()->json(
                 ['message' => $this->classroomService->store($data)],

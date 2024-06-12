@@ -92,6 +92,7 @@ class BlockServiceImpl implements BlockService
 
     public function store(array $data): string 
     {
+        $data['block_status_id'] = BlockStatusRepository::enabled(); 
         $this->blockRepository->save($data);
         return 'Se guardo correctamente el nuevo bloque '.$data['block_name'];
     }

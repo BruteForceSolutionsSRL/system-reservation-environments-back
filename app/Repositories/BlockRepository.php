@@ -92,6 +92,8 @@ class BlockRepository
         $block = $this->model::find($id); 
 
         $block->block_status_id = $this->blockStatusRepository->deleted();
+        $block->save();
+        return $this->formatOutput($block);
     }
 
     /**

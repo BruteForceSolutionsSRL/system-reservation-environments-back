@@ -13,68 +13,20 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+
+
 Route::get('/', function () {
-    return view('mail/templates/reservation/accept');
-});
+    return view('index');
+})->where('', '.*');
 
-Route::get('/send', function () {
-    $details = [
-        'details' => [
-            'title' => 'Mail desde el backend XD',
-            'body' => 'Hola este seria mi cuerpo de algun tipo',
-            'updated_at' => '02/06/2024', 
-            'status' => 'Rechazado', 
-            'sendBy' => 'SISTEMA',
-            'subject_name' => 'ALGEBRA I',
-            'block_name' => 'EDIFICIO ACADEMICO 2',
-            'quantity' => '100', 
-            'reason_name' => 'CLASES',
-            'groups' => [
-                [
-                    'teacher_name' => 'LETICIA BLANCO',
-                    'group' => 2
-                ],
-                [
-                    'teacher_name' => 'LETICIA BLANCO',
-                    'group' => 3
-                ],
-                [
-                    'teacher_name' => 'LETICIA BLANCO',
-                    'group' => 5
-                ],
-                [
-                    'teacher_name' => 'ROSEMARY TORRICO',
-                    'group' => 1
-                ],
-            ],
-            'classrooms' => [
-                [
-                    'classroom_name' => '690A',
-                    'capacity' => 50
-                ],
-                [
-                    'classroom_name' => '690D',
-                    'capacity' => 25
-                ],
-                [
-                    'classroom_name' => '690E',
-                    'capacity' => 25
-                ],
-            ],
-            'date' => '04/06/2024',
-            'time_slot' => ['09:45:00', '11:15:00'],
-        ],
-    ];
-    return view('mail/templates/notification', $details);    
-});
+Route::fallback(function ($request) {
+  if (!str_starts_with($request->url(), '/api')) {
+    return Response::json([
+      'message' => 'Invalid route. Please use the API for requests to /api endpoints.',
+      'status' => 404
+    ], 404);
+  }
 
-Route::get('/test', function ()
-{
-    $details = [
-        'title' => 'ESTE ES MI TITULO', 
-        'status' => 'Rechazado', 
-        'updated_at' => '12/05/2023', 
-        'body' => 'este es mi body'
-    ];
-    return view('mail/templates/templateSolicitudRechazo', $details);
+  // If it's an API request, let Laravel's default routing handle it
+  return response();
 });

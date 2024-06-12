@@ -9,15 +9,21 @@ use Illuminate\Http\{
     Request
 };
 use Illuminate\Support\Facades\Validator;
+use Carbon\Carbon;
 
-use App\Service\ServiceImplementation\ReservationServiceImpl;
+use App\Service\ServiceImplementation\{
+    ReservationServiceImpl,
+    TimeSlotServiceImpl
+};
 
 class ReservationController extends Controller
 {
     private $reservationService;
+    private $timeSlotService; 
     function __construct()
     {
         $this->reservationService = new ReservationServiceImpl();
+        $this->timeSlotService = new TimeSlotServiceImpl();
     }
 
     /**
@@ -258,6 +264,17 @@ class ReservationController extends Controller
             }
 
             $data = $validator->validated();
+
+            $requestedHour = Carbon::parse($data['date'].' '.$this->timeSlotService->getTimeSlot($data['time_slot_id'][0])['time']); 
+
+            $now = Cargon::now();
+            $now->setTimeZone('America/New_York');
+            if (!$now->isBefore($requestedHour))
+                return response()->json(
+                    ['message' => 'La hora elegida ya paso, no es posible realizar una reserva'], 
+                    404
+                ); 
+
             return response()->json(
                 ['message' => $this->reservationService->store($data)], 
                 200

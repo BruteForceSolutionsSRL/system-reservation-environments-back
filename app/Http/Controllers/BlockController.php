@@ -214,7 +214,8 @@ class BlockController extends Controller
                     400
                 );
 
-            $enabledClassrooms = $this->classroomService->getAllClassrooms('ENABLE'); 
+            $enabledClassrooms = $this->classroomService
+                ->getDisponibleClassroomsByBlock($block_id); 
 
             if (!empty($enabledClassrooms)) 
                 return response()->json(
@@ -223,7 +224,7 @@ class BlockController extends Controller
                 );
 
             return response()->json(
-                $this->blockService->delete($id), 
+                $this->blockService->delete($block_id), 
                 200
             );
         } catch (Exception $e) {
@@ -257,7 +258,6 @@ class BlockController extends Controller
                 integer|
                 min:0',
             'block_status_id' => '
-                required|
                 integer|
                 exists:block_statuses,id'
         ], [
@@ -272,7 +272,6 @@ class BlockController extends Controller
             'block_maxclassrooms.integer' => 'El \'capacidad de ambientes\' debe ser un valor entero',
             'block_maxclassrooms.exists' => 'El \'capacidad de ambientes\' debe ser un numero mayor a 0',
 
-            'block_status_id.required' => 'El atributo \'estado\' no debe ser nulo o vacio',
             'block_status_id.integer' => 'El \'estado\' debe ser un valor entero',
             'block_status_id.exists' => 'El \'estado\' debe ser una seleccion valida'
         ]);
