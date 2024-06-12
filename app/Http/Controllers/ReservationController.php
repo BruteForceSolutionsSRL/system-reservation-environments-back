@@ -267,7 +267,7 @@ class ReservationController extends Controller
 
             $requestedHour = Carbon::parse($data['date'].' '.$this->timeSlotService->getTimeSlot($data['time_slot_id'][0])['time']); 
 
-            $now = Cargon::now();
+            $now = Carbon::now();
             $now->setTimeZone('America/New_York');
             if (!$now->isBefore($requestedHour))
                 return response()->json(

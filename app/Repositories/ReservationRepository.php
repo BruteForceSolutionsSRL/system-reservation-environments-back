@@ -485,6 +485,7 @@ class ReservationRepository extends Repository
             ->join('blocks', 'classrooms.block_id', '=', 'blocks.id')
             ->join('reservation_time_slot', 'reservations.id', '=', 'reservation_time_slot.reservation_id')
             ->join('time_slots', 'reservation_time_slot.time_slot_id', '=', 'time_slots.id')
+            ->join('reservation_reasons', 'reservation_reasons.id', '=', 'reservations.reservation_reason_id')
             ->select(
                 'reservations.id as reservation_id',
                 'reservations.date',
@@ -494,7 +495,8 @@ class ReservationRepository extends Repository
                 'time_slots.time as time_slot_time',
                 'reservations.created_at as date_send',
                 'reservations.updated_at as date_approval',
-                'reservations.reservation_status_id'
+                'reservations.reservation_status_id',
+                'reservation_reasons.reason'
             )
             ->whereBetween('reservations.date', [$data['date_start'], $data['date_end']])
             ->whereIn('reservations.reservation_status_id', [
@@ -549,21 +551,23 @@ class ReservationRepository extends Repository
                     'reservation_id' => $result->reservation_id,
                     'date' => Carbon::parse($result->date)->format('Y-m-d'),
                     'date_send' => Carbon::parse($result->date_send)->format('Y-m-d'),
-                    'date_approval' => '',
+                    'date_approval' => Carbon::parse($result->date_approval)->format('Y-m-d'),
                     'block_name' => $result->block_name,
+                    'reservation_status' => '',
+                    'reservation_reason' => $result->reason,
                     'teachers' => [],
                     'classrooms' => [],
                     'time_slots' => [],
                 ];
                 if ($result->reservation_status_id === ReservationStatuses::accepted()) {
                     $acceptedCount++;
-                    $formattedResults[$reservationId]['date_approval'] = $result->date_approval;               
+                    $formattedResults[$reservationId]['reservation_status'] = 'ACEPTADO';            
                 } else if ($result->reservation_status_id === ReservationStatuses::cancelled()) {
                     $canceledCount++;
-                    $formattedResults[$reservationId]['date_approval'] = Carbon::parse($result->date_approval)->format('Y-m-d'); 
+                    $formattedResults[$reservationId]['reservation_status'] = 'CANCELADO'; 
                 } else if ($result->reservation_status_id === ReservationStatuses::rejected()) {
                     $rejectedCount++;
-                    $formattedResults[$reservationId]['date_approval'] = 'N/A';
+                    $formattedResults[$reservationId]['reservation_status'] = 'RECHAZADO'; 
                 }
             }
 
@@ -584,7 +588,10 @@ class ReservationRepository extends Repository
         foreach ($formattedResults as $formattedResult) {
             $classrooms = implode(', ', $formattedResult['classrooms']);
             $timeSlots = $formattedResult['time_slots'];
-            $timeSlots = ($timeSlots[0]).'-'.($timeSlots[count($timeSlots)-1]);
+            $timeSlots = 
+                Carbon::parse($timeSlots[0])->format('H:i').
+                '-'.
+                Carbon::parse($timeSlots[count($timeSlots)-1])->format('H:i');
             foreach ($formattedResult['teachers'] as $teacher) {
                 $finalResults [] = [
                     'reservation_id' => $formattedResult['reservation_id'],
@@ -592,6 +599,8 @@ class ReservationRepository extends Repository
                     'date_send' => $formattedResult['date_send'],
                     'date_approval' => $formattedResult['date_approval'],
                     'block_name' => $formattedResult['block_name'],
+                    'reservation_status' => $formattedResult['reservation_status'],
+                    'reservation_reason' => $formattedResult['reservation_reason'],
                     'teacher' => $teacher,
                     'classrooms' => $classrooms,
                     'time_slots' => $timeSlots
