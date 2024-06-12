@@ -15,8 +15,10 @@ use App\Http\Controllers\{
     ClassroomStatusController,
     ReservationStatusController,
     PersonController,
+    AuthController,
     UniversitySubjectController
 };
+use App\Models\Role;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,6 +34,25 @@ use App\Http\Controllers\{
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+
+Route::controller(AuthController::class)->group(function() {
+    Route::post('/login', 'authenticate');
+    Route::post('/register', 'register');
+});
+
+Route::group(['middleware' => ['jwt.verify']], function() {
+    //Todo lo que este dentro de este grupo requiere verificación de usuario.
+    Route::controller(AuthController::class)->group(function() {
+        Route::post('/logout', 'logout');
+        Route::post('/get-user', 'getUser');
+    });
+
+    Route::controller(BlockController::class)->group(function() {
+        Route::get('/blocks', 'list');
+    });
+});
+
 Route::controller(ReservationReasonController::class)->group(function() {
     Route::get('/reservations/reasons', 'list');
 });
