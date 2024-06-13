@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse as Response; 
+use Illuminate\Http\{
+    JsonResponse as Response,
+    Request
+}; 
 
 use App\Service\ServiceImplementation\{
     PersonServiceImpl
@@ -20,10 +22,11 @@ class PersonController extends Controller
 
     /**
      * Retrieve information about a single user based on its ID
-     * @param int $userIs
+     * @param int $userId
+     * @param Request $request
      * @param Response
      */
-    public function show(int $userId): Response
+    public function show(int $userId, Request $request): Response
     {
         try {
             return response()->json(
@@ -43,10 +46,10 @@ class PersonController extends Controller
 
     /**
      * Retrieve a response about a list of all persons
-     * @param none
+     * @param Request $request
      * @return Response
      */
-    public function list(): Response
+    public function list(Request $request): Response
     {
         try {
             return response()->json(
@@ -66,10 +69,10 @@ class PersonController extends Controller
 
     /**
      * Retrieve a response of all list teachers 
-     * @param none
+     * @param Request $request
      * @return Reponse
      */
-    public function listTeachers(): Response 
+    public function listTeachers(Request $request): Response 
     {
         try {
             return response()->json(

@@ -2,7 +2,8 @@
 namespace App\Repositories; 
 
 use App\Models\{
-	Notification
+	Notification,
+	NotificationPerson
 };
 
 use App\Repositories\{
@@ -25,9 +26,17 @@ class NotificationRepository
 	}
 
 	// aqui falta ver quien es el que esta leendo la notificacion para cambiarla de estado.
-	public function getNotification(int $id) 
+	public function getNotification(int $id, int $personId) 
 	{
-		return $this->formatOutput($this->model::find($id));
+		$notification = $this->model::find($id); 
+
+		$notificationPerson = NotificationPerson::where('notification_id', $id)
+			->where('person_id', $personId)
+			->first();
+		$notificationPerson->readed = 1; 
+		$notificationPerson->save();
+
+		return $this->formatOutput($notification);
 	}
 
 	/**
@@ -64,7 +73,10 @@ class NotificationRepository
 		$notification->person_id = $data['sendBy'];
 
 		$notification->save(); 
-		$data['to'] = array_unique($data['to']->toArray());
+		if (is_array($data['to']))
+			$data['to'] = array_unique($data['to']);
+		else 
+			$data['to'] = array_unique($data['to']->toArray());
 		$notification->receptors()->attach($data['to']);
 		return $this->formatOutput($notification);
 	}

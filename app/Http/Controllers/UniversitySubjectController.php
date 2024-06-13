@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Service\ServiceImplementation\UniversitySubjectImpl;
 use Exception;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse as Response;
+use Illuminate\Http\{
+    JsonResponse as Response,
+    Request
+};
 
 class UniversitySubjectController extends Controller
 {
@@ -18,10 +20,10 @@ class UniversitySubjectController extends Controller
 
     /**
      * get all the subjects registered in the system
-     *
+     * @param Request $request
      * @return array
      */
-    public function list(): Response
+    public function list(Request $request): Response
     {
         try {
             return response()->json(

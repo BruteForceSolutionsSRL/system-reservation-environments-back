@@ -223,6 +223,18 @@ class ClassroomRepository extends Repository
     }
 
     /**
+     * disable a single classroom by its id
+     * @param int $classroomId
+     * @return none
+     */
+    public function disable(int $classroomId): void 
+    {
+        $classroom = $this->model::find($classroomId);
+        $classroom->classroom_status_id = ClassroomStatusRepository::disabled();
+        $classroom->save();
+    }
+
+    /**
      * Function to format a classroom into an array
      * @param Classroom $classroom
      * @return array

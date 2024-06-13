@@ -30,8 +30,7 @@ class ClassroomController extends Controller
     }
 
     /**
-     * Explain:
-     * list function retrieves all classrooms.
+     * List function retrieves all classrooms.
      * @param Request $request
      * @return Response
      */
@@ -55,12 +54,11 @@ class ClassroomController extends Controller
     }
 
     /**
-     * Explain:
-     * list function retrieves all classrooms with statistis and format.
-     * @param none
+     * List function retrieves all classrooms with statistis and format.
+     * @param Request $request
      * @return Response
      */
-    public function getAllClassroomsWithStatistics(): Response
+    public function getAllClassroomsWithStatistics(Request $request): Response
     {
         try {
             return  response()->json(
@@ -81,9 +79,10 @@ class ClassroomController extends Controller
     /**
      * Retrieve a single classroom 
      * @param int $classroomId
+     * @param Request $request
      * @return Response
      */
-    public function show(int $classroomId): Response
+    public function show(int $classroomId, Request $request): Response
     {
         try {
             return response()->json(
@@ -157,9 +156,10 @@ class ClassroomController extends Controller
     /**
      * To retrieve data available classrooms within block
      * @param int $blockId
+     * @param Request $request
      * @return Response
      */
-    public function availableClassroomsByBlock(int $blockId): Response
+    public function availableClassroomsByBlock(int $blockId, Request $request): Response
     {
         try {
             $block = $this->blockService->getBlock($blockId);
@@ -192,9 +192,10 @@ class ClassroomController extends Controller
     /**
      * Return all classrooms in a block
      * @param int $blockId
+     * @param Request $request
      * @return Response
      */
-    public function classroomsByBlock(int $blockId): Response
+    public function classroomsByBlock(int $blockId, Request $request): Response
     {
         try {
             $block = $this->blockService->getBlock($blockId);
@@ -645,7 +646,7 @@ class ClassroomController extends Controller
      * @param int $classroomId
      * @return Response
      */
-    public function destroy(int $classroomId): Response
+    public function destroy(int $classroomId, Request $request): Response
     {
         try {
             $isDeleted = $this->classroomService->isDeletedClassroom($classroomId);
@@ -672,7 +673,7 @@ class ClassroomController extends Controller
      * @param Request $request
      * @return Response
      */
-    function getClassroomStats(Request $request): Response
+    public function getClassroomStats(Request $request): Response
     {
         try {
             $validator = $this->validateGetClassroomStatsData($request);
