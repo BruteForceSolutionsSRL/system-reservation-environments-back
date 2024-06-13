@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class NotificationPerson extends Model
 {
     use HasFactory;
+    protected $table = 'notification_person';
     
     public function receptor()
     {

@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use App\Service\ServiceImplementation\ReservationReasonServiceImpl;
 
 use Exception;
-use Illuminate\Http\JsonResponse as Response; 
+use Illuminate\Http\{
+    JsonResponse as Response,
+    Request
+}; 
 
 class ReservationReasonController extends Controller
 {
@@ -17,10 +20,10 @@ class ReservationReasonController extends Controller
 
     /**
      * Retrieve a JSON of all reservation reasons
-     * @param none
+     * @param Request $request
      * @return Response
      */
-    public function list(): Response
+    public function list(Request $request): Response
     {
         try {
             return response()->json(

@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse as Response; 
+use Illuminate\Http\{
+    JsonResponse as Response,
+    Request
+}; 
 
 use App\Service\ServiceImplementation\ClassroomTypeServiceImpl; 
 
@@ -18,11 +20,11 @@ class ClassroomTypeController extends Controller
     }
     
     /**
-     * Explain: Retrieve all classroom types
-     * @param none 
+     * Retrieve all classroom types
+     * @param Request $request 
      * @return Response
      */
-    public function list(): Response
+    public function list(Request $request): Response
     {
         try {
             return response()->json(

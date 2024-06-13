@@ -14,6 +14,7 @@ interface ClassroomService
     function suggestClassrooms(array $data): array;
     function store(array $data): string;
     function update(array $data): string; 
+    function disable(int $classroom_id): string;
     function retriveLastClassroom(array $data): array;
     function deleteByClassroomId(int $classroomId): array;
     function getClassroomStats(array $data): array;

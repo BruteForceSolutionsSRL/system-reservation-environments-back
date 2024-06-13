@@ -120,7 +120,7 @@ class ReservationServiceImpl implements ReservationService
      * @param int $reservationId
      * @return string
      */
-    public function reject(int $reservationId, string $message): string
+    public function reject(int $reservationId, string $message, int $personId): string
     {
         $reservation = Reservation::find($reservationId);
 
@@ -142,7 +142,7 @@ class ReservationServiceImpl implements ReservationService
                     'title' => 'SOLICITUD DE RESERVA #'.$reservation->id.' RECHAZADA', 
                     'body' => 'Se rechazo la solicitud #'.$reservation->id.' '.$message,
                     'type' => NotificationTypeRepository::accepted(),
-                    'sendBy' => $this->personRepository->system(), 
+                    'sendBy' => $personId, 
                     'to' => $reservation->teacherSubjects->map(
                         function ($teacher) 
                         {
@@ -228,7 +228,8 @@ class ReservationServiceImpl implements ReservationService
         if (!$this->checkAvailibility($reservation)) {
             $this->reject(
                 $reservation->id,
-                'Se rechazo su solicitud, contacte con un administrador'
+                'Se rechazo su solicitud, contacte con un administrador',
+                PersonRepository::system()
             );
             return  'La solicitud no puede aceptarse, existen ambientes ocupados';
         }
@@ -250,7 +251,8 @@ class ReservationServiceImpl implements ReservationService
             foreach ($reservationSet as $reservationIterable)
                 $message .= $this->reject(
                     $reservationIterable->id,
-                    'Se rechazo su solicitud, contacte con un administrador'
+                    'Se rechazo su solicitud, contacte con un administrador',
+                    PersonRepository::system()
                 );
         }
 
@@ -346,7 +348,8 @@ class ReservationServiceImpl implements ReservationService
         } else {
             return $this->reject(
                 $reservation->id,
-                'Se rechazo su solicitud, contacte con un administrador'
+                'Se rechazo su solicitud, contacte con un administrador',
+                PersonRepository::system()
             );
         }
     }
@@ -548,7 +551,8 @@ class ReservationServiceImpl implements ReservationService
             foreach ($pendingReservations as $reservationId) {
                 $this->reject(
                     $reservationId,
-                    'Se rechazo su solicitud, contacte con un administrador'
+                    'Se rechazo su solicitud, contacte con un administrador',
+                    PersonRepository::system()
                 );
             }
 

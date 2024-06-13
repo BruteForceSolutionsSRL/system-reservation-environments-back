@@ -2,9 +2,9 @@
 namespace App\Service\ServiceImplementation;
 
 use App\Repositories\NotificationRepository;
-use App\Service\NofiticationService;
+use App\Service\NotificationService;
 
-class NotificationServiceImpl implements NofiticationService
+class NotificationServiceImpl implements NotificationService
 {
     private $notificationRepository;
 
@@ -22,9 +22,9 @@ class NotificationServiceImpl implements NofiticationService
      * @param int $id
      * @return array
      */
-    public function getNotification(int $id): array 
+    public function getNotification(int $id, int $personId): array 
     {
-        return $this->notificationRepository->getNotification($id);
+        return $this->notificationRepository->getNotification($id, $personId);
     }
 
     /**

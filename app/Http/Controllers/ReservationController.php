@@ -20,7 +20,7 @@ class ReservationController extends Controller
 {
     private $reservationService;
     private $timeSlotService; 
-    function __construct()
+    public function __construct()
     {
         $this->reservationService = new ReservationServiceImpl();
         $this->timeSlotService = new TimeSlotServiceImpl();
@@ -28,10 +28,10 @@ class ReservationController extends Controller
 
     /**
      * Retrieves all reservations.
-     * @param none
+     * @param Request $request
      * @return Response
      */
-    public function list(): Response
+    public function list(Request $request): Response
     {
         try {
             return response()->json(
@@ -51,9 +51,10 @@ class ReservationController extends Controller
 
     /**
      * Function to get all requests except pending requests
+     * @param Request $request
      * @return Response
      */
-    public function getAllRequestsExceptPending(): Response
+    public function getAllRequestsExceptPending(Request $request): Response
     {
         try {
             return response()->json(
@@ -73,10 +74,10 @@ class ReservationController extends Controller
 
     /**
      * Function to retrieve all pending request
-     * @param none
+     * @param Request $request
      * @return Response
      */
-    public function getPendingRequests(): Response
+    public function getPendingRequests(Request $request): Response
     {
         try {
             return response()->json(
@@ -98,8 +99,9 @@ class ReservationController extends Controller
      * Function to retrieve acepted/pending request by teacher
      * @param int $teacher
      * @return Response
+     * @param Request $request
      */
-    public function listRequestsByTeacher(int $teacherId): Response
+    public function listRequestsByTeacher(int $teacherId, Request $request): Response
     {
         try {
             $reservations = $this->reservationService->listRequestsByTeacher($teacherId);
@@ -124,9 +126,10 @@ class ReservationController extends Controller
     /**
      * Function to retrieve all request by teacher
      * @param int $teacherId
+     * @param Request $request
      * @return Response
      */
-    public function listAllRequestsByTeacher(int $teacherId): Response
+    public function listAllRequestsByTeacher(int $teacherId, Request $request): Response
     {
         try {
             $reservations = $this->reservationService
@@ -152,9 +155,10 @@ class ReservationController extends Controller
     /**
      * function to get all requests except pending requests by teacher
      * @param int $teacherId
+     * @param Request $request
      * @return Response
      */
-    public function getAllRequestsExceptPendingByTeacher(int $teacherId): Response
+    public function getAllRequestsExceptPendingByTeacher(int $teacherId, Request $request): Response
     {
         try {
             return response()->json(
@@ -177,9 +181,10 @@ class ReservationController extends Controller
     /**
      * Function to retrieve a reservation by its id
      * @param int $reservationId
+     * @param Request $request
      * @return Response
      */
-    public function show(int $reservationId): Response
+    public function show(int $reservationId, Request $request): Response
     {
         try {
             $reservation = $this->reservationService
@@ -204,14 +209,17 @@ class ReservationController extends Controller
     /**
      * Function to reject a reservation by its id
      * @param int $reservationId
+     * @param Request $request
      * @return Response
      */
     public function rejectReservation(int $reservationId, Request $request): Response
     {
+        // aqui falta agregar lo de quien esta haciendo el rechazo
         try {
             $message = $this->reservationService->reject(
                 $reservationId, 
-                $request->input('message')
+                $request->input('message'),
+                1
             ); 
             if ($message == 'No existe una solicitud con este ID') {
                 return response()->json(['message' => $message], 404);
@@ -228,9 +236,10 @@ class ReservationController extends Controller
     /**
      * Cancel a pending/accepted request-booking
      * @param int $reservationId
+     * @param Request $request
      * @return Response
      */
-    public function cancelRequest(int $reservationId): Response
+    public function cancelRequest(int $reservationId, Request $request): Response
     {
         try {
             $message = $this->reservationService->cancel($reservationId); 
@@ -339,9 +348,10 @@ class ReservationController extends Controller
     /**
      * Endpoint to assign reservations if fulfill no overlapping with assigned reservations.
      * @param int $reservationId
+     * @param Request $request
      * @return Response
      */
-    public function assign(int $reservationId): Response
+    public function assign(int $reservationId, Request $request): Response
     {
         try {
             $message = $this->reservationService->accept($reservationId); 
@@ -360,9 +370,10 @@ class ReservationController extends Controller
     /**
      * Endpoint to retrieve if a reservation have conflicts
      * @param int $reservationId
+     * @param Request $request
      * @return Response
      */
-    public function getConflicts(int $reservationId): Response
+    public function getConflicts(int $reservationId, Request $request): Response
     {
         try {
             $result = $this->reservationService->getConflict($reservationId); 
@@ -384,12 +395,14 @@ class ReservationController extends Controller
     /**
      * Function to get reservations accepted, pending and reject
      * @param int $classromId
+     * @param Request $request
      * @return Response
      */
-    public function getAllReservationsByClassroom(int $classromId): Response
+    public function getAllReservationsByClassroom(int $classromId, Request $request): Response
     {
         try {
-            $reservations = $this->reservationService->getAllReservationsByClassroom($classromId); 
+            $reservations = $this->reservationService
+                ->getAllReservationsByClassroom($classromId); 
             if ($reservations === []) {
                 response()->json(
                     ['message' => 'El ambiente no tiene reservaciones pendientes o aceptadas.'],
@@ -448,7 +461,11 @@ class ReservationController extends Controller
         }
     }
 
-
+    /**
+     * Validate the body request for retrieve a report data
+     * @param Request $request
+     * @return mixed
+     */
     private function validateGetReportsData(Request $request)
     {
         return Validator::make($request->all(), [

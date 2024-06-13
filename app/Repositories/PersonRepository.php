@@ -11,9 +11,9 @@ class PersonRepository extends Repository
 {
     protected $model; 
 
-    public function system()
+    public static function system()
     {
-        return $this->model::where('name', 'SISTEMA')
+        return Person::where('name', 'SISTEMA')
             ->get()
             ->pop()
             ->id;

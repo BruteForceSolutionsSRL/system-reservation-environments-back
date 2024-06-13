@@ -152,17 +152,9 @@ class ClassroomServiceImpl implements ClassroomService
             $data['classroom_id']
         );
         $modifiedClassroom = $this->classroomRepository->update($data);
-        if ($classroom['classroom_status_id'] != $modifiedClassroom['classroom_status_id']) {
-            $reservations = $this->reservationService->getActiveReservationsByClassroom(
-                $classroom['classroom_id']
-            );
-            foreach ($reservations as $reservation)
-                if ($reservation['repeat'] == 0) {
-                    $this->reservationService->reject($reservation['reservation_id'],
-                    "Su reserva ha sido rechazada"
-                );
-                }
-            // modulo para enviar las notificaciones :V
+        if (($classroom['classroom_status_id'] != $modifiedClassroom['classroom_status_id'])
+              && ($classroom['classroom_status_id'] == ClassroomStatusRepository::disabled())) {
+            $this->disable($classroom['classroom_id']);
         }
         return "El ambiente fue actualizado correctamente";
     }
@@ -394,5 +386,27 @@ class ClassroomServiceImpl implements ClassroomService
     public function getClassroomStats(array $data): array
     {
         return $this->classroomRepository->getClassroomStats($data);
+    }
+
+    /**
+     * Disable a single classroom based on its id
+     * @param int $classroom_id
+     * @return string
+     */
+    public function disable(int $classroomId): string 
+    {
+        $classroom = $this->getClassroomById($classroomId);
+        $this->classroomRepository->disable($classroomId);
+        $reservations = $this->reservationService->getActiveReservationsByClassroom(
+                $classroom['classroom_id']
+            );
+        foreach ($reservations as $reservation)
+            if ($reservation['repeat'] == 0) {
+                $this->reservationService->reject($reservation['reservation_id'],
+                'Su reserva ha sido rechazada debido a que el ambiente '.$classroom['classroom_name'].' fue deshabilitado'
+            );
+        }
+
+        return 'Ambiente deshabilitado correctamente';
     }
 }

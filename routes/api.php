@@ -33,7 +33,7 @@ use App\Http\Controllers\{
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
-
+ 
 
 Route::controller(AuthController::class)->group(function() {
     Route::post('/login', 'authenticate');
@@ -108,6 +108,8 @@ Route::controller(TeacherSubjectController::class)->group(function() {
 });
 
 Route::controller(NotificationController::class)->group(function() {
+    Route::middleware('sanitize:api')->post('/notifications/send/{personId}', 'store');
+
     Route::get('/notifications/inbox/{personId}', 'list');
     Route::get('/notifications/inbox/{personId}/{notificationId}', 'show');
 });

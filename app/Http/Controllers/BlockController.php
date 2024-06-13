@@ -26,10 +26,10 @@ class BlockController extends Controller
 
     /**
      * Retrieve a list of all blocks registered
-     * @param none
+     * @param Request $request
      * @return Response
      */
-    public function list(): Response
+    public function list(Request $request): Response
     {
         try {
             return response()->json(
@@ -49,14 +49,15 @@ class BlockController extends Controller
 
     /**
      * Retrieve a single block by its ID
-     * @param int $block_id
+     * @param int $blockId
+     * @param Request $request
      * @return Response
      */
-    public function show(int $block_id): Response 
+    public function show(int $blockId, Request $request): Response 
     {
         try {
             return response()->json(
-                $this->blockService->getBlock($block_id), 
+                $this->blockService->getBlock($blockId), 
                 200
             );
         } catch (Exception $e) {
@@ -72,14 +73,15 @@ class BlockController extends Controller
 
     /**
      * Retrieve a response including statistical information
-     * @param int $block_id
+     * @param int $blockId
+     * @param Request $request
      * @return Response
      */
-    public function getBlockStatistics(int $block_id): Response 
+    public function getBlockStatistics(int $blockId, Request $request): Response 
     {
         try {
             return response()->json(
-                $this->blockService->getBlockStatistics($block_id), 
+                $this->blockService->getBlockStatistics($blockId), 
                 200
             );
         } catch (Exception $e) {
@@ -115,7 +117,7 @@ class BlockController extends Controller
 
             $data = $validator->validated();
 
-            if (count($this->blockService->findByName($data['block_name']))!=0)
+            if (count($this->blockService->findByName($data['block_name'])) != 0)
                 return response()->json(
                     ['message' => 'El nombre del bloque ya existe'], 
                     400
@@ -138,11 +140,11 @@ class BlockController extends Controller
 
     /**
      * Updates a single block with its new information
-     * @param Request $request
      * @param int $block_id
+     * @param Request $request
      * @return Response
      */
-    public function update(Request $request, int $block_id): Response 
+    public function update(int $block_id, Request $request): Response 
     {
         try {
             $validator = $this->validateBlockData($request); 
@@ -200,13 +202,14 @@ class BlockController extends Controller
 
     /**
      * Destroy a single block by its ID
-     * @param int $block_id
+     * @param int $blockId
+     * @param Request $request
      * @return Response
      */
-    public function destroy(int $block_id): Response 
+    public function destroy(int $blockId, Request $request): Response 
     {
         try {
-            $block = $this->blockService->getBlock($block_id); 
+            $block = $this->blockService->getBlock($blockId); 
 
             if (empty($block))
                 return response()->json(
@@ -215,7 +218,7 @@ class BlockController extends Controller
                 );
 
             $enabledClassrooms = $this->classroomService
-                ->getDisponibleClassroomsByBlock($block_id); 
+                ->getDisponibleClassroomsByBlock($blockId); 
 
             if (!empty($enabledClassrooms)) 
                 return response()->json(
@@ -224,7 +227,7 @@ class BlockController extends Controller
                 );
 
             return response()->json(
-                $this->blockService->delete($block_id), 
+                $this->blockService->delete($blockId), 
                 200
             );
         } catch (Exception $e) {

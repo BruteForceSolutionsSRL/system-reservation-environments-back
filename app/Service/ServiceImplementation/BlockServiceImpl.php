@@ -54,6 +54,11 @@ class BlockServiceImpl implements BlockService
         return $this->blockRepository->getBlock($id); 
     }
 
+    /**
+     * Retrieve a block within its statistics based on reservations by classrooms
+     * @param int $block_id
+     * @return array
+     */
     public function getBlockStatistics(int $block_id): array 
     {
         $result = [
@@ -82,14 +87,25 @@ class BlockServiceImpl implements BlockService
                 $result['pending'] += $set['pending']; 
             }
         }
+        $result['total'] = $result['accepted']+$result['rejected']+$result['cancelled']+$result['pending'];
         return array_merge($result, $this->getBlock($block_id));
     }
 
+    /**
+     * Find a block by its name
+     * @param string $name
+     * @return array
+     */
     public function findByName(string $name): array 
     {
         return $this->blockRepository->findByName($name);
     }
 
+    /**
+     * Register a block enabled by default
+     * @param array $data
+     * @return string
+     */
     public function store(array $data): string 
     {
         $data['block_status_id'] = BlockStatusRepository::enabled(); 
@@ -97,16 +113,29 @@ class BlockServiceImpl implements BlockService
         return 'Se guardo correctamente el nuevo bloque '.$data['block_name'];
     }
 
-    public function update(array $data, int $id): string 
+    /**
+     * Update a single block registered, with the new information
+     * @param array $data
+     * @param int $block_id
+     */
+    public function update(array $data, int $blockId): string 
     {
-        $block = $this->blockRepository->update($data, $id);
-
+        $block = $this->blockRepository->update($data, $blockId);
+        if ($data['block_status_id'] ==  BlockStatusRepository::disabled())
+            foreach ($block['block_classrooms'] as $classroom) {
+                $this->classroomService->disable($classroom['classroom_id']);
+            }
         return 'Se modifico correctamente el bloque '.$block['block_name'];
     }
 
-    public function delete(int $id): string 
+    /**
+     * Delete a block within its id
+     * @param int $blockId
+     * @return string
+     */
+    public function delete(int $blockId): string 
     {
-        $block = $this->blockRepository->delete($id); 
+        $block = $this->blockRepository->delete($blockId); 
         $classrooms = array_map(
             function ($classroom) 
             {
@@ -115,6 +144,9 @@ class BlockServiceImpl implements BlockService
             $this->classroomService
                 ->getClassroomsByBlock($block['block_id'])
         );
+
+        foreach ($classrooms as $classroomId)
+            $this->classroomService->deleteByClassroomId($classroomId);
         return 'Se elimino el bloque '.$block['block_name']; 
     }
 }
