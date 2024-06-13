@@ -25,14 +25,21 @@ class NotificationRepository
 		$this->notificationTypeRepository = new NotificationTypeRepository();
 	}
 
-	// aqui falta ver quien es el que esta leendo la notificacion para cambiarla de estado.
-	public function getNotification(int $id, int $personId) 
+	/**
+	 * Retrieve a single notification to a user 
+	 * @param int $id
+	 * @param int $personId
+	 * @return array
+	 */
+	public function getNotification(int $id, int $personId): array 
 	{
 		$notification = $this->model::find($id); 
 
 		$notificationPerson = NotificationPerson::where('notification_id', $id)
 			->where('person_id', $personId)
 			->first();
+		if (!$notificationPerson) 
+			return []; 
 		$notificationPerson->readed = 1; 
 		$notificationPerson->save();
 

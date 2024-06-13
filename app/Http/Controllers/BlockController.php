@@ -124,7 +124,7 @@ class BlockController extends Controller
                 );
 
             return response()->json(
-                $this->blockService->store($data), 
+                ['message' => $this->blockService->store($data)], 
                 200
             );
         } catch (Exception $e) {
@@ -186,7 +186,7 @@ class BlockController extends Controller
                 );
 
             return response()->json(
-                $this->blockService->update($data, $block_id), 
+                ['message' => $this->blockService->update($data, $block_id)], 
                 200
             );
         } catch (Exception $e) {
@@ -226,8 +226,8 @@ class BlockController extends Controller
                     400
                 );
 
-            return response()->json(
-                $this->blockService->delete($blockId), 
+            return response()->json( 
+                ['message' => $this->blockService->delete($blockId)], 
                 200
             );
         } catch (Exception $e) {

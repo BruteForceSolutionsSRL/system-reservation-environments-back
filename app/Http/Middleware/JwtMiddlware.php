@@ -55,6 +55,9 @@ class JwtMiddlware
 
         $person = $user->person;
 
+        $request->merge(['person_id' => $person->id]);
+        return $next($request);
+
         if (!$person) {
             return response()->json(
                 ['status' => 'Usuario no tiene un perfil asociado'],

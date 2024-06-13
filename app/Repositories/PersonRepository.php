@@ -43,7 +43,7 @@ class PersonRepository extends Repository
      */
     public function getAllPersons(): array
     {
-        return $this->model::where('name', '!=', 'SISTEMA')
+        return $this->model::where('id', '!=', $this->system())
             ->get()->map(
                 function ($person) 
                 {
