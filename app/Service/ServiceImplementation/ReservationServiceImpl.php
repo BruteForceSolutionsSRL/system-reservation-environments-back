@@ -299,6 +299,8 @@ class ReservationServiceImpl implements ReservationService
 
         $this->mailService->createReservation($reservation, PersonRepository::system());
 
+        return '';
+
         if ($this->checkAvailibility($reservation)) {
             if ($this->alertReservation($reservation)['ok'] != 0) {
                 return  'Tu solicitud debe ser revisada por un administrador, se enviara una notificacion para mas detalles';

@@ -23,7 +23,7 @@ class NotificationRepository
 	{
 		$this->model = Notification::class;
 		
-		$this->personRepository = new PersonRepository();
+		$this->personRepository = new PersonRepository(); 
 		$this->notificationTypeRepository = new NotificationTypeRepository();
 	}
 

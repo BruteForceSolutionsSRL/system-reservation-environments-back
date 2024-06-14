@@ -21,11 +21,6 @@ use App\Repositories\{
 
 class MailerServiceImpl implements MailerService
 {
-	private $notificationService; 
-	public function __construct() 
-	{
-		$this->notificationService = new NotificationServiceImpl();
-	}
 	/**
 	 * Queues a mail to send to all addresses
 	 * @param Mailable $mail
@@ -41,25 +36,23 @@ class MailerServiceImpl implements MailerService
 	/**
 	 * Create a Mailable class with data reservation pending
 	 * @param array $data
-	 * @return void 
+	 * @return array 
 	 */
-	public function createReservation(array $reservation, int $sender): void 
+	public function createReservation(array $reservation, int $sender): array 
 	{
-		$emailData = $this->notificationService->store(
-            [
-                'title' => 'SOLICITUD DE RESERVA #'.$reservation['reservation_id'].' PENDIENTE', 
-                'body' => 'Se envio la solicitud #'.$reservation['reservation_id'],
-                'type' => NotificationTypeRepository::accepted(),
-                'sendBy' => $sender, 
-                'to' => array_map(
-					function ($person) 
-					{
-						return $person['person_id'];
-					}	
-					,$reservation['groups']
-				)
-            ]
-        );
+		$emailData = [
+            'title' => 'SOLICITUD DE RESERVA #'.$reservation['reservation_id'].' PENDIENTE', 
+            'body' => 'Se envio la solicitud #'.$reservation['reservation_id'],
+            'type' => NotificationTypeRepository::accepted(),
+            'sendBy' => $sender, 
+            'to' => array_map(
+				function ($person) 
+				{
+					return $person['person_id'];
+				},
+				$reservation['groups']
+			)
+		];
 
         $emailData = array_merge($emailData, $reservation);
 
@@ -70,6 +63,7 @@ class MailerServiceImpl implements MailerService
 			), 
 			$this->getAddresses($emailData['to'])
 		);
+		return $emailData;
 	}
 
 	/**
