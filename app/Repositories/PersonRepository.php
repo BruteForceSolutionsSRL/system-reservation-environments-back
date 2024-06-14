@@ -65,7 +65,8 @@ class PersonRepository extends Repository
                 foreach ($roles as $rol)
                     $query->orWhere('roles.id', $rol);
             }
-        )->get()->map(
+        )->where('id', '!=', $this->system())
+        ->get()->map(
             function ($user) 
             {
                 return $this->formatOutput($user);
