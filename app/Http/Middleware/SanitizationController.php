@@ -16,11 +16,12 @@ class SanitizationController
      */
     public function handle(Request $request, Closure $next)
     {
-        $input = $request->all(); 
-        array_walk_recursive($input, function(&$input) {
-            $input = strip_tags($input);
-        });
-        $request->merge($input); 
+        $inputData = $request->all(); 
+        $inputData = array_map(function ($value) {
+            return strip_tags($value);
+        }, $inputData);
+        $headers = $request->headers->all(); 
+        $request->replace(array_merge($inputData, $headers));
         return $next($request);
     }
 }

@@ -53,7 +53,6 @@ class NotificationController extends Controller
     public function store(Request $request): Response
     {   
         try {
-            dd($request);
             $validator = $this->validateNotificationData($request); 
             if ($validator->fails()) {
                 $message = implode('.', $validator->errors()->all()); 
@@ -62,7 +61,6 @@ class NotificationController extends Controller
 
             $data = $validator->validated();
 
-            dd($request);
             $data['sendBy'] = $request['person_id'];
             
             return response()->json(

@@ -47,7 +47,8 @@ class JwtMiddlware
                 );
             } else {
                 return response()->json(
-                    ['status' => 'Autorizacion de token no encontrada'], 
+                    ['status' => 'Autorizacion de token no encontrada',
+                    'error' => $e->getMessage()], 
                     401
                 );
             }

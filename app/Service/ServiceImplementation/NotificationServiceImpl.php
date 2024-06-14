@@ -46,7 +46,6 @@ class NotificationServiceImpl implements NotificationService
      */
     public function store(array $data): array 
     {
-        dd($data['sendBy']);
         if ($data['to'][0] == 'TODOS') {
             $users = $this->personService->getAllUsers();
             $data['to'] = [];
@@ -54,8 +53,6 @@ class NotificationServiceImpl implements NotificationService
                 if ($user['person_id'] != $data['sendBy'])
                     array_push($data['to'], $user['person_id']);
         }
-        dd($data['to']);
-        return [];
         $emailData = $this->notificationRepository->save($data);
         if (
             ($emailData['type'] == 'INFORMATIVO') 
