@@ -32,6 +32,8 @@ class BlockController extends Controller
     public function list(Request $request): Response
     {
         try {
+            //$blockStatus = $request->query('status', 'ENABLE');
+
             return response()->json(
                 $this->blockService->getAllBlocks(), 
                 200

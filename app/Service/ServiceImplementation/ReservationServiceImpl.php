@@ -297,27 +297,7 @@ class ReservationServiceImpl implements ReservationService
 
         $reservation = $this->reservationRepository->save($data);
 
-        $emailData = $this->notificationService->store(
-            [
-                'title' => 'SOLICITUD DE RESERVA #'.$reservation->id.' PENDIENTE', 
-                'body' => 'Se envio la solicitud #'.$reservation->id,
-                'type' => NotificationTypeRepository::accepted(),
-                'sendBy' => $this->personRepository->system(), 
-                'to' => $reservation->teacherSubjects->map(
-                    function ($teacher) 
-                    {
-                        return $teacher->person_id;
-                    }
-                )
-            ]
-        );
-
-        $emailData = array_merge(
-            $emailData, 
-            $this->reservationRepository->formatOutput($reservation)
-        );
-
-        $this->mailService->createReservation($emailData);
+        $this->mailService->createReservation($reservation, PersonRepository::system());
 
         if ($this->checkAvailibility($reservation)) {
             if ($this->alertReservation($reservation)['ok'] != 0) {

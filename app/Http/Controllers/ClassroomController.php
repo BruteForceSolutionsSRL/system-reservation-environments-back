@@ -201,6 +201,7 @@ class ClassroomController extends Controller
     public function classroomsByBlock(int $blockId, Request $request): Response
     {
         try {
+            $classroomStatus = $request->query('status', 'ENABLE');
             $block = $this->blockService->getBlock($blockId);
 
             if ($block == []) {
@@ -209,6 +210,12 @@ class ClassroomController extends Controller
                     400
                 );
             }
+
+            if ($classroomStatus=='ALL') 
+                return response()->json(
+                    $this->classroomService->getAllClassroomsByBlock($blockId), 
+                    200
+                );
 
             return response()->json(
                 $this->classroomService->getClassroomsByBlock($blockId),

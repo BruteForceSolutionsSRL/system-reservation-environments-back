@@ -12,7 +12,7 @@ class ReservationStatusServiceImpl implements ReservationStatusService
     private $reservationStatusRepository; 
     public function __construct()
     {
-        $this->reservationStatusRepository  = new ReservationStatusRepository(ReservationStatus::class);
+        $this->reservationStatusRepository  = new ReservationStatusRepository();
     }
 
     /**

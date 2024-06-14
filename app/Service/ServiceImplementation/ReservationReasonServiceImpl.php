@@ -18,9 +18,7 @@ class ReservationReasonServiceImpl implements ReservationReasonService
     private $reservationReasonRepository; 
     public function __construct()
     {
-        $this->reservationReasonRepository = new ReservationReasonRepository(
-            ReservationReason::class
-        );
+        $this->reservationReasonRepository = new ReservationReasonRepository();
     }
     
     /**
