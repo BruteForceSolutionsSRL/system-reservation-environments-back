@@ -218,7 +218,7 @@ class ReservationController extends Controller
             $message = $this->reservationService->reject(
                 $reservationId, 
                 $request->input('message'),
-                $request['person_id']
+                $request['session_id']
             ); 
             if ($message == 'No existe una solicitud con este ID') {
                 return response()->json(['message' => $message], 404);
@@ -273,11 +273,11 @@ class ReservationController extends Controller
 
             $data = $validator->validated();
 
-            $requestedHour = Carbon::parse($data['date'].' '.$this->timeSlotService->getTimeSlot($data['time_slot_id'][0])['time']); 
+            $requestedHour = Carbon::parse($data['date'].' '.$this->timeSlotService
+                ->getTimeSlot($data['time_slot_id'][0])['time'])->addHours(4); 
 
             $now = Carbon::now();
-            $now->setTimeZone('America/New_York');
-            if (!$now->isBefore($requestedHour))
+            if ($now >= $requestedHour)
                 return response()->json(
                     ['message' => 'La hora elegida ya paso, no es posible realizar una reserva'], 
                     404
