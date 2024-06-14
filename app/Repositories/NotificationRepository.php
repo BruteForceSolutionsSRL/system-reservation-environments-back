@@ -10,6 +10,8 @@ use App\Repositories\{
 	PersonRepository
 };
 
+use Carbon\Carbon;
+
 class NotificationRepository 
 {
 	protected $model; 
@@ -123,6 +125,13 @@ class NotificationRepository
 		
 		$receptors = $notification->receptors;
 
+		$carbon = Carbon::parse($notification->created_at);
+        $carbon->setTimeZone('America/New_York');
+
+		$date = $carbon->format('Y-m-d');
+		$hour = $carbon->format('H');
+		$minutes = $carbon->format('i');
+
 		$result = [
 			'id' => $notification->id,
 			'title' => $notification->title, 
@@ -144,6 +153,9 @@ class NotificationRepository
 				}
 			), 
 			'body' => $notification->description, 
+			'hour' => $hour, 
+			'minutes' => $minutes,
+			'date' => $date,
 		];
 
 		if (in_array($notificationType['notification_type_id'], [

@@ -23,6 +23,7 @@ class JwtMiddlware
         $this->personService = new PersonService();           
     }
     /**
+     * token expiration = 20 minutos
      * Handle an incoming request.
      *
      * @param  \Illuminate\Http\Request  $request

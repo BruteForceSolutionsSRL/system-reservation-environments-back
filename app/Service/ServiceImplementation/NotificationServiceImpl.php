@@ -58,7 +58,7 @@ class NotificationServiceImpl implements NotificationService
             ($emailData['type'] == 'INFORMATIVO') 
             || ($emailData['type'] == 'ADVERTENCIA')
         ) {
-            $this->mailService->sendSimpleEmail($emailData);
+            //$this->mailService->sendSimpleEmail($emailData);
         }
         return  $emailData;
     }
