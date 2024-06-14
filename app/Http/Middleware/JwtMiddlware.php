@@ -79,7 +79,7 @@ class JwtMiddlware
                 );
             }
         }
-        $request->merge(['person_id' => $person->id]);
+        $request->merge(['session_id' => $person->id]);
         return $next($request);
     }
 }

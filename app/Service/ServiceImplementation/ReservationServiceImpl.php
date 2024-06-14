@@ -297,7 +297,7 @@ class ReservationServiceImpl implements ReservationService
 
         $reservation = $this->reservationRepository->save($data);
 
-        $this->mailService->createReservation($reservation, PersonRepository::system());
+        //$this->mailService->createReservation($reservation, PersonRepository::system());
 
         if ($this->checkAvailibility($reservation)) {
             if ($this->alertReservation($reservation)['ok'] != 0) {
