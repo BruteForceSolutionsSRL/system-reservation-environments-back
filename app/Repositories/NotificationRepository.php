@@ -23,7 +23,7 @@ class NotificationRepository
 	{
 		$this->model = Notification::class;
 		
-		$this->personRepository = new PersonRepository();
+		$this->personRepository = new PersonRepository(); 
 		$this->notificationTypeRepository = new NotificationTypeRepository();
 	}
 
@@ -80,7 +80,6 @@ class NotificationRepository
 		$notification->description = $data['body'];
 		$notification->notification_type_id = $data['type']; 
 		$notification->person_id = $data['sendBy'];
-
 		$notification->save(); 
 		if (is_array($data['to']))
 			$data['to'] = array_unique($data['to']);

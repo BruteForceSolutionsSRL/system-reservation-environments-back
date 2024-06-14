@@ -31,7 +31,7 @@ class NotificationController extends Controller
     {
         try {
             return response()->json(
-                $this->notificationService->getNotifications($request['person_id']),
+                $this->notificationService->getNotifications($request['session_id']),
                 200
             );
         } catch (Exception $e) {
@@ -61,7 +61,7 @@ class NotificationController extends Controller
 
             $data = $validator->validated();
 
-            $data['sendBy'] = $request['person_id'];
+            $data['sendBy'] = $request['session_id'];
             
             return response()->json(
                 $this->notificationService->store($data),
@@ -122,7 +122,7 @@ class NotificationController extends Controller
         try {
             $result = $this->notificationService->getNotification(
                     $notificationId, 
-                    $request['person_id']
+                    $request['session_id']
                 );
             
             if (empty($result)) 
