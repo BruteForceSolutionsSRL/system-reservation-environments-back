@@ -131,7 +131,10 @@ class ClassroomController extends Controller
                 );
             }
 
-            if ($block['block_maxclassrooms'] == count($block['block_classrooms'])) {
+            $classroom = $this->classroomService->getClassroomByID($data['classroom_id']);
+
+            if (($block['block_maxclassrooms'] == count($block['block_classrooms']))
+                 && ($classroom['block_id'] != $data['block_id'])) {
                 return response()->json(
                     ['message' => 'El bloque llego a su maxima cantidad de ambientes registrados'],
                     400

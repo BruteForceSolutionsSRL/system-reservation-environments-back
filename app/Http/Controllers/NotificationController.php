@@ -27,11 +27,11 @@ class NotificationController extends Controller
      * @param Request $request
      * @return Response
      */
-    public function list(int $personId, Request $request): Response
+    public function list(Request $request): Response
     {
         try {
             return response()->json(
-                $this->notificationService->getNotifications($personId),
+                $this->notificationService->getNotifications($request['person_id']),
                 200
             );
         } catch (Exception $e) {
@@ -50,7 +50,7 @@ class NotificationController extends Controller
      * @param  Request  $request
      * @return Response
      */
-    public function store(int $personId, Request $request): Response
+    public function store(Request $request): Response
     {   
         try {
             $validator = $this->validateNotificationData($request); 
@@ -61,7 +61,7 @@ class NotificationController extends Controller
 
             $data = $validator->validated();
 
-            $data['sendBy'] = $personId;
+            $data['sendBy'] = $request['person_id'];
             
             return response()->json(
                 $this->notificationService->store($data),
@@ -97,8 +97,7 @@ class NotificationController extends Controller
                 integer|
                 exists:notification_types,id',
             'to.*' => '
-                required|
-                exists:people,id'
+                required'
         ], [
             'title.required' => 'El atributo \'titulo\' no debe ser nulo o vacio',
 
@@ -109,7 +108,6 @@ class NotificationController extends Controller
             'type.exists' => 'El \'tipo de mensaje\' debe ser una seleccion valida',
 
             'to.*.required' => 'El atributo \'para\' no debe ser nulo o vacio',
-            'to.*.exists' => 'El atributo \'para\' debe ser una seleccion valida de personas',
         ]);
     }
     
@@ -119,13 +117,21 @@ class NotificationController extends Controller
      * @param Request $request
      * @return Response
      */
-    public function show(int $personId, int $notificationId,Request $request): Response
+    public function show(int $notificationId, Request $request): Response
     {
         try {
-            return response()->json(
-                $this->notificationService->getNotification($notificationId, $personId),
-                200
-            );
+            $result = $this->notificationService->getNotification(
+                    $notificationId, 
+                    $request['person_id']
+                );
+            
+            if (empty($result)) 
+                return response()->json(
+                    ['message' => 'No puedes acceder a esta notificacion'],
+                    403
+                );
+
+            return response()->json($result, 200);
         } catch (Exception $e) {
             return response()->json(
                 [

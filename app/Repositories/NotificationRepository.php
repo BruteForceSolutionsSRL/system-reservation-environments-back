@@ -10,6 +10,8 @@ use App\Repositories\{
 	PersonRepository
 };
 
+use Carbon\Carbon;
+
 class NotificationRepository 
 {
 	protected $model; 
@@ -25,14 +27,21 @@ class NotificationRepository
 		$this->notificationTypeRepository = new NotificationTypeRepository();
 	}
 
-	// aqui falta ver quien es el que esta leendo la notificacion para cambiarla de estado.
-	public function getNotification(int $id, int $personId) 
+	/**
+	 * Retrieve a single notification to a user 
+	 * @param int $id
+	 * @param int $personId
+	 * @return array
+	 */
+	public function getNotification(int $id, int $personId): array 
 	{
 		$notification = $this->model::find($id); 
 
 		$notificationPerson = NotificationPerson::where('notification_id', $id)
 			->where('person_id', $personId)
 			->first();
+		if (!$notificationPerson) 
+			return []; 
 		$notificationPerson->readed = 1; 
 		$notificationPerson->save();
 
@@ -116,6 +125,13 @@ class NotificationRepository
 		
 		$receptors = $notification->receptors;
 
+		$carbon = Carbon::parse($notification->created_at);
+        $carbon->setTimeZone('America/New_York');
+
+		$date = $carbon->format('Y-m-d');
+		$hour = $carbon->format('H');
+		$minutes = $carbon->format('i');
+
 		$result = [
 			'id' => $notification->id,
 			'title' => $notification->title, 
@@ -137,6 +153,9 @@ class NotificationRepository
 				}
 			), 
 			'body' => $notification->description, 
+			'hour' => $hour, 
+			'minutes' => $minutes,
+			'date' => $date,
 		];
 
 		if (in_array($notificationType['notification_type_id'], [

@@ -9,12 +9,14 @@ class NotificationServiceImpl implements NotificationService
     private $notificationRepository;
 
     private $mailService; 
+    private $personService; 
 
     public function __construct() 
     {
         $this->notificationRepository = new NotificationRepository();
         
         $this->mailService = new MailerServiceImpl();
+        $this->personService = new PersonServiceImpl();
     }
 
     /**
@@ -44,12 +46,19 @@ class NotificationServiceImpl implements NotificationService
      */
     public function store(array $data): array 
     {
+        if ($data['to'][0] == 'TODOS') {
+            $users = $this->personService->getAllUsers();
+            $data['to'] = [];
+            foreach ($users as $user)
+                if ($user['person_id'] != $data['sendBy'])
+                    array_push($data['to'], $user['person_id']);
+        }
         $emailData = $this->notificationRepository->save($data);
         if (
             ($emailData['type'] == 'INFORMATIVO') 
             || ($emailData['type'] == 'ADVERTENCIA')
         ) {
-            $this->mailService->sendSimpleEmail($emailData);
+            //$this->mailService->sendSimpleEmail($emailData);
         }
         return  $emailData;
     }
