@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solicitud para Elementos de programación y estructura de datos</title>
+    <title>{{ $details['title'] }}</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css">
     <style>
         body {
@@ -48,6 +48,21 @@
             color: #555;
         }
 
+        .content .status {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .content .status p {
+            margin-right: 10px;
+        }
+
+        .content .status i {
+            font-size: 20px;
+            color: #dc3545; /* Color rojo para indicar rechazo */
+        }
+
         .content table {
             border-collapse: collapse;
             width: 100%;
@@ -88,13 +103,25 @@
         <h1>{{ $details['title'] }}</h1>
     </div>
     <div class="content">
-        <p>**Fecha de eliminación:** {{ $details['updated_at'] }}</p>
-        <p>El ambiente {{ $details['classroom_name'] }} se elimino del sistema el día {{ $details['updated_at'] }}. Las solicitudes/reservas y demás acontecimientos serán rechazados/cancelados por el mencionado motivo, favor de tomar nota.</p>
+        <p>{{$details['body']}}</p>
+        <h3>Detalle del ambiente</h3>
+        <div class="status">
+            <p><b>Estado:</b> {{ $details['classroom_status_name'] }}</p>
+        </div>
+        <p><b>Nombre:</b> {{ $details['classroom_name'] }}</p>
+        <p><b>Tipo:</b> {{ $details['classroom_type_name'] }}</p>
+        <p><b>Capacidad:</b> {{ $details['capacity'] }}</p>
+        <p><b>Piso:</b> {{ $details['floor'] }} </p>
+        <p><b>Bloque perteneciente:</b> {{ $details['block_name'] }}</p>
     </div>
+    <hr>
     <div class="footer">
-        <p>**Enviado por:** {{ $details['sender'] }}</p>
+        <p><b>Enviado por:</b> {{ $details['sendBy'] }}</p>
         <p>&copy; 2024 SURA. Todos los derechos reservados.</p>
-        <p>**Redes sociales:**</
+        <p>**Redes sociales:**</p>
+        <a href="#">Facebook</a> |
+        <a href="#">Twitter</a> |
+        <a href="#">LinkedIn</a>
     </div>
 </div>
 </body>

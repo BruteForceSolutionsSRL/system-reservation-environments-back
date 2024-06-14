@@ -214,12 +214,11 @@ class ReservationController extends Controller
      */
     public function rejectReservation(int $reservationId, Request $request): Response
     {
-        // aqui falta agregar lo de quien esta haciendo el rechazo
         try {
             $message = $this->reservationService->reject(
                 $reservationId, 
                 $request->input('message'),
-                1
+                $request['person_id']
             ); 
             if ($message == 'No existe una solicitud con este ID') {
                 return response()->json(['message' => $message], 404);

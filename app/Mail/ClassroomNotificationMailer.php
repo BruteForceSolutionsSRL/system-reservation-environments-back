@@ -6,6 +6,8 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
+use App\Repositories\ClassroomRepository;
+
 class ClassroomNotificationMailer extends Mailable
 {
     use Queueable, SerializesModels;
@@ -31,17 +33,17 @@ class ClassroomNotificationMailer extends Mailable
      */
     public function build()
     {
-        $dir = 'mail/templates/classroom/';
+        $dir = 'mail/templates/classroom';
         switch ($this->type) {
             case 1:
                 return $this->subject('CREACION DE AMBIENTE')
-                    ->view($dir.'create');
+                    ->view($dir);
             case 2: 
                 return $this->subject('ELIMINACION DE AMBIENTE')
-                    ->view($dir.'delete');
+                    ->view($dir);
             default:
                 return $this->subject('ACTUALIZACION DE DATOS DE AMBIENTE')
-                    ->view($dir.'update');
+                    ->view($dir);
         }
     }
 }

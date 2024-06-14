@@ -11,7 +11,7 @@ class TimeSlotServiceImpl implements TimeSlotService
     private $timeSlotRepository; 
     public function __construct()
     {
-        $this->timeSlotRepository  = new TimeSlotRepository(TimeSlot::class);
+        $this->timeSlotRepository  = new TimeSlotRepository();
     }
 
     /**
