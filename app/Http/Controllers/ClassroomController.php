@@ -172,7 +172,10 @@ class ClassroomController extends Controller
                     400
                 );
             }
-            return response()->Json($this->classroomService->getDisponibleClassroomsByBlock($blockId));
+            return response()->Json(
+                $this->classroomService->getDisponibleClassroomsByBlock($blockId),
+                200
+            );
         } catch (ModelNotFoundException $e) {
             return response()->json(
                 [

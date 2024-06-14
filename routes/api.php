@@ -30,6 +30,14 @@ use App\Http\Controllers\{
 |
 */
 
+/**
+ * Permisos
+ * request_reserve => solicitud de reserva (docente)
+ * reservation_handling => atender solicitudes (administrador)
+ * availability => ver disponibilidad (all)
+ * classrooms_statistics => ver estadisticas de ambientes (all)
+ */
+
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
@@ -41,16 +49,17 @@ Route::controller(AuthController::class)->group(function() {
 });
 
 Route::group(['middleware' => ['jwt.verify:blocks']], function() {
-    //Todo lo que este dentro de este grupo requiere verificación de usuario.
     Route::controller(AuthController::class)->group(function() {
         Route::post('/logout', 'logout');
         Route::post('/get-user', 'getUser');
     });
 });
 
+
 Route::controller(ReservationReasonController::class)->group(function() {
-    Route::get('/reservations/reasons', 'list');
+    Route::middleware('jwt.verify:request_reserve')->get('/reservations/reasons', 'list');
 });
+
 
 Route::controller(ReservationStatusController::class)->group(function() {
     Route::get('/reservations/statuses', 'list');
@@ -58,21 +67,21 @@ Route::controller(ReservationStatusController::class)->group(function() {
 
 Route::controller(ReservationController::class)->group(function() {
     Route::get('/reservations', 'list');
-    Route::get('/reservations/pending', 'getPendingRequests');
+    Route::middleware('jwt.verify:reservation_handling')->get('/reservations/pending', 'getPendingRequests');
     Route::get('/reservations/teacher/{teacherId}/open', 'listRequestsByTeacher');
     Route::get('/reservations/teacher/{teacherId}', 'listAllRequestsByTeacher');
-    Route::get('/reservations/history', 'getAllRequestsExceptPending');
-    Route::get('/reservations/history/teacher/{teacherId}', 'getAllRequestsExceptPendingByTeacher');
+    Route::middleware('jwt.verify:history')->get('/reservations/history', 'getAllRequestsExceptPending');
+    Route::middleware('jwt.verify:history')->get('/reservations/history/teacher/{teacherId}', 'getAllRequestsExceptPendingByTeacher');
     Route::get('/reservations/reports', 'getReports');
     Route::get('/reservations/{reservationId}', 'show');
-    Route::get('/reservations/{reservationId}/conflicts', 'getConflicts');
+    Route::middleware('jwt.verify:reservation_handling')->get('/reservations/{reservationId}/conflicts', 'getConflicts');
     Route::get('/reservations/classroom/{classroomId}','getAllReservationsByClassroom');
 
-    Route::middleware('sanitize:api')->patch('/reservations/{reservationId}/reject', 'rejectReservation');
-    Route::middleware('sanitize:api')->patch('/reservations/{reservationId}/assign', 'assign');
+    Route::middleware('sanitize:api')->middleware('jwt.verify:reservation_handling')->patch('/reservations/{reservationId}/reject', 'rejectReservation');
+    Route::middleware('sanitize:api')->middleware('jwt.verify:reservation_handling')->patch('/reservations/{reservationId}/assign', 'assign');
     Route::middleware('sanitize:api')->patch('/reservations/{reservationId}/cancel', 'cancelRequest');
 
-    Route::middleware('sanitize:api')->post('/reservations', 'store');
+    Route::middleware('sanitize:api')->middleware('jwt.verify:request_reserve')->post('/reservations', 'store');
 });
 
 Route::controller(ClassroomStatusController::class)->group(function() {
@@ -85,26 +94,28 @@ Route::controller(ClassroomTypeController::class)->group(function() {
 
 Route::controller(ClassroomController::class)->group(function() {
     Route::get('/classrooms', 'list');
-    Route::get('/classrooms/block/{blockId}','classroomsByBlock');
-    Route::get('/classrooms/block/{blockId}/available', 'availableClassroomsByBlock');
+    Route::middleware('jwt.verify')->get('/classrooms/block/{blockId}','classroomsByBlock');
+    Route::middleware('jwt.verify')->get('/classrooms/block/{blockId}/available', 'availableClassroomsByBlock');
     Route::get('/classrooms/last-validated', 'retriveLastClassroom');
     Route::get('/classrooms/statistics/list','getAllClassroomsWithStatistics');
 
-    Route::middleware('sanitize:api')->post('/classrooms/stats', 'getClassroomStats');
-
     Route::delete('/classrooms/delete/{classroomId}','destroy');
 
-    Route::middleware('sanitize:api')->post('/classrooms/disponibility', 'getClassroomByDisponibility');
-    Route::middleware('sanitize:api')->post('/classrooms/reservation/suggest', 'suggestClassrooms');
+    Route::group(['middleware' => ['sanitize:api','jwt.verify:request_reserve']], function() {
+        Route::post('/classrooms/reservation/suggest', 'suggestClassrooms');
+    });
+
+    Route::middleware('sanitize:api')->middleware('jwt.verify:availability')->post('/classrooms/disponibility', 'getClassroomByDisponibility');
     Route::middleware('sanitize:api')->post('/classrooms', 'store');
-    Route::middleware('sanitize:api')->post('/classrooms/stats', 'getClassroomStats');
+    Route::middleware('sanitize:api')->middleware('jwt.verify')->post('/classrooms/stats', 'getClassroomStats');
 
     Route::middleware('sanitize:api')->put('/classrooms/{classroomId}', 'update');
 });
 
+//Agrupacion
 Route::controller(TeacherSubjectController::class)->group(function() {
-    Route::get('/teacher-subjects/teacher/{teacherId}', 'subjectsByTeacher');
-    Route::get('/teacher-subjects/subject/{universitySubjectID}', 'teachersBySubject');
+    Route::middleware('jwt.verify:request_reserve')->get('/teacher-subjects/teacher/{teacherId}', 'subjectsByTeacher');
+    Route::middleware('jwt.verify:request_reserve')->get('/teacher-subjects/subject/{universitySubjectID}', 'teachersBySubject');
 });
 
 Route::controller(NotificationController::class)->group(function() {
@@ -115,7 +126,7 @@ Route::controller(NotificationController::class)->group(function() {
 });
 
 Route::controller(BlockController::class)->group(function() {
-    Route::get('/blocks', 'list');
+    Route::middleware('jwt.verify')->get('/blocks', 'list');
     Route::get('/blocks/{block_id}', 'show'); 
     Route::get('/blocks/{block_id}/statistics', 'getBlockStatistics'); 
 
@@ -127,7 +138,7 @@ Route::controller(BlockController::class)->group(function() {
 });
 
 Route::controller(TimeSlotController::class)->group(function() {
-    Route::get('/timeslots', 'list');
+    Route::middleware('jwt.verify')->get('/timeslots', 'list');
 });
 
 Route::controller(PersonController::class)->group(function() {
