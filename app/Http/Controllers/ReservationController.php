@@ -218,7 +218,7 @@ class ReservationController extends Controller
             $message = $this->reservationService->reject(
                 $reservationId, 
                 $request->input('message'),
-                $request['person_id']
+                $request['session_id']
             ); 
             if ($message == 'No existe una solicitud con este ID') {
                 return response()->json(['message' => $message], 404);
