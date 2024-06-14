@@ -14,10 +14,18 @@ use App\Mail\{
 	ReservationNotificationMailer
 }; 
 
-use App\Repositories\ReservationStatusRepository as ReservationStatus;
+use App\Repositories\{
+	ReservationStatusRepository as ReservationStatus,
+	NotificationTypeRepository
+};
 
 class MailerServiceImpl implements MailerService
 {
+	private $notificationService; 
+	public function __construct() 
+	{
+		$this->notificationService = new NotificationServiceImpl();
+	}
 	/**
 	 * Queues a mail to send to all addresses
 	 * @param Mailable $mail
@@ -35,15 +43,32 @@ class MailerServiceImpl implements MailerService
 	 * @param array $data
 	 * @return void 
 	 */
-	public function createReservation($data): void 
+	public function createReservation(array $reservation, int $sender): void 
 	{
-		$addresses = $this->getAddresses($data['to']); 
+		$emailData = $this->notificationService->store(
+            [
+                'title' => 'SOLICITUD DE RESERVA #'.$reservation['reservation_id'].' PENDIENTE', 
+                'body' => 'Se envio la solicitud #'.$reservation['reservation_id'],
+                'type' => NotificationTypeRepository::accepted(),
+                'sendBy' => $sender, 
+                'to' => array_map(
+					function ($person) 
+					{
+						return $person['person_id'];
+					}	
+					,$reservation['groups']
+				)
+            ]
+        );
+
+        $emailData = array_merge($emailData, $reservation);
+
 		$this->sendMail(
 			new ReservationNotificationMailer(
-				$data,
+				$emailData,
 				ReservationStatus::pending()
 			), 
-			$addresses
+			$this->getAddresses($emailData['to'])
 		);
 	}
 
@@ -111,6 +136,46 @@ class MailerServiceImpl implements MailerService
 			$addresses
 		);
 	}
+
+	/**
+	 * Create a Mailable class with data for creation
+	 * @param array $data
+	 * @return void
+	 */
+	public function sendCreationClassroomEmail(array $data): void 
+	{
+		$this->sendMail(
+			new ClassroomNotificationMailer($data, 1), 
+			$this->getAddresses($data['to'])
+		);
+	}
+
+	/**
+	 * Create a Mailable class with data for update
+	 * @param array $data
+	 * @return void
+	 */
+	public function sendUpdateClassroomEmail(array $data): void 
+	{
+		$this->sendMail(
+			new ClassroomNotificationMailer($data, 3), 
+			$this->getAddresses($data['to'])
+		);
+	}
+
+	/**
+	 * Create a Mailable class with data for delete
+	 * @param array $data
+	 * @return void
+	 */
+	public function sendDeleteClassroomEmail(array $data): void 
+	{
+		$this->sendMail(
+			new ClassroomNotificationMailer($data, 2), 
+			$this->getAddresses($data['to'])
+		);
+	}
+
 
 	/**
 	 * Retrieve a list of addresses 

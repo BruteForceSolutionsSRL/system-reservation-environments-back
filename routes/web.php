@@ -15,10 +15,11 @@ use Illuminate\Support\Facades\Route;
 
 
 
-Route::get('/', function () {
+Route::get('/{any}', function () {
     return view('index');
-})->where('', '.*');
+})->where('any', '^(?!api/).*$');
 
+/*
 Route::fallback(function ($request) {
   if (!str_starts_with($request->url(), '/api')) {
     return Response::json([
@@ -30,3 +31,4 @@ Route::fallback(function ($request) {
   // If it's an API request, let Laravel's default routing handle it
   return response();
 });
+*/

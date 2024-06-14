@@ -23,6 +23,7 @@ class JwtMiddlware
         $this->personService = new PersonService();           
     }
     /**
+     * token expiration = 20 minutos
      * Handle an incoming request.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -47,13 +48,17 @@ class JwtMiddlware
                 );
             } else {
                 return response()->json(
-                    ['status' => 'Autorizacion de token no encontrada'], 
+                    ['status' => 'Autorizacion de token no encontrada',
+                    'error' => $e->getMessage()], 
                     401
                 );
             }
         }
 
         $person = $user->person;
+
+        $request->merge(['person_id' => $person->id]);
+        return $next($request);
 
         if (!$person) {
             return response()->json(

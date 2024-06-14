@@ -14,9 +14,7 @@ class TeacherSubjectServiceImpl implements TeacherSubjectService
     private $teacherSubjectRepository; 
     public function __construct()
     {
-        $this->teacherSubjectRepository = new TeacherSubjectRepository(
-            TeacherSubject::class
-        );
+        $this->teacherSubjectRepository = new TeacherSubjectRepository();
     }
 
     /**

@@ -131,7 +131,10 @@ class ClassroomController extends Controller
                 );
             }
 
-            if ($block['block_maxclassrooms'] == count($block['block_classrooms'])) {
+            $classroom = $this->classroomService->getClassroomByID($data['classroom_id']);
+
+            if (($block['block_maxclassrooms'] == count($block['block_classrooms']))
+                 && ($classroom['block_id'] != $data['block_id'])) {
                 return response()->json(
                     ['message' => 'El bloque llego a su maxima cantidad de ambientes registrados'],
                     400
@@ -198,6 +201,7 @@ class ClassroomController extends Controller
     public function classroomsByBlock(int $blockId, Request $request): Response
     {
         try {
+            $classroomStatus = $request->query('status', 'ENABLE');
             $block = $this->blockService->getBlock($blockId);
 
             if ($block == []) {
@@ -206,6 +210,12 @@ class ClassroomController extends Controller
                     400
                 );
             }
+
+            if ($classroomStatus=='ALL') 
+                return response()->json(
+                    $this->classroomService->getAllClassroomsByBlock($blockId), 
+                    200
+                );
 
             return response()->json(
                 $this->classroomService->getClassroomsByBlock($blockId),

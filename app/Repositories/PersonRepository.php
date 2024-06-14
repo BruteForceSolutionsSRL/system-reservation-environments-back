@@ -43,7 +43,7 @@ class PersonRepository extends Repository
      */
     public function getAllPersons(): array
     {
-        return $this->model::where('name', '!=', 'SISTEMA')
+        return $this->model::where('id', '!=', $this->system())
             ->get()->map(
                 function ($person) 
                 {
@@ -65,7 +65,8 @@ class PersonRepository extends Repository
                 foreach ($roles as $rol)
                     $query->orWhere('roles.id', $rol);
             }
-        )->get()->map(
+        )->where('id', '!=', $this->system())
+        ->get()->map(
             function ($user) 
             {
                 return $this->formatOutput($user);

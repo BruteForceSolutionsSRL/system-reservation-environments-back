@@ -254,6 +254,7 @@ class ReservationRepository extends Repository
                 return [
                     'teacher_name' => $person->name . ' ' . $person->last_name,
                     'group_number' => $teacherSubject->group_number,
+                    'person_id' => $person->id,
                 ];
             }),
             'block_name' => $classrooms->first()->block->name,
@@ -355,9 +356,9 @@ class ReservationRepository extends Repository
     /** 
      * Store a new Reservation request
      * @param array $data
-     * @return Reservation
+     * @return array
      */
-    public function save(array $data): Reservation
+    public function save(array $data): array
     {
         $reservation = new Reservation();
         $reservation->number_of_students = $data['quantity'];
@@ -371,7 +372,7 @@ class ReservationRepository extends Repository
         $reservation->classrooms()->attach($data['classroom_id']);
         $reservation->timeSlots()->attach($data['time_slot_id']);
 
-        return $reservation;
+        return $this->formatOutput($reservation);
     }
 
     /**
@@ -383,7 +384,8 @@ class ReservationRepository extends Repository
     public function getReservationsByClassroomAndStatuses(
         int $classroomId,
         array $statuses
-    ): array {
+    ): array 
+    {
         return $this->model::whereHas(
             'classrooms',
             function ($query) use ($classroomId) {

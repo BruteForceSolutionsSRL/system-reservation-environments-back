@@ -5,22 +5,14 @@ namespace App\Service\ServiceImplementation;
 use App\Repositories\BlockRepository;
 use App\Service\ClassroomService;
 
-use App\Models\{
-    Classroom,
-    ClassroomLogs,
-    Reservation,
-    TimeSlot,
-    Block,
-    ClassroomStatus
-};
-
 use App\Repositories\{
     ClassroomRepository,
     ReservationRepository,
     ReservationStatusRepository as ReservationStatuses,
     TimeSlotRepository,
     ClassroomStatusRepository,
-    ClassroomLogsRepository
+    ClassroomLogsRepository,
+    PersonRepository
 };
 
 class ClassroomServiceImpl implements ClassroomService
@@ -117,6 +109,16 @@ class ClassroomServiceImpl implements ClassroomService
     {
         return $this->classroomRepository
             ->getDisponibleClassroomsByBlock($blockId);
+    }
+
+    /**
+     * Retrieve a list of all classrooms
+     * @param int $blockId
+     * @return array
+     */
+    public function getAllClassroomsByBlock(int $blockId): array 
+    {
+        return $this->classroomRepository->getAllClassroomByBlock($blockId);
     }
 
     /**
@@ -376,6 +378,7 @@ class ClassroomServiceImpl implements ClassroomService
         foreach ($classroomIds as $classroomId)
             $this->deleteByClassroomId($classroomId);
         // aqui falta las notificaciones para que los admins vean las modificaciones sobre aulas
+        return [];
     }
 
     /**
@@ -403,7 +406,8 @@ class ClassroomServiceImpl implements ClassroomService
         foreach ($reservations as $reservation)
             if ($reservation['repeat'] == 0) {
                 $this->reservationService->reject($reservation['reservation_id'],
-                'Su reserva ha sido rechazada debido a que el ambiente '.$classroom['classroom_name'].' fue deshabilitado'
+                'Su reserva ha sido rechazada debido a que el ambiente '.$classroom['classroom_name'].' fue deshabilitado',
+                PersonRepository::system()
             );
         }
 

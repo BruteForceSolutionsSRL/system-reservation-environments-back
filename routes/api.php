@@ -108,10 +108,10 @@ Route::controller(TeacherSubjectController::class)->group(function() {
 });
 
 Route::controller(NotificationController::class)->group(function() {
-    Route::middleware('sanitize:api')->post('/notifications/send/{personId}', 'store');
+    Route::middleware('sanitize:api')->middleware('jwt.verify:api')->post('/notifications/send', 'store');
 
-    Route::get('/notifications/inbox/{personId}', 'list');
-    Route::get('/notifications/inbox/{personId}/{notificationId}', 'show');
+    Route::middleware('jwt.verify:api')->get('/notifications/inbox', 'list');
+    Route::middleware('jwt.verify:api')->get('/notifications/inbox/{notificationId}', 'show');
 });
 
 Route::controller(BlockController::class)->group(function() {
