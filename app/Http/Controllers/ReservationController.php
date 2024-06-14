@@ -282,7 +282,6 @@ class ReservationController extends Controller
                     ['message' => 'La hora elegida ya paso, no es posible realizar una reserva'], 
                     404
                 ); 
-            return response()->json(['ok'=>'1']);
 
             return response()->json(
                 ['message' => $this->reservationService->store($data)], 

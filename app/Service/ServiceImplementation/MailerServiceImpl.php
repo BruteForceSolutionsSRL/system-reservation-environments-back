@@ -45,23 +45,27 @@ class MailerServiceImpl implements MailerService
             'body' => 'Se envio la solicitud #'.$reservation['reservation_id'],
             'type' => NotificationTypeRepository::accepted(),
             'sendBy' => $sender, 
-            'to' => array_map(
-				function ($person) 
-				{
-					return $person['person_id'];
-				},
-				$reservation['groups']
-			)
+            'to' => [],
 		];
+		for ($i =0 ; $i<count($reservation['groups']); $i++) 
+			array_push($emailData['to'], $reservation['groups'][$i]);
 
         $emailData = array_merge($emailData, $reservation);
+		$addresses = $this->getAddresses($emailData['to']);
+		$emailData['to'] = array_unique(array_map(
+			function ($user) 
+			{
+				return $user['person_id'];
+			},
+			$emailData['to']
+		));
 
 		$this->sendMail(
 			new ReservationNotificationMailer(
 				$emailData,
 				ReservationStatus::pending()
 			), 
-			$this->getAddresses($emailData['to'])
+			$addresses
 		);
 		return $emailData;
 	}
@@ -180,9 +184,9 @@ class MailerServiceImpl implements MailerService
 	{
 		$addresses = []; 
 
-		foreach ($data as $user) 
-			array_push($addresses, $user['person_email']);
+		for ($i = 0; $i<count($data); $i++)  
+			array_push($addresses, $data[$i]['person_email']);
 
-		return $addresses; 
+		return array_unique($addresses); 
 	}
 }
