@@ -21,11 +21,6 @@ use App\Repositories\{
 
 class MailerServiceImpl implements MailerService
 {
-	private $notificationService; 
-	public function __construct() 
-	{
-		$this->notificationService = new NotificationServiceImpl();
-	}
 	/**
 	 * Queues a mail to send to all addresses
 	 * @param Mailable $mail
@@ -41,35 +36,38 @@ class MailerServiceImpl implements MailerService
 	/**
 	 * Create a Mailable class with data reservation pending
 	 * @param array $data
-	 * @return void 
+	 * @return array 
 	 */
-	public function createReservation(array $reservation, int $sender): void 
+	public function createReservation(array $reservation, int $sender): array 
 	{
-		$emailData = $this->notificationService->store(
-            [
-                'title' => 'SOLICITUD DE RESERVA #'.$reservation['reservation_id'].' PENDIENTE', 
-                'body' => 'Se envio la solicitud #'.$reservation['reservation_id'],
-                'type' => NotificationTypeRepository::accepted(),
-                'sendBy' => $sender, 
-                'to' => array_map(
-					function ($person) 
-					{
-						return $person['person_id'];
-					}	
-					,$reservation['groups']
-				)
-            ]
-        );
+		$emailData = [
+            'title' => 'SOLICITUD DE RESERVA #'.$reservation['reservation_id'].' PENDIENTE', 
+            'body' => 'Se envio la solicitud #'.$reservation['reservation_id'],
+            'type' => NotificationTypeRepository::accepted(),
+            'sendBy' => $sender, 
+            'to' => [],
+		];
+		for ($i =0 ; $i<count($reservation['groups']); $i++) 
+			array_push($emailData['to'], $reservation['groups'][$i]);
 
         $emailData = array_merge($emailData, $reservation);
+		$addresses = $this->getAddresses($emailData['to']);
+		$emailData['to'] = array_unique(array_map(
+			function ($user) 
+			{
+				return $user['person_id'];
+			},
+			$emailData['to']
+		));
 
 		$this->sendMail(
 			new ReservationNotificationMailer(
 				$emailData,
 				ReservationStatus::pending()
 			), 
-			$this->getAddresses($emailData['to'])
+			$addresses
 		);
+		return $emailData;
 	}
 
 	/**
@@ -186,9 +184,9 @@ class MailerServiceImpl implements MailerService
 	{
 		$addresses = []; 
 
-		foreach ($data as $user) 
-			array_push($addresses, $user['person_email']);
+		for ($i = 0; $i<count($data); $i++)  
+			array_push($addresses, $data[$i]['person_email']);
 
-		return $addresses; 
+		return array_unique($addresses); 
 	}
 }
