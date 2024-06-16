@@ -93,9 +93,9 @@ class PersonRepository extends Repository
     /**
 	 * Retrieve all permissions of a person
 	 * @param array $data
-	 * @return array
+	 * @return bool
 	 */
-	public function havePermission(array $data):array 
+	public function havePermission(array $data):bool 
 	{
         $permissions = DB::table('permissions')
             ->join('role_permission', 'permissions.id', '=', 'role_permission.permission_id')
@@ -103,10 +103,11 @@ class PersonRepository extends Repository
             ->join('person_role', 'roles.id', '=', 'person_role.role_id')
             ->join('people', 'person_role.person_id', '=', 'people.id')
             ->where('people.id', $data['person_id'])
+            ->whereIn('permissions.name', $data['permissions'])
             ->select('permissions.name')
             ->distinct()
             ->get()
             ->toArray();
-        return $permissions;
+        return !empty($permissions);
 	}
 }

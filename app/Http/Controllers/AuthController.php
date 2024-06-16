@@ -126,6 +126,7 @@ class AuthController extends Controller
 
         $user = Auth::user();
         $person = $user->person;
+        $roles = $person->roles()->pluck('name');
 
         return response()->json(
             [
@@ -136,6 +137,7 @@ class AuthController extends Controller
                     'name' => $person->name,
                     'last_name' => $person->last_name,
                     'email' => $person->email,
+                    'roles' => $roles
                 ]
             ],
             200

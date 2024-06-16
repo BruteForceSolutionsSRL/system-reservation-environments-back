@@ -61,12 +61,6 @@ class PersonServiceImpl implements PersonService
 	 */
 	public function havePermission(array $data):bool 
 	{
-		$permissions = $this->personRepository->havePermission($data);
-		foreach ($permissions as $permission) {
-			if ($permission->name === $data['permission']) {
-				return true;
-			}
-		}
-		return false;
+		return $this->personRepository->havePermission($data);;
 	}
 }

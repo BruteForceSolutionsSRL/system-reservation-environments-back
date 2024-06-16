@@ -6,6 +6,7 @@ use App\Models\{
     Reservation,
     ReservationStatus,
     ClassroomLogs,
+    Person
 };
 
 
@@ -223,10 +224,10 @@ class ReservationRepository extends Repository
 
     /**
      * Function to format from Reservation class to array
-     * @param Reservation $reservation
+     * @param mixed $reservation
      * @return array
      */
-    public function formatOutput(Reservation $reservation): array
+    public function formatOutput($reservation): array
     {
         if ($reservation == null) return [];
         $reservationReason = $reservation->reservationReason;
@@ -240,6 +241,8 @@ class ReservationRepository extends Repository
             $priority = 1;
         }
 
+        //dd($teacherSubjects);
+
         return [
             'reservation_id' => $reservation->id,
             'subject_name' => $teacherSubjects->first()->universitySubject->name,
@@ -249,13 +252,13 @@ class ReservationRepository extends Repository
                 return $timeSlot->time;
             }),
             'groups' => $teacherSubjects->map(function ($teacherSubject) {
-                $person = $teacherSubject->person;
-
+                //$person = $teacherSubject->person;
+                $person = Person::find($teacherSubject->person_id);
                 return [
                     'teacher_name' => $person->name . ' ' . $person->last_name,
                     'group_number' => $teacherSubject->group_number,
                     'person_email' => $person->email,
-                    'person_id' => $person->id,
+                    'person_id' => $teacherSubject->person_id,
                 ];
             }),
             'block_name' => $classrooms->first()->block->name,

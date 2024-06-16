@@ -30,11 +30,12 @@ class JwtMiddlware
      * @param  \Closure $next
      * @return mixed
      */
-    public function handle(Request $request, Closure $next, $permission = null)
+    public function handle(Request $request, Closure $next, ...$permissions)
     {
         
         try {
             $user = JWTAuth::parseToken()->authenticate();
+            
         } catch (JWTException $e) {
             if ($e instanceof TokenInvalidException) {
                 return response()->json(
@@ -57,9 +58,6 @@ class JwtMiddlware
 
         $person = $user->person;
 
-        $request->merge(['person_id' => $person->id]);
-        return $next($request);
-
         if (!$person) {
             return response()->json(
                 ['status' => 'Usuario no tiene un perfil asociado'],
@@ -67,20 +65,21 @@ class JwtMiddlware
             );
         }
 
-        if ($permission) {
+        if (!empty($permissions)) {
+            
             $data = [
                 'person_id' => $person->id,
-                'permission' => $permission
+                'permissions' => $permissions
             ];
             $havePermission = $this->personService->havePermission($data);
             if (!$havePermission) {
                 return response()->json(
-                    ['status' => 'No tienes permiso para realizar esta accion'],
+                    ['status' => 'No tienes permisos suficientes para realizar esta accion'],
                     403
                 );
             }
         }
-        $request->merge(['person_id' => $person->id]);
+        $request->merge(['session_id' => $person->id]);
         return $next($request);
     }
 }
