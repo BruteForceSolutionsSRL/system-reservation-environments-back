@@ -47,3 +47,26 @@ Ejecutar en una terminal de comandos aparte ubicado en el proyecto
 ```bash
 1. php artisan queue:Work
 ```
+## Para que funcione la autenticacion de usuarios
+Instalamos las dependencias
+```bash
+1. composer i
+```
+Alternativamente para las dependencias
+```bash
+1. composer require tymon/jwt-auth
+```
+Publicamos el servicio
+```bash
+1. php artisan vendor:publish --provider="Tymon\JWTAuth\Providers\LaravelServiceProvider"
+```
+Finalmente se genera el secreto para los tokens aparece en el archvivo .env
+```bash
+1. php artisan jwt:secret
+```
+## Rellenar la base de datos
+Primero se ejecuta este comando para rellenar los usuarios.
+```bash
+1. php artisan migrate --seed
+```
+Luego solo ejecuart el archivo SQL.
