@@ -54,7 +54,7 @@ class TeacherSubjectRepository
                     );
                     
                     $item = $this->formatOutputTeacher($teacher); 
-                    $item['id'] = $teacherSubject->id; 
+                    $item['teacher_subject_id'] = $teacherSubject->id; 
                     $item['group_number'] = $teacherSubject->group_number; 
                     
                     return $item;
