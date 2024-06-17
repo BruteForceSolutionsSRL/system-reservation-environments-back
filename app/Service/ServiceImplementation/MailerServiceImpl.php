@@ -11,7 +11,8 @@ use App\Jobs\MailSenderJob;
 
 use App\Mail\{
 	ClassroomNotificationMailer,
-	ReservationNotificationMailer
+	ReservationNotificationMailer,
+	BlockNotificationMailer
 }; 
 
 use App\Repositories\{
@@ -30,7 +31,6 @@ class MailerServiceImpl implements MailerService
 	public function sendMail(Mailable $mail, array $addresses): void
 	{
 		MailSenderJob::dispatch($addresses, $mail);
-		//\Mail::to($addresses)->send($mail);
 	}
 
 	/**
@@ -174,6 +174,44 @@ class MailerServiceImpl implements MailerService
 		);
 	}
 
+	/**
+	 * Create a Mailable class with data for creation
+	 * @param array $data
+	 * @return void
+	 */
+	public function sendCreationBlockEmail(array $data): void 
+	{
+		$this->sendMail(
+			new BlockNotificationMailer($data, 1), 
+			$this->getAddresses($data['to'])
+		);
+	}
+
+	/**
+	 * Create a Mailable class with data for update
+	 * @param array $data
+	 * @return void
+	 */
+	public function sendUpdateBlockEmail(array $data): void 
+	{
+		$this->sendMail(
+			new BlockNotificationMailer($data, 3), 
+			$this->getAddresses($data['to'])
+		);
+	}
+
+	/**
+	 * Create a Mailable class with data for delete
+	 * @param array $data
+	 * @return void
+	 */
+	public function sendDeleteBlockEmail(array $data): void 
+	{
+		$this->sendMail(
+			new BlockNotificationMailer($data, 2), 
+			$this->getAddresses($data['to'])
+		);
+	}
 
 	/**
 	 * Retrieve a list of addresses 

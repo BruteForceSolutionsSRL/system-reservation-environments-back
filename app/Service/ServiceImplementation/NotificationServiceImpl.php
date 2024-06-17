@@ -55,10 +55,11 @@ class NotificationServiceImpl implements NotificationService
         }
         $emailData = $this->notificationRepository->save($data);
         if (
-            ($emailData['type'] == 'INFORMATIVO') 
-            || ($emailData['type'] == 'ADVERTENCIA')
+            (($emailData['type'] == 'INFORMATIVO') 
+                        || ($emailData['type'] == 'ADVERTENCIA'))
+            && (!array_key_exists('sended', $data))
         ) {
-            //$this->mailService->sendSimpleEmail($emailData);
+            $this->mailService->sendSimpleEmail($emailData);
         }
         return  $emailData;
     }

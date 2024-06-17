@@ -12,7 +12,8 @@ use App\Repositories\{
     TimeSlotRepository,
     ClassroomStatusRepository,
     ClassroomLogsRepository,
-    PersonRepository
+    PersonRepository,
+    NotificationTypeRepository
 };
 
 class ClassroomServiceImpl implements ClassroomService
@@ -26,6 +27,8 @@ class ClassroomServiceImpl implements ClassroomService
 
     private $reservationService;
     private $timeSlotService;
+    private $notificationService; 
+    private $mailService;
 
     public function __construct()
     {
@@ -38,6 +41,8 @@ class ClassroomServiceImpl implements ClassroomService
         $this->timeSlotService = new TimeSlotServiceImpl();
         $this->reservationService = new ReservationServiceImpl();
         $this->classroomLogRepository = new ClassroomLogsRepository();
+        $this->notificationService = new NotificationServiceImpl();
+        $this->mailService = new MailerServiceImpl();
     }
  
     /**
@@ -139,7 +144,20 @@ class ClassroomServiceImpl implements ClassroomService
      */
     public function store(array $data): string
     {
-        $this->classroomRepository->save($data);
+        $classroom = $this->classroomRepository->save($data);
+
+        $data['title'] = 'CREACION DE AMBIENTE '.$classroom['classroom_name'].'#'.$classroom['classroom_id'];
+        $data['sended'] = 1;
+        $data['sendBy'] = PersonRepository::system();
+        $data['to'] = ['TODOS']; 
+        $data['type'] = NotificationTypeRepository::informative();
+        $data['body'] = 'Se creo un nuevo ambiente denominado '.$classroom['classroom_name'];
+
+        $emailData = $this->notificationService->store($data);
+        $emailData = array_merge($emailData, $classroom);
+
+        $this->mailService->sendCreationClassroomEmail($emailData);
+
         return "El ambiente fue creado exitosamente.";
     }
 
@@ -158,6 +176,19 @@ class ClassroomServiceImpl implements ClassroomService
               && ($classroom['classroom_status_id'] == ClassroomStatusRepository::disabled())) {
             $this->disable($classroom['classroom_id']);
         }
+
+        $data['title'] = 'ACTUALIZACION DE DATOS DEL AMBIENTE '.$classroom['classroom_name'].'#'.$classroom['classroom_id'];
+        $data['sended'] = 1;
+        $data['sendBy'] = PersonRepository::system();
+        $data['to'] = ['TODOS']; 
+        $data['type'] = NotificationTypeRepository::informative();
+        $data['body'] = 'Se actualizaron los datos del ambiente denominado '.$classroom['classroom_name'];
+
+        $emailData = $this->notificationService->store($data);
+        $emailData = array_merge($emailData, $classroom);
+
+        $this->mailService->sendUpdateClassroomEmail($emailData);
+
         return "El ambiente fue actualizado correctamente";
     }
 
@@ -364,7 +395,21 @@ class ClassroomServiceImpl implements ClassroomService
         $this->reservationService->cancelAndRejectReservationsByClassroom(
             $classroomId
         );
-        $this->classroomRepository->deleteByClassroomId($classroomId); 
+        $classroom = $this->classroomRepository->deleteByClassroomId($classroomId); 
+
+        $data = [];
+        $data['title'] = 'ELIMINACION DE AMBIENTE '.$classroom['classroom_name'].'#'.$classroom['classroom_id'];
+        $data['sended'] = 1;
+        $data['sendBy'] = PersonRepository::system();
+        $data['to'] = ['TODOS']; 
+        $data['type'] = NotificationTypeRepository::informative();
+        $data['body'] = 'Se elimino el ambiente denominado '.$classroom['classroom_name'];
+
+        $emailData = $this->notificationService->store($data);
+        $emailData = array_merge($emailData, $classroom);
+
+        $this->mailService->sendDeleteClassroomEmail($emailData);
+
         return ['message' => 'Ambiente eliminado exitosamente.'];
     }
 
@@ -377,7 +422,6 @@ class ClassroomServiceImpl implements ClassroomService
     {
         foreach ($classroomIds as $classroomId)
             $this->deleteByClassroomId($classroomId);
-        // aqui falta las notificaciones para que los admins vean las modificaciones sobre aulas
         return [];
     }
 

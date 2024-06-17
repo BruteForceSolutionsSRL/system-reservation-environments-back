@@ -5,7 +5,9 @@ use App\Repositories\{
     BlockRepository,
     BlockLogRepository,
     BlockStatusRepository,
-    ReservationStatusRepository as ReservationStatus
+    ReservationStatusRepository as ReservationStatus,
+    PersonRepository, 
+    NotificationTypeRepository
 };
 
 use App\Models\{
@@ -25,6 +27,8 @@ class BlockServiceImpl implements BlockService
     private $blockStatusRepository;
 
     private $classroomService; 
+    private $mailService; 
+    private $notificationService;
     public function __construct()
     {
         $this->blockRepository = new BlockRepository();
@@ -32,6 +36,8 @@ class BlockServiceImpl implements BlockService
         $this->blockStatusRepository = new BlockStatusRepository();
 
         $this->classroomService = new ClassroomServiceImpl();
+        $this->mailService = new MailerServiceImpl();
+        $this->notificationService = new NotificationServiceImpl();
     }
 
     /**
@@ -109,7 +115,20 @@ class BlockServiceImpl implements BlockService
     public function store(array $data): string 
     {
         $data['block_status_id'] = BlockStatusRepository::enabled(); 
-        $this->blockRepository->save($data);
+        $block = $this->blockRepository->save($data);
+        
+        $data['title'] = 'CREACION DE BLOQUE #'.$block['block_id'];
+        $data['sended'] = 1;
+        $data['sendBy'] = PersonRepository::system();
+        $data['to'] = ['TODOS']; 
+        $data['type'] = NotificationTypeRepository::informative();
+        $data['body'] = 'Se creo un nuevo bloque denominado '.$block['block_name'];
+
+        $emailData = $this->notificationService->store($data);
+        $emailData = array_merge($emailData, $block);
+
+        $this->mailService->sendCreationBlockEmail($emailData);
+
         return 'Se guardo correctamente el nuevo bloque '.$data['block_name'];
     }
 
@@ -125,6 +144,21 @@ class BlockServiceImpl implements BlockService
             foreach ($block['block_classrooms'] as $classroom) {
                 $this->classroomService->disable($classroom['classroom_id']);
             }
+
+        $block = $this->blockRepository->save($data);
+        
+        $data['title'] = 'ACTUALIZACION DE DATOS DEL BLOQUE '.$block['block_name'].'#'.$block['block_id'];
+        $data['sended'] = 1;
+        $data['sendBy'] = PersonRepository::system();
+        $data['to'] = ['TODOS']; 
+        $data['type'] = NotificationTypeRepository::informative();
+        $data['body'] = 'Se actualizo el bloque denominado '.$data['block_name'];
+
+        $emailData = $this->notificationService->store($data);
+        $emailData = array_merge($emailData, $block);
+
+        $this->mailService->sendUpdateBlockEmail($emailData);
+
         return 'Se modifico correctamente el bloque '.$block['block_name'];
     }
 
@@ -135,18 +169,31 @@ class BlockServiceImpl implements BlockService
      */
     public function delete(int $blockId): string 
     {
-        $block = $this->blockRepository->delete($blockId); 
         $classrooms = array_map(
             function ($classroom) 
             {
                 return $classroom['classroom_id'];
             },
             $this->classroomService
-                ->getClassroomsByBlock($block['block_id'])
+                ->getAllClassroomsByBlock($blockId)
         );
+        $block = $this->blockRepository->delete($blockId); 
 
         foreach ($classrooms as $classroomId)
             $this->classroomService->deleteByClassroomId($classroomId);
+        
+        $data['title'] = 'ELIMINACION DE BLOQUE '.$block['block_name'].'#'.$block['block_id'];
+        $data['sended'] = 1;
+        $data['sendBy'] = PersonRepository::system();
+        $data['to'] = ['TODOS']; 
+        $data['type'] = NotificationTypeRepository::informative();
+        $data['body'] = 'Se elimino el bloque denominado '.$block['block_name'];
+
+        $emailData = $this->notificationService->store($data);
+        $emailData = array_merge($emailData, $block);
+
+        $this->mailService->sendDeleteBlockEmail($emailData);
+
         return 'Se elimino el bloque '.$block['block_name']; 
     }
 }
