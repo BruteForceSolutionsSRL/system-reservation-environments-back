@@ -119,8 +119,8 @@ Route::controller(ClassroomController::class)->group(function() {
 
 //Agrupacion
 Route::controller(TeacherSubjectController::class)->group(function() {
-    Route::middleware('jwt.verify:request_reserve')->get('/teacher-subjects/teacher/{teacherId}', 'subjectsByTeacher');
-    Route::middleware('jwt.verify:request_reserve')->get('/teacher-subjects/subject/{universitySubjectID}', 'teachersBySubject'); // ALL
+    Route::middleware('jwt.verify:request_reserve,report')->get('/teacher-subjects/teacher/{teacherId}', 'subjectsByTeacher');
+    Route::middleware('jwt.verify:request_reserve,report')->get('/teacher-subjects/subject/{universitySubjectID}', 'teachersBySubject'); // ALL
 });
 
 Route::controller(NotificationController::class)->group(function() {

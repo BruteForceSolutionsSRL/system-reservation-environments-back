@@ -66,7 +66,6 @@ class JwtMiddlware
         }
 
         if (!empty($permissions)) {
-            
             $data = [
                 'person_id' => $person->id,
                 'permissions' => $permissions
