@@ -90,10 +90,11 @@ class BlockRepository
     public function delete(int $id): array 
     {
         $block = $this->model::find($id); 
+        $retrieveBlock = $this->formatOutput($block);
 
         $block->block_status_id = $this->blockStatusRepository->deleted();
         $block->save();
-        return $this->formatOutput($block);
+        return $retrieveBlock;
     }
 
     /**

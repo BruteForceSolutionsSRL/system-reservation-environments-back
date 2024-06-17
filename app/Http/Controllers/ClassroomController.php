@@ -357,7 +357,6 @@ class ClassroomController extends Controller
     {
         return Validator::make($request->all(), [
             'classroom_id' => '
-                required|
                 integer|
                 exists:classrooms,id',
             'capacity' => '

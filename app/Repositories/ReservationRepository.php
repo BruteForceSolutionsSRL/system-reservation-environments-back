@@ -415,32 +415,27 @@ class ReservationRepository extends Repository
      */
     public function getAcceptedAndPendingReservationsByClassroom(int $classroomId): array
     {
-        $acceptedStatus = ReservationStatus::where('status', 'ACCEPTED')->first();
-        $pendingStatus = ReservationStatus::where('status', 'PENDING')->first();
+        $acceptedStatus = ReservationStatuses::accepted();
+        $pendingStatus = ReservationStatuses::pending();
 
         if (!$acceptedStatus || !$pendingStatus) {
             return ['error' => 'Reservation statuses not found.'];
         }
 
-
-
-        $acceptedStatusId = $acceptedStatus->id;
-        $pendingStatusId = $pendingStatus->id;
-
         $reservations = Reservation::whereHas('classrooms', function ($query) use ($classroomId) {
             $query->where('classroom_id', $classroomId);
-        })->where(function ($query) use ($acceptedStatusId, $pendingStatusId) {
-            $query->where('reservation_status_id', $acceptedStatusId)
-                ->orWhere('reservation_status_id', $pendingStatusId);
+        })->where(function ($query) use ($acceptedStatus, $pendingStatus) {
+            $query->where('reservation_status_id', $acceptedStatus)
+                ->orWhere('reservation_status_id', $pendingStatus);
         })->get(['id', 'reservation_status_id']);
 
         $acceptedReservations = [];
         $pendingReservations = [];
 
         foreach ($reservations as $reservation) {
-            if ($reservation->reservation_status_id === $acceptedStatusId) {
+            if ($reservation->reservation_status_id === $acceptedStatus) {
                 $acceptedReservations[] = $reservation->id;
-            } elseif ($reservation->reservation_status_id === $pendingStatusId) {
+            } elseif ($reservation->reservation_status_id === $pendingStatus) {
                 $pendingReservations[] = $reservation->id;
             }
         }

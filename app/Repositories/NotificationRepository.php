@@ -157,21 +157,27 @@ class NotificationRepository
 			'date' => $date,
 		];
 
-		if (in_array($notificationType['notification_type_id'], [
-			$this->notificationTypeRepository->accepted(), 
-			$this->notificationTypeRepository->cancelled(), 
-			$this->notificationTypeRepository->rejected()
-		])) {
-			$title = $notification->title; 
-			$reservationID = '';
-			$i = 0; 
-			while ($i < strlen($title) && $title{$i}!='#') $i += 1;
+		$title = $notification->title; 
+		$reservationID = '';
+		$i = 0; 
+		while ($i < strlen($title) && $title{$i}!='#') $i += 1;
+		$i+=1;
+		while ($i < strlen($title) && $title{$i}>='0' && $title{$i}<='9') {
+			$reservationID .= $title{$i}; 
 			$i+=1;
-			while ($i < strlen($title) && $title{$i}>='0' && $title{$i}<='9') {
-				$reservationID .= $title{$i}; 
-				$i+=1;
+		}
+		if ($reservationID != '') {
+			$pos = strpos($title, 'RESERVA'); 
+			if ($pos === false) {
+				$pos = strpos($title, 'AMBIENTE'); 
+				if ($pos === false) {
+					$result['block_id'] = intval($reservationID); 
+				} else {
+					$result['classroom_id'] = intval($reservationID);
+				}
+			} else {
+				$result['reservation_id'] = intval($reservationID);
 			}
-			$result['reservation_id'] = intval($reservationID);
 		}
 
 		return $result;

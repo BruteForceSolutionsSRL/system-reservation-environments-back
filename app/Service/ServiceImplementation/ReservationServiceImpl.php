@@ -141,7 +141,7 @@ class ReservationServiceImpl implements ReservationService
                 [
                     'title' => 'SOLICITUD DE RESERVA #'.$reservation->id.' RECHAZADA', 
                     'body' => 'Se rechazo la solicitud #'.$reservation->id.' '.$message,
-                    'type' => NotificationTypeRepository::accepted(),
+                    'type' => NotificationTypeRepository::rejected(),
                     'sendBy' => $personId, 
                     'to' => $reservation->teacherSubjects->map(
                         function ($teacher) 
