@@ -45,7 +45,7 @@ class JwtMiddlware
             } else if ($e instanceof TokenExpiredException) {
                 return response()->json(
                     ['status' => 'Token expirado'], 
-                    401
+                    402
                 );
             } else {
                 return response()->json(
