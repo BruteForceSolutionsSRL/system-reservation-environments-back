@@ -30,15 +30,14 @@ class ClassroomController extends Controller
     }
 
     /**
-     * Explain:
-     * list function retrieves all classrooms.
+     * List function retrieves all classrooms.
      * @param Request $request
      * @return Response
      */
     public function list(Request $request): Response
     {
         try {
-            $classroomStatus = $request->query('status', 'ENABLED');
+            $classroomStatus = $request->query('status', 'ALL');
             return response()->json(
                 $this->classroomService->getAllClassrooms($classroomStatus),
                 200
@@ -55,12 +54,11 @@ class ClassroomController extends Controller
     }
 
     /**
-     * Explain:
-     * list function retrieves all classrooms with statistis and format.
-     * @param none
+     * List function retrieves all classrooms with statistis and format.
+     * @param Request $request
      * @return Response
      */
-    public function getAllClassroomsWithStatistics(): Response
+    public function getAllClassroomsWithStatistics(Request $request): Response
     {
         try {
             return  response()->json(
@@ -81,9 +79,10 @@ class ClassroomController extends Controller
     /**
      * Retrieve a single classroom 
      * @param int $classroomId
+     * @param Request $request
      * @return Response
      */
-    public function show(int $classroomId): Response
+    public function show(int $classroomId, Request $request): Response
     {
         try {
             return response()->json(
@@ -132,6 +131,16 @@ class ClassroomController extends Controller
                 );
             }
 
+            $classroom = $this->classroomService->getClassroomByID($data['classroom_id']);
+
+            if (($block['block_maxclassrooms'] == count($block['block_classrooms']))
+                 && ($classroom['block_id'] != $data['block_id'])) {
+                return response()->json(
+                    ['message' => 'El bloque llego a su maxima cantidad de ambientes registrados'],
+                    400
+                );
+            }
+
             return response()->json(
                 ['message' => $this->classroomService->update($data)],
                 200
@@ -150,9 +159,10 @@ class ClassroomController extends Controller
     /**
      * To retrieve data available classrooms within block
      * @param int $blockId
+     * @param Request $request
      * @return Response
      */
-    public function availableClassroomsByBlock(int $blockId): Response
+    public function availableClassroomsByBlock(int $blockId, Request $request): Response
     {
         try {
             $block = $this->blockService->getBlock($blockId);
@@ -162,7 +172,10 @@ class ClassroomController extends Controller
                     400
                 );
             }
-            return response()->Json($this->classroomService->getDisponibleClassroomsByBlock($blockId));
+            return response()->Json(
+                $this->classroomService->getDisponibleClassroomsByBlock($blockId),
+                200
+            );
         } catch (ModelNotFoundException $e) {
             return response()->json(
                 [
@@ -185,11 +198,13 @@ class ClassroomController extends Controller
     /**
      * Return all classrooms in a block
      * @param int $blockId
+     * @param Request $request
      * @return Response
      */
-    public function classroomsByBlock(int $blockId): Response
+    public function classroomsByBlock(int $blockId, Request $request): Response
     {
         try {
+            $classroomStatus = $request->query('status', 'ENABLE');
             $block = $this->blockService->getBlock($blockId);
 
             if ($block == []) {
@@ -198,6 +213,12 @@ class ClassroomController extends Controller
                     400
                 );
             }
+
+            if ($classroomStatus=='ALL') 
+                return response()->json(
+                    $this->classroomService->getAllClassroomsByBlock($blockId), 
+                    200
+                );
 
             return response()->json(
                 $this->classroomService->getClassroomsByBlock($blockId),
@@ -252,6 +273,12 @@ class ClassroomController extends Controller
                     400
                 );
             }
+
+            if ($block['block_maxclassrooms'] == count($block['block_classrooms']))
+                return response()->json(
+                    ['message' => 'El bloque llego a su maxima cantidad de ambientes registrados'],
+                    404
+                );
 
             return response()->json(
                 ['message' => $this->classroomService->store($data)],
@@ -330,7 +357,6 @@ class ClassroomController extends Controller
     {
         return Validator::make($request->all(), [
             'classroom_id' => '
-                required|
                 integer|
                 exists:classrooms,id',
             'capacity' => '
@@ -492,7 +518,16 @@ class ClassroomController extends Controller
 
             $data = $validator->validated();
 
-            return response()->json($this->classroomService->suggestClassrooms($data), 200);
+            $response = $this->classroomService->suggestClassrooms($data);
+
+            $status = 200; 
+            if (
+                (array_key_exists('message', $response)) && 
+                ($response['message'] == 'No existe una sugerencia apropiada')
+            ) 
+                $status = 404;
+
+            return response()->json($response, $status);
         } catch (Exception $e) {
             return response()->json(
                 [
@@ -623,7 +658,7 @@ class ClassroomController extends Controller
      * @param int $classroomId
      * @return Response
      */
-    public function destroy(int $classroomId): Response
+    public function destroy(int $classroomId, Request $request): Response
     {
         try {
             $isDeleted = $this->classroomService->isDeletedClassroom($classroomId);
@@ -646,11 +681,11 @@ class ClassroomController extends Controller
     }
 
     /**
-     * Function to retrive statistics through start and end dates, along with classroom ID
+     * Function to retrieve statistics from a classroom by start and end date, along with a classroom ID
      * @param Request $request
      * @return Response
      */
-    function getClassroomStats(Request $request): Response
+    public function getClassroomStats(Request $request): Response
     {
         try {
             $validator = $this->validateGetClassroomStatsData($request);
@@ -664,8 +699,17 @@ class ClassroomController extends Controller
                 );
             }
             $data = $validator->validated();
-            $classroomStats = $this->classroomService->getClassroomStats($data);
-            return response()->json($classroomStats);
+            $report = $this->classroomService->getClassroomStats($data);
+            if (empty($report)) {
+                return response()->json(
+                    ['message' => 'No existen datos'],
+                    404
+                );
+            }
+            return response()->json(
+                $report,
+                200
+            );
         } catch (Exception $e) {
             return response()->json(
                 [
@@ -678,7 +722,7 @@ class ClassroomController extends Controller
     }
 
     /**
-     * Function to validate all input for retrieving statistics for a classroom
+     * Function to validate data from the function "getClassroomStats"
      * @param Request $request
      * @return mixed
      */

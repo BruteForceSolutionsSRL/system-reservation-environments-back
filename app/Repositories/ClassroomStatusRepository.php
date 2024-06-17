@@ -5,13 +5,15 @@ use App\Models\ClassroomStatus;
 
 use Illuminate\Cache\Repository;
 
+use Illuminate\Database\Eloquent\Model; 
+
 class ClassroomStatusRepository extends Repository
 {
      
     protected $model; 
-    function __construct($model) 
+    function __construct() 
     {
-        $this->model = $model;
+        $this->model = ClassroomStatus::class;
     }
 
     public static function available() 
@@ -76,12 +78,12 @@ class ClassroomStatusRepository extends Repository
             return [
                 $this->disabled() 
             ];
-        } else {
+        } else if ($status === 'ALL'){
             return [
                 $this->available(),
                 $this->disabled() 
             ];
-        }
+        } else return [$this->available()];
     }
     
     /**

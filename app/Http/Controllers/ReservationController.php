@@ -1,29 +1,37 @@
 <?php
 namespace App\Http\Controllers;
 
+use Illuminate\Validation\Rule;
+
 use Exception;
 use Illuminate\Http\{
     JsonResponse as Response,
     Request
 };
 use Illuminate\Support\Facades\Validator;
+use Carbon\Carbon;
 
-use App\Service\ServiceImplementation\ReservationServiceImpl;
+use App\Service\ServiceImplementation\{
+    ReservationServiceImpl,
+    TimeSlotServiceImpl
+};
 
 class ReservationController extends Controller
 {
     private $reservationService;
-    function __construct()
+    private $timeSlotService; 
+    public function __construct()
     {
         $this->reservationService = new ReservationServiceImpl();
+        $this->timeSlotService = new TimeSlotServiceImpl();
     }
 
     /**
      * Retrieves all reservations.
-     * @param none
+     * @param Request $request
      * @return Response
      */
-    public function list(): Response
+    public function list(Request $request): Response
     {
         try {
             return response()->json(
@@ -43,9 +51,10 @@ class ReservationController extends Controller
 
     /**
      * Function to get all requests except pending requests
+     * @param Request $request
      * @return Response
      */
-    public function getAllRequestsExceptPending(): Response
+    public function getAllRequestsExceptPending(Request $request): Response
     {
         try {
             return response()->json(
@@ -65,10 +74,10 @@ class ReservationController extends Controller
 
     /**
      * Function to retrieve all pending request
-     * @param none
+     * @param Request $request
      * @return Response
      */
-    public function getPendingRequests(): Response
+    public function getPendingRequests(Request $request): Response
     {
         try {
             return response()->json(
@@ -90,8 +99,9 @@ class ReservationController extends Controller
      * Function to retrieve acepted/pending request by teacher
      * @param int $teacher
      * @return Response
+     * @param Request $request
      */
-    public function listRequestsByTeacher(int $teacherId): Response
+    public function listRequestsByTeacher(int $teacherId, Request $request): Response
     {
         try {
             $reservations = $this->reservationService->listRequestsByTeacher($teacherId);
@@ -116,9 +126,10 @@ class ReservationController extends Controller
     /**
      * Function to retrieve all request by teacher
      * @param int $teacherId
+     * @param Request $request
      * @return Response
      */
-    public function listAllRequestsByTeacher(int $teacherId): Response
+    public function listAllRequestsByTeacher(int $teacherId, Request $request): Response
     {
         try {
             $reservations = $this->reservationService
@@ -144,9 +155,10 @@ class ReservationController extends Controller
     /**
      * function to get all requests except pending requests by teacher
      * @param int $teacherId
+     * @param Request $request
      * @return Response
      */
-    public function getAllRequestsExceptPendingByTeacher(int $teacherId): Response
+    public function getAllRequestsExceptPendingByTeacher(int $teacherId, Request $request): Response
     {
         try {
             return response()->json(
@@ -169,9 +181,10 @@ class ReservationController extends Controller
     /**
      * Function to retrieve a reservation by its id
      * @param int $reservationId
+     * @param Request $request
      * @return Response
      */
-    public function show(int $reservationId): Response
+    public function show(int $reservationId, Request $request): Response
     {
         try {
             $reservation = $this->reservationService
@@ -196,12 +209,17 @@ class ReservationController extends Controller
     /**
      * Function to reject a reservation by its id
      * @param int $reservationId
+     * @param Request $request
      * @return Response
      */
-    public function rejectReservation(int $reservationId): Response
+    public function rejectReservation(int $reservationId, Request $request): Response
     {
         try {
-            $message = $this->reservationService->reject($reservationId); 
+            $message = $this->reservationService->reject(
+                $reservationId, 
+                $request->input('message'),
+                $request['session_id']
+            ); 
             if ($message == 'No existe una solicitud con este ID') {
                 return response()->json(['message' => $message], 404);
             }
@@ -217,9 +235,10 @@ class ReservationController extends Controller
     /**
      * Cancel a pending/accepted request-booking
      * @param int $reservationId
+     * @param Request $request
      * @return Response
      */
-    public function cancelRequest(int $reservationId): Response
+    public function cancelRequest(int $reservationId, Request $request): Response
     {
         try {
             $message = $this->reservationService->cancel($reservationId); 
@@ -253,6 +272,17 @@ class ReservationController extends Controller
             }
 
             $data = $validator->validated();
+
+            $requestedHour = Carbon::parse($data['date'].' '.$this->timeSlotService
+                ->getTimeSlot($data['time_slot_id'][0])['time'])->addHours(4); 
+
+            $now = Carbon::now();
+            if ($now >= $requestedHour)
+                return response()->json(
+                    ['message' => 'La hora elegida ya paso, no es posible realizar una reserva'], 
+                    404
+                ); 
+
             return response()->json(
                 ['message' => $this->reservationService->store($data)], 
                 200
@@ -317,9 +347,10 @@ class ReservationController extends Controller
     /**
      * Endpoint to assign reservations if fulfill no overlapping with assigned reservations.
      * @param int $reservationId
+     * @param Request $request
      * @return Response
      */
-    public function assign(int $reservationId): Response
+    public function assign(int $reservationId, Request $request): Response
     {
         try {
             $message = $this->reservationService->accept($reservationId); 
@@ -338,9 +369,10 @@ class ReservationController extends Controller
     /**
      * Endpoint to retrieve if a reservation have conflicts
      * @param int $reservationId
+     * @param Request $request
      * @return Response
      */
-    public function getConflicts(int $reservationId): Response
+    public function getConflicts(int $reservationId, Request $request): Response
     {
         try {
             $result = $this->reservationService->getConflict($reservationId); 
@@ -362,12 +394,14 @@ class ReservationController extends Controller
     /**
      * Function to get reservations accepted, pending and reject
      * @param int $classromId
+     * @param Request $request
      * @return Response
      */
-    public function getAllReservationsByClassroom(int $classromId): Response
+    public function getAllReservationsByClassroom(int $classromId, Request $request): Response
     {
         try {
-            $reservations = $this->reservationService->getAllReservationsByClassroom($classromId); 
+            $reservations = $this->reservationService
+                ->getAllReservationsByClassroom($classromId); 
             if ($reservations === []) {
                 response()->json(
                     ['message' => 'El ambiente no tiene reservaciones pendientes o aceptadas.'],
@@ -384,5 +418,105 @@ class ReservationController extends Controller
                 500
             );
         }
+    }
+
+    /**
+     * Endpoint to retrieve if a reservation have conflicts
+     * @param Request $request
+     * @return Response
+     */
+    public function getReports(Request $request):Response
+    {
+        try {
+            $validator = $this->validateGetReportsData($request);
+
+            if ($validator->fails()) {
+                $message = '';
+                foreach ($validator->errors()->all() as $value)
+                    $message .= $value . ' ';
+                return response()->json(['message' => $message], 400);
+            } 
+
+            $data = $validator->validated();
+            $report = $this->reservationService->getReports($data);
+            if (empty($report['report'])) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'No data found',
+                ], 404);
+            }
+            return response()->json(
+                $report, 
+                200
+            );
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'message' => 'Hubo un error en el servidor',
+                    'error' => $e->getMessage()
+                ],
+                500
+            );
+        }
+    }
+
+    /**
+     * Validate the body request for retrieve a report data
+     * @param Request $request
+     * @return mixed
+     */
+    private function validateGetReportsData(Request $request)
+    {
+        return Validator::make($request->all(), [
+            'date_start' => '
+                required|
+                date',
+            'date_end' => '
+                required|
+                date|
+                after_or_equal:date_start',
+            'block_id' => '
+                nullable|
+                integer|
+                exists:blocks,id',
+            'classroom_id' => '
+                nullable|
+                integer|
+                exists:classrooms,id',
+            'reservation_status_id' => '
+                nullable|
+                integer|
+                exists:reservation_statuses,id',
+            'university_subject_id' => '
+                nullable|
+                integer|
+                exists:university_subjects,id',
+            'person_id' => '
+                nullable|
+                integer|
+                exists:people,id',
+        ], [
+            'date_start.required' => 'La fecha de inicio es obligatoria',
+            'date_start.date' => 'La fecha de incio debe tener un formato válido',
+            
+            'date_end.required' => 'La fecha de fin es obligatoria',
+            'date_end.date' => 'La fecha de fin debe tener un formato válido',
+            'date_end.after_or_equal' => 'La fecha de fin debe ser mayor o igual a la fecha de inicio',          
+            
+            'block_id.integer' => 'El bloque debe ser un valor entero',
+            'block_id.exists' => 'El bloque debe ser una selección válida',
+
+            'classroom_id.integer' => 'El id del ambiente tiene que tener un formato valido',
+            'classroom_id.exists' => 'El ambiente seleccionados no es válido',
+        
+            'reservation_status_id.integer' => 'El estado de la reserva debe ser un valor entero',
+            'reservation_status_id.exists' => 'El estado de la reserva debe ser una selección válida',
+
+            'university_subject_id.integer' => 'El ID de la asignatura universitaria debe ser un valor entero',
+            'university_subject_id.exists' => 'La asignatura universitaria debe ser una selección válida',
+
+            'person_id.integer' => 'El ID de la persona debe ser un valor entero',
+            'person_id.exists' => 'La persona debe ser una selección válida',
+        ]);
     }
 }

@@ -19,8 +19,9 @@ class SanitizationController
         $input = $request->all(); 
         array_walk_recursive($input, function(&$input) {
             $input = strip_tags($input);
-        });
-        $request->merge($input); 
+        });        
+        $headers = $request->headers->all(); 
+        $request->replace(array_merge($input, $headers));
         return $next($request);
     }
 }

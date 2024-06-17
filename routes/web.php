@@ -13,6 +13,22 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
+
+
+Route::get('/{any}', function () {
+    return view('index');
+})->where('any', '^(?!api/).*$');
+
+/*
+Route::fallback(function ($request) {
+  if (!str_starts_with($request->url(), '/api')) {
+    return Response::json([
+      'message' => 'Invalid route. Please use the API for requests to /api endpoints.',
+      'status' => 404
+    ], 404);
+  }
+
+  // If it's an API request, let Laravel's default routing handle it
+  return response();
 });
+*/

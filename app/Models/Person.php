@@ -9,9 +9,18 @@ class Person extends Model
 {
     use HasFactory;
 
+     /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = [
+        'name', 'last_name', 'email'
+    ];
+
     public function notifications()
     {
-        return $this->hasMany(Notification::class);
+        return $this->hasMany(NotificationPerson::class);
     }
 
     public function roles()

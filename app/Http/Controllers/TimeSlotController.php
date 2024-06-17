@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Service\ServiceImplementation\TimeSlotServiceImpl;
 
-use Illuminate\Http\JsonResponse as Response;
+use Illuminate\Http\{
+    JsonResponse as Response,
+    Request
+};
 use Exception;
 
 class TimeSlotController extends Controller
@@ -17,10 +20,10 @@ class TimeSlotController extends Controller
 
     /**
      * Retrieve a list of all time-slots
-     * @param none
+     * @param Request $request
      * @return Response
      */
-    public function list(): Response
+    public function list(Request $request): Response
     {
         try {
             return response()->json(

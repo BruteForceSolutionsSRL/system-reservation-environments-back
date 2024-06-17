@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Service\ServiceImplementation\ClassroomServiceImpl;
 
-use Illuminate\Http\JsonResponse as Response;
+use Illuminate\Http\{
+    JsonResponse as Response,
+    Request
+};
 use Exception; 
 
 class ClassroomStatusController extends Controller
@@ -17,10 +20,10 @@ class ClassroomStatusController extends Controller
     
     /**
      * Retrieve a JSON to list all statuses for classroom
-     * @param none
+     * @param Request $request
      * @return Response
      */
-    public function list(): Response
+    public function list(Request $request): Response
     {
         try {
             return response()->json(
@@ -37,5 +40,4 @@ class ClassroomStatusController extends Controller
             );
         }
     }
-
 }

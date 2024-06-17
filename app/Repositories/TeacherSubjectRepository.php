@@ -10,10 +10,11 @@ class TeacherSubjectRepository
 {
     protected $model;
     private $personRepository; 
-    public function __construct($model)
+    public function __construct()
     {
-        $this->model = $model; 
-        $this->personRepository = new PersonRepository(Person::class);
+        $this->model = TeacherSubject::class; 
+        
+        $this->personRepository = new PersonRepository();
     }
 
     /**
@@ -53,7 +54,7 @@ class TeacherSubjectRepository
                     );
                     
                     $item = $this->formatOutputTeacher($teacher); 
-                    $item['id'] = $teacherSubject->id; 
+                    $item['teacher_subject_id'] = $teacherSubject->id; 
                     $item['group_number'] = $teacherSubject->group_number; 
                     
                     return $item;
@@ -79,12 +80,12 @@ class TeacherSubjectRepository
      * @param Person $teacher
      * @return array
      */
-    private function formatOutputTeacher(Person $teacher): array
+    private function formatOutputTeacher($teacher): array
     {
         return [
-            'person_id' => $teacher->id,
-            'teacher_name' => $teacher->name,
-            'teacher_last_name' => $teacher->last_name,
+            'person_id' => $teacher['person_id'],
+            'teacher_name' => $teacher['person_name'],
+            'teacher_last_name' => $teacher['person_lastname'],
         ];
     }
 }
