@@ -84,7 +84,9 @@ class BlockServiceImpl implements BlockService
         foreach ($classrooms as $classroom) {
             $data['classroom_id'] = $classroom['classroom_id'];
             $chart = $this->classroomService
-                ->getClassroomStats($data)['chart'];
+                ->getClassroomStats($data);
+            if ($chart === []) continue;
+            $chart = $chart['chart'];
             for ($i = 0; $i<count($chart); $i++) {
                 $set = (array)$chart[$i];
                 $result['accepted'] += $set['accepted'];
@@ -144,8 +146,6 @@ class BlockServiceImpl implements BlockService
             foreach ($block['block_classrooms'] as $classroom) {
                 $this->classroomService->disable($classroom['classroom_id']);
             }
-
-        $block = $this->blockRepository->save($data);
         
         $data['title'] = 'ACTUALIZACION DE DATOS DEL BLOQUE '.$block['block_name'].'#'.$block['block_id'];
         $data['sended'] = 1;
