@@ -542,8 +542,6 @@ class ReservationRepository extends Repository
             ];
         }
 
-        /* return $results; */
-
         $formattedResults = [];
         foreach ($results as $result) {
             $reservationId = $result->reservation_id;
@@ -611,8 +609,6 @@ class ReservationRepository extends Repository
 
         $totalCount = $acceptedCount + $rejectedCount + $canceledCount;
 
-        //$formattedResults = array_values($formattedResults);
-
         return [
             'accepted_reservations' => $acceptedCount,
             'rejected_reservations' => $rejectedCount,
@@ -621,4 +617,53 @@ class ReservationRepository extends Repository
             'report' => $finalResults
         ];
     }
+
+    /**
+     * Retrieve a list of reports based on the given data.
+     * @param array $data
+     * @return array
+     */
+    public function getReservations(array $data): array
+    {
+        $query = Reservation::with([
+            'reservationStatus:id,status',
+            'reservationReason:id,reason',
+            'timeSlots:id,time',
+            'teacherSubjects:id,group_number,person_id,university_subject_id',
+            'teacherSubjects.person:id,name,last_name,email',
+            'teacherSubjects.universitySubject:id,name',
+            'classrooms:id,name,capacity,block_id',
+            'classrooms.block:id,name',
+            'classrooms.classroomType:id,description'
+        ]);
+    
+        if (!empty($data['dates'])) {
+            $query->whereBetween('date', [$data['dates']['date_start'], $data['dates']['date_end']]);
+        }
+    
+        if (!empty($data['reservation_statuses'])) {
+            $query->whereIn('reservation_status_id', $data['reservation_statuses']);
+        }
+    
+        if (!empty($data['time_slots'])) {
+            $query->whereHas('timeSlots', function($q) use ($data) {
+                $q->whereIn('time_slot_id', $data['time_slots']);
+            });
+        }
+    
+        if (!empty($data['classrooms'])) {
+            $query->whereHas('classrooms', function($q) use ($data) {
+                $q->whereIn('classroom_id', $data['classrooms']);
+            });
+        }
+    
+        $reservations = $query->orderBy('date')->get()->map(
+            function ($reservation) {
+                return $this->formatOutput($reservation);
+            }
+        )->toArray();
+        
+        return $reservations;
+    }
+
 }
