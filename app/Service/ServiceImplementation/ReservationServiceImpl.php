@@ -272,6 +272,8 @@ class ReservationServiceImpl implements ReservationService
                     'quantity' => $data['quantity']
                 ]
             );
+            if (empty($data['classroom_id'])) 
+                return 'No existen ambientes disponibles que cumplan con los requerimientos de la solicitud';
         }
 
         if (!$this->classroomService->sameBlock($data['classroom_id'])) {

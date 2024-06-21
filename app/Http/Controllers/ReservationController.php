@@ -283,8 +283,19 @@ class ReservationController extends Controller
                     404
                 ); 
 
+            $result = $this->reservationService->store($data);
+
+            if ($result == 'No existen ambientes disponibles que cumplan con los requerimientos de la solicitud')
+                return response()->json(['message' => $result], 400);
+
+            if ($result == 'La solicitud se rechazo, existen ambientes ocupados')
+                return response()->json(['message' => $result, 201]);
+
+            if ($result == 'La reserva fue aceptada correctamente')
+                return response()->json(['message' => $result], 202);
+
             return response()->json(
-                ['message' => $this->reservationService->store($data)], 
+                ['message' =>$result ], 
                 200
             );
         } catch (Exception $e) {
