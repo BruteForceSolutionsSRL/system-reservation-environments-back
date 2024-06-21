@@ -500,6 +500,40 @@ class ClassroomController extends Controller
     }
 
     /**
+     * Function to retrieve a list of classrooms based on a single block for a reservation
+     * @param Request $request
+     * @return Response
+     */
+    public function getClassroomsByDisponibility(Request $request): Response
+    {
+        try {
+            $validator = $this->validateSuggestionData($request);
+
+            if ($validator->fails()) {
+                $message = '';
+                foreach ($validator->errors()->all() as $value)
+                    $message .= $value . '.';
+                return response()->json(['message' => $message], 400);
+            }
+
+            $data = $validator->validated();
+
+            $response = $this->classroomService->suggestClassrooms($data);
+
+            $status = 200; 
+            return response()->json($response, $status);
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'message' => 'Hubo un error en el servidor',
+                    'error' => $e->getMessage()
+                ],
+                500
+            );
+        }
+    }
+
+    /**
      * Function suggest a set of classrooms for a booking
      * @param Request $request
      * @return Response

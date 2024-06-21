@@ -113,6 +113,7 @@ Route::controller(ClassroomController::class)->group(function() {
     Route::middleware('sanitize:api')->middleware('jwt.verify')->post('/classrooms/disponibility', 'getClassroomByDisponibility');
     Route::middleware('sanitize:api')->middleware('jwt.verify:environment_register')->post('/classrooms', 'store');
     Route::middleware('sanitize:api')->middleware('jwt.verify')->post('/classrooms/stats', 'getClassroomStats');
+    Route::middleware('sanitize:api')->middleware('jwt:verify')->post('classrooms/disponible', 'getClassroomsByDisponibility');
 
     Route::middleware('sanitize:api')->middleware('jwt.verify:environment_update')->put('/classrooms/{classroomId}', 'update');
 });
