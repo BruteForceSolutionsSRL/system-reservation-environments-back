@@ -42,6 +42,19 @@ class TimeSlotRepository extends Repository
     }
 
     /**
+     * Retrieve the id of time slot by time 
+     * @param string $time
+     * @return array
+     */
+    public function getTimeSlot(string $time): array 
+    {
+        return $this->formatOutput(
+            $this->model::where('time', $time)
+                ->get()->first()
+        );
+    }
+
+    /**
      * Transform TimeSlot to array
      * @param TimeSlot $timeSlot
      * @return array

@@ -39,7 +39,7 @@ class ClassroomServiceImpl implements ClassroomService
         $this->classroomStatusRepository = new ClassroomStatusRepository();
 
         $this->timeSlotService = new TimeSlotServiceImpl();
-        $this->reservationService = new ReservationServiceImpl();
+        $this->reservationService = new ClassroomReservationsTakerServiceImpl();
         $this->classroomLogRepository = new ClassroomLogsRepository();
         $this->notificationService = new NotificationServiceImpl();
         $this->mailService = new MailerServiceImpl();
@@ -233,8 +233,13 @@ class ClassroomServiceImpl implements ClassroomService
             }
 
             foreach ($reservations as $reservation) {
-                $timesReservation = $this->timeSlotService
-                    ->getTimeSlotsSorted($reservation->timeSlots);
+                $timesReservation = $this->timeSlotService->getTimeSlotsSorted(
+                    $reservation->timeSlots->map(
+                        function ($timeSlot) {
+                            return $timeSlot->time;
+                        }
+                    )->toArray()
+                );
                 $isAccepted = $reservation->reservation_status_id == $acceptedStatus;
 
                 for (
@@ -261,45 +266,91 @@ class ClassroomServiceImpl implements ClassroomService
     }
 
     /**
+     * Retrieve a list of all disponible classrooms by block for a date and time slots 
+     * @param array $data
+     * @return array
+     */
+    public function getClassroomsByDisponibility(array $data): array
+    {
+        $result = []; 
+        $classrooms = $this->classroomRepository->getClassroomsByBlock(
+            $data['block_id']
+        ); 
+        $usedClassrooms = []; 
+        foreach ($classrooms as $classroom) 
+            $usedClassrooms[$classroom['classroom_id']] = 0; 
+
+        $reservations = $this->reservationRepository->getReservations(
+            [
+                'dates' => [
+                    'date_start' => $data['date'], 
+                    'date_end' => $data['date']
+                ],
+                'reservation_statuses' => [
+                    ReservationStatuses::accepted(),
+                    ReservationStatuses::pending()
+                ],
+                'time_slots' => $data['time_slot_id'],
+                'classrooms' => array_map(
+                    function ($classroom) 
+                    {
+                        return $classroom['classroom_id'];
+                    },
+                    $classrooms
+                )
+            ]
+        );
+
+        //foreach ($classrooms as $classroom) {
+        //    echo $classroom['classroom_id'].' '.$usedClassrooms[$classroom['classroom_id']].'.';
+        //}
+        
+        foreach ($reservations as $reservation) 
+        foreach ($reservation['classrooms'] as $classroom)
+            $usedClassrooms[$classroom['classroom_id']] = 1;
+        //echo '\n';
+        //foreach ($classrooms as $classroom) {
+        //    echo $classroom['classroom_id'].' '.$usedClassrooms[$classroom['classroom_id']].'\n';
+        //}
+    
+        foreach ($classrooms as $classroom) 
+        if ($usedClassrooms[$classroom['classroom_id']] == 0) {
+            $result = array_merge($result, [$classroom]);
+        }
+        return $result;
+    }
+
+    /**
      * Function suggest a set of classrooms for a booking
      * @param array $data
      * @return array
      */
     public function suggestClassrooms(array $data): array
     {
-        $classroomSet = $this->classroomRepository
-            ->getClassroomsByBlock($data['block_id']);
+        $classroomSet = $this->getClassroomsByDisponibility($data); 
         $classroomSets = []; 
-        $max_floor = $this->blockRepository
+        $maxFloor = $this->blockRepository
             ->getBlock($data['block_id'])['block_maxfloor'];
 
-        for ($i = 0; $i <= $max_floor; $i++) {
+        for ($i = 0; $i <= $maxFloor; $i++) 
             $classroomSets[$i] = [
-                "quantity" => 0,
-                "list" => array()
+                'quantity' => 0,
+                'list' => array()
             ];
-        }
-        $acceptedStatus = ReservationStatuses::accepted();
-        foreach ($classroomSet as $classroom) {
 
-            $reservations = $this->reservationRepository
-                ->getActiveReservationsWithDateStatusAndClassroom(
-                    [$acceptedStatus],
-                    $data['date'],
-                    $classroom['classroom_id']
-                );
-            if (count($reservations) != 0) continue;
+        for ($i = 0; $i < count($classroomSet); $i++) {
+            $classroom = $classroomSet[$i];
             $classroomSets[$classroom['floor']]['quantity'] += $classroom['capacity'];
             array_push($classroomSets[$classroom['floor']]['list'], $classroom);
         }
-
         $MAX_LEN = 1e4 + 10;
-        $dp = array_fill(0, $MAX_LEN + 1, $max_floor + 100);
+        $INF = 1e6;
+        $dp = array_fill(0, $MAX_LEN + 1, $INF);
         $pointerDp = array_fill(0, $MAX_LEN + 1, -1);
         $dp[0] = 0;
-        for ($i = 0; $i <= $max_floor; $i++)
+        for ($i = 0; $i <= $maxFloor; $i++)
             for ($j = $MAX_LEN; $j > -1; $j--)
-                if ($dp[$j] < $max_floor + 100) {
+                if ($dp[$j] < $INF) {
                     $index = $j + $classroomSets[$i]['quantity'];
                     if ($index > $MAX_LEN) break;
                     $len = $dp[$j] + count($classroomSets[$i]['list']);
@@ -310,13 +361,14 @@ class ClassroomServiceImpl implements ClassroomService
                     }
                 }
 
-        $bestSuggest = $dp[$data['quantity']];
-
-        for ($i = $data['quantity']; $i <= min($data['quantity'] + 300, 1e5); $i++)
-            if (($bestSuggest == -1) || ($dp[$bestSuggest] > $dp[$i]))
-                $bestSuggest = $i;
-
-        if ($pointerDp[$bestSuggest] == -1) {
+        $bestSuggest = -1;
+        for ($i = $data['quantity']; $i <= min($data['quantity']*4, $MAX_LEN); $i++) {
+            if (($bestSuggest == -1) || ($dp[$bestSuggest] < $dp[$i])) {
+                if ($dp[$i] < $INF) 
+                    $bestSuggest = $i;
+            }
+        }
+        if (($bestSuggest == -1) || ($pointerDp[$bestSuggest] == -1)) {
             return ['message' => 'No existe una sugerencia apropiada'];
         }
 
@@ -456,5 +508,22 @@ class ClassroomServiceImpl implements ClassroomService
         }
 
         return 'Ambiente deshabilitado correctamente';
+    }
+
+    /**
+     * Retrieve a boolean value to correct if a set of classrooms are in the same block 
+     * @param array $classromIds
+     * @return bool 
+     */
+    public function sameBlock(array $classroomIds): bool
+    {
+        $block = -1;
+        foreach ($classroomIds as $classroomId) {
+            $classroom = $this->classroomRepository->getClassroomById($classroomId); 
+            if ($block == -1) $block = $classroom['block_id'];
+            if ($block != $classroom['block_id']) 
+                return False;
+        }
+        return True;
     }
 }

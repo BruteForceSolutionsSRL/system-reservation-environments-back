@@ -353,7 +353,7 @@ class ReservationController extends Controller
     public function assign(int $reservationId, Request $request): Response
     {
         try {
-            $message = $this->reservationService->accept($reservationId); 
+            $message = $this->reservationService->accept($reservationId, true); 
             if ($message == 'No existe una solicitud con este ID') {
                 return response()->json(['message' => $message], 404);
             }
