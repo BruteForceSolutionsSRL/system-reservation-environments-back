@@ -4,8 +4,6 @@ namespace App\Repositories;
 
 use App\Models\{
     Reservation,
-    ReservationStatus,
-    ClassroomLogs,
     Person
 };
 
@@ -638,7 +636,24 @@ class ReservationRepository extends Repository
         ]);
     
         if (!empty($data['dates'])) {
-            $query->whereBetween('date', [$data['dates']['date_start'], $data['dates']['date_end']]);
+            $dateStart = $data['dates']['date_start'];
+            $dateEnd = $data['dates']['date_end'];
+    
+            $query->where(function ($query) use ($dateStart, $dateEnd) {
+                $query->where(function ($query) use ($dateStart, $dateEnd) {
+                    $query->where('repeat', '>', 0)
+                        ->where(function ($query) use ($dateStart, $dateEnd) {
+                            $query->whereRaw('MOD(DATEDIFF(date, ?), `repeat`) = 0', [$dateStart])
+                                ->orWhereRaw('`repeat` - MOD(DATEDIFF(date, ?), `repeat`) <= DATEDIFF(?, ?)', [
+                                    $dateStart,
+                                    $dateStart,
+                                    $dateEnd,
+                                    $dateStart
+                                ]);
+                        });
+                })
+                ->orWhereBetween('date', [$dateStart, $dateEnd]);
+            });
         }
     
         if (!empty($data['reservation_statuses'])) {
