@@ -636,24 +636,19 @@ class ReservationRepository extends Repository
         ]);
     
         if (!empty($data['dates'])) {
-            $dateStart = $data['dates']['date_start'];
-            $dateEnd = $data['dates']['date_end'];
-    
-            $query->where(function ($query) use ($dateStart, $dateEnd) {
-                $query->where(function ($query) use ($dateStart, $dateEnd) {
+            $query->whereBetween('date', [$data['dates']['date_start'], $data['dates']['date_end']])
+                ->orWhere(function ($query) use ($data) {
                     $query->where('repeat', '>', 0)
-                        ->where(function ($query) use ($dateStart, $dateEnd) {
-                            $query->whereRaw('MOD(DATEDIFF(date, ?), `repeat`) = 0', [$dateStart])
+                        ->where('date', '<=', $data['dates']['date_start'])
+                        ->where(function ($query) use ($data) {
+                            $query->whereRaw('MOD(DATEDIFF(date, ?), `repeat`) = 0', [$data['dates']['date_start']])
                                 ->orWhereRaw('`repeat` - MOD(DATEDIFF(date, ?), `repeat`) <= DATEDIFF(?, ?)', [
-                                    $dateStart,
-                                    $dateStart,
-                                    $dateEnd,
-                                    $dateStart
+                                    $data['dates']['date_start'],
+                                    $data['dates']['date_end'],
+                                    $data['dates']['date_start']
                                 ]);
                         });
-                })
-                ->orWhereBetween('date', [$dateStart, $dateEnd]);
-            });
+                });
         }
     
         if (!empty($data['reservation_statuses'])) {
