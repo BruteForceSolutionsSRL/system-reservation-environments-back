@@ -300,18 +300,10 @@ class ClassroomServiceImpl implements ClassroomService
                 )
             ]
         );
-
-        //foreach ($classrooms as $classroom) {
-        //    echo $classroom['classroom_id'].' '.$usedClassrooms[$classroom['classroom_id']].'.';
-        //}
         
         foreach ($reservations as $reservation) 
         foreach ($reservation['classrooms'] as $classroom)
             $usedClassrooms[$classroom['classroom_id']] = 1;
-        //echo '\n';
-        //foreach ($classrooms as $classroom) {
-        //    echo $classroom['classroom_id'].' '.$usedClassrooms[$classroom['classroom_id']].'\n';
-        //}
     
         foreach ($classrooms as $classroom) 
         if ($usedClassrooms[$classroom['classroom_id']] == 0) {
