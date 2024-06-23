@@ -263,7 +263,7 @@ class ReservationServiceImpl implements ReservationService
      */
     public function store(array $data): string
     {
-        if (count($data['classroom_id']) == 0) {
+        if (!array_key_exists('classroom_id', $data) || count($data['classroom_id']) == 0) {
             $data['classroom_id'] = $this->classroomService->suggestClassrooms(
                 [
                     'date' => $data['date'], 
