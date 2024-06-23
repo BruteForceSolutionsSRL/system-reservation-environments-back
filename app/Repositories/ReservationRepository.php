@@ -196,6 +196,37 @@ class ReservationRepository extends Repository
     }
 
     /**
+     * Retrieve a list of all active reservations by person id 
+     * @param int $personId
+     * @return array
+     */
+    public function getAllActiveRequestByUser(int $personId): array 
+    {
+        $now = Carbon::now(); 
+        $hourTime = $now->format('H:i:s');
+        $date = $now->format('Y-m-d');
+        return $this->model::with([
+            'reservationStatus:id,status',
+            'reservationReason:id,reason',
+            'timeSlots:id,time',
+            'teacherSubjects:id,group_number,person_id,university_subject_id',
+            'teacherSubjects.person:id,name,last_name',
+            'teacherSubjects.universitySubject:id,name',
+            'classrooms:id,name,capacity,block_id',
+            'classrooms.block:id,name',
+            'classrooms.classroomType:id,description'
+        ])->whereHas('teacherSubjects', function ($query) use ($personId) {
+            $query->where('person_id', $personId);
+        })->where('date', '>=', $date)
+        ->where('time', '>=', $hourTime)
+        ->orderBy('date')->get()->map(
+            function ($reservation) {
+                return $this->formatOutput($reservation);
+            }
+        )->toArray();
+    }
+
+    /**
      * Retrieve a list of all request by teacher ID
      * @param int $teacherId
      * @return array

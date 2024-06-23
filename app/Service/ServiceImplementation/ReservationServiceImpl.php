@@ -100,7 +100,7 @@ class ReservationServiceImpl implements ReservationService
         if ($teacher === []) {
             return ['message' => 'No existe el docente'];
         }
-        return $this->reservationRepository->getAllRequestByTeacher($teacherId);
+        return $this->reservationRepository->getAllActiveRequestByUser($teacherId);
     }
 
     /**
@@ -363,21 +363,22 @@ class ReservationServiceImpl implements ReservationService
             'ok' => 0
         ];
         $totalCapacity = $this->getTotalCapacity($reservation['classrooms']);
-        if ($totalCapacity < $reservation['quantity']) {
-            $result['quantity'] .= 'La cantidad de estudiantes excede la capacidad de estudiantes.';
-            $result['ok'] = 1;
-        }
 
         $usagePercent = $reservation['quantity'] / $totalCapacity * 100;
         if ($usagePercent < 50.0) {
-            $message = 'la capacidad de los ambientes solicitados es muy elevada para la capacidad de ambientes solicitados.\n';
+            $message = 'la capacidad de los ambientes solicitados es muy elevada para la cantidad de estudiantes.';
             $result['quantity'] .= $message;
             $result['ok'] = 1;
         }
 
+        if ($usagePercent > 150.0) {
+            $result['quantity'].='La capacidad de los ambientes solicitados en muy baja para la cantidad de estudiantes';
+            $result['ok'] = 1;
+        } 
+
         if ($this->getTotalFloors($reservation['classrooms']) > 2) {
             $result['ok'] = 1;
-            $message = 'los ambientes solicitados, se encuentran en mas de 2 pisos diferentes\n';
+            $message = 'los ambientes solicitados, se encuentran en mas de 2 pisos diferentes.';
             $result['classroom']['message'] .= $message;
         }
 
@@ -419,7 +420,7 @@ class ReservationServiceImpl implements ReservationService
         }
 
         if (count($result['classroom']['list']) != 0) 
-            $result['classroom']['message'] = 'Existen ambientes que se quieren ocupar.';
+            $result['classroom']['message'] .= 'Existen ambientes que se quieren ocupar.';
         return $result;
     }
 
