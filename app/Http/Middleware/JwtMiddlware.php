@@ -32,7 +32,6 @@ class JwtMiddlware
      */
     public function handle(Request $request, Closure $next, ...$permissions)
     {
-        
         try {
             $user = JWTAuth::parseToken()->authenticate();
             

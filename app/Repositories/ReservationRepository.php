@@ -114,6 +114,9 @@ class ReservationRepository extends Repository
      */
     public function getPendingRequest(): array
     {
+        $now = Carbon::now()->setTimeZone('America/New_York'); 
+        $hourTime = $now->format('H:i:s');
+        $date = $now->format('Y-m-d');
         return $this->model::with([
             'reservationStatus:id,status',
             'reservationReason:id,reason',
@@ -124,7 +127,22 @@ class ReservationRepository extends Repository
             'classrooms:id,name,capacity,block_id',
             'classrooms.block:id,name',
             'classrooms.classroomType:id,description'
-        ])->where('date', '>=', Carbon::now()->format('Y-m-d'))
+        ])->where(
+            function ($query) use ($date, $hourTime)
+            {
+                $query->where('date', '>', $date);
+                $query->orWhere(
+                    function ($query) use ($date, $hourTime) {
+                        $query->where('date', $date)
+                            ->whereHas('timeSlots',
+                            function ($query) use ($hourTime)
+                            {
+                                $query->where('time', '>=', $hourTime);
+                            }
+                    );
+                });
+            }
+        )
             ->where('reservation_status_id', ReservationStatuses::pending())
             ->orderBy('date')->get()->map(
                 function ($reservation) {
@@ -202,7 +220,7 @@ class ReservationRepository extends Repository
      */
     public function getAllActiveRequestByUser(int $personId): array 
     {
-        $now = Carbon::now(); 
+        $now = Carbon::now()->setTimeZone('America/New_York'); 
         $hourTime = $now->format('H:i:s');
         $date = $now->format('Y-m-d');
         return $this->model::with([
@@ -217,8 +235,21 @@ class ReservationRepository extends Repository
             'classrooms.classroomType:id,description'
         ])->whereHas('teacherSubjects', function ($query) use ($personId) {
             $query->where('person_id', $personId);
-        })->where('date', '>=', $date)
-        ->where('time', '>=', $hourTime)
+        })->where(
+            function ($query) use ($date, $hourTime)
+            {
+                $query->where('date', '>', $date);
+                $query->orWhere(
+                    function ($query) use ($date, $hourTime) {
+                        $query->where('date', $date)
+                            ->whereHas('timeSlots',
+                            function ($query) use ($hourTime)
+                            {
+                                $query->where('time', '>=', $hourTime);
+                            }
+                    );
+                });
+            })
         ->orderBy('date')->get()->map(
             function ($reservation) {
                 return $this->formatOutput($reservation);

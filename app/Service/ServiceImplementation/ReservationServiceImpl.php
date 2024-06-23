@@ -14,6 +14,7 @@ use App\Repositories\{
     ReservationStatusRepository as ReservationStatuses,
     ReservationRepository
 };
+use Carbon\Carbon;
 
 class ReservationServiceImpl implements ReservationService
 {
@@ -199,6 +200,11 @@ class ReservationServiceImpl implements ReservationService
         if ($reservation['reservation_status'] != 'PENDIENTE') {
             return 'Esta solicitud ya fue atendida';
         }
+
+        if ($this->isExpired($reservation)) {
+            return 'Esta solicitud ya es expirada, no puede atenderse';
+        }
+
         if (!$this->checkAvailibility($reservation)) {
             $this->reject(
                 $reservation['reservation_id'],
@@ -550,5 +556,17 @@ class ReservationServiceImpl implements ReservationService
     public function getReports(array $data): array
     {
         return $this->reservationRepository->getReports($data);
+    }
+
+    /**
+     * Function to check if a reservation is expired
+     * @param array $reservation
+     * @return bool
+     */
+    public function isExpired(array $reservation): bool 
+    {
+        $now = Carbon::now();
+        $requestedHour = Carbon::parse($reservation['date'].' '.$reservation['time_slot'][0])->addHours(4); 
+        return ($now > $requestedHour);
     }
 }

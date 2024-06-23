@@ -374,6 +374,11 @@ class ReservationController extends Controller
             if ($message == 'No existe una solicitud con este ID') {
                 return response()->json(['message' => $message], 404);
             }
+            
+            if ($message == 'Esta solicitud ya es expirada, no puede atenderse') {
+                return response()->json(['message' => $message], 400);
+            }
+
             return response()->json(['message' => $message], 200);
         } catch (Exception $e) {
             return response()->json([
