@@ -556,10 +556,11 @@ class ClassroomController extends Controller
 
             $status = 200; 
             if (
-                (array_key_exists('message', $response)) && 
-                ($response['message'] == 'No existe una sugerencia apropiada')
+                ((array_key_exists('message', $response)) && 
+                ($response['message'] == 'No existe una sugerencia apropiada'))
+                || ($response == ['No existe una sugerencia apropiada'])
             ) 
-                $status = 404;
+                return response()->json(['message' => $response[0]], 404);
 
             return response()->json($response, $status);
         } catch (Exception $e) {

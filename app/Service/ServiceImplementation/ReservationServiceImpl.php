@@ -259,7 +259,7 @@ class ReservationServiceImpl implements ReservationService
     /**
      * Function to store full data about a request and automatic accept/reject
      * @param array $data
-     * @return string
+     * @return mixed
      */
     public function store(array $data): string
     {
@@ -272,8 +272,13 @@ class ReservationServiceImpl implements ReservationService
                     'quantity' => $data['quantity']
                 ]
             );
-            if (empty($data['classroom_id'])) 
+            if (empty($data['classroom_id']) || ($data['classroom_id'] == ['No existe una sugerencia apropiada'])) 
                 return 'No existen ambientes disponibles que cumplan con los requerimientos de la solicitud';
+            $data['classroom_id'] = array_map(
+                function ($classroom) {
+                    return $classroom['classroom_id'];
+                }, $data['classroom_id']
+            );
         }
 
         if (!$this->classroomService->sameBlock($data['classroom_id'])) {

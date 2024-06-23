@@ -315,7 +315,7 @@ class ClassroomServiceImpl implements ClassroomService
     /**
      * Function suggest a set of classrooms for a booking
      * @param array $data
-     * @return array
+     * @return string
      */
     public function suggestClassrooms(array $data): array
     {
@@ -361,7 +361,7 @@ class ClassroomServiceImpl implements ClassroomService
             }
         }
         if (($bestSuggest == -1) || ($pointerDp[$bestSuggest] == -1)) {
-            return ['message' => 'No existe una sugerencia apropiada'];
+            return ['No existe una sugerencia apropiada'];
         }
 
         $classrooms = array();
@@ -397,7 +397,7 @@ class ClassroomServiceImpl implements ClassroomService
         $res = array();
         $piv = $bestSuggest;
         if ($dp[$piv] == -1)
-            return ['message' => 'No existe una sugerencia apropiada'];
+            return ['No existe una sugerencia apropiada'];
 
         while ($piv != 0) {
             $classroom = $this->classroomRepository
@@ -405,7 +405,6 @@ class ClassroomServiceImpl implements ClassroomService
             array_push($res, $classroom);
             $piv -= $classroom['capacity'];
         }
-
         return $res;
     }
 

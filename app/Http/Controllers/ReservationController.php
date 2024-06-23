@@ -292,7 +292,12 @@ class ReservationController extends Controller
                 return response()->json(['message' => $result, 201]);
 
             if ($result == 'La reserva fue aceptada correctamente')
-                return response()->json(['message' => $result], 202);
+                return response()->json(
+                    [
+                        'message' => $result
+                    ], 
+                    202
+                );
 
             return response()->json(
                 ['message' =>$result ], 
@@ -334,6 +339,7 @@ class ReservationController extends Controller
                     }
                 }
             ],
+            'block_id' => 'required|int|exists:blocks,id',
         ], [
             'quantity.required' => 'El número de estudiantes es obligatorio.',
             'quantity.integer' => 'El número de estudiantes debe ser un valor entero.',
