@@ -309,8 +309,9 @@ class ClassroomServiceImpl implements ClassroomService
                 if ($usedClassrooms[$classroom['classroom_id']] == 1) 
                     continue;
 
-                if ($reservation['reservation_status'] == 'PENDIENTE') 
-                    $usedClassrooms[$classroom['classroom_name']] = 2; 
+                if ($reservation['reservation_status'] == 'PENDIENTE') {
+                    $usedClassrooms[$classroom['classroom_id']] = 2; 
+                }
                 else $usedClassrooms[$classroom['classroom_id']] = 1;
             }
         } else {
