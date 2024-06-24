@@ -517,8 +517,8 @@ class ClassroomController extends Controller
             }
 
             $data = $validator->validated();
-
-            $response = $this->classroomService->getClassroomsByDisponibility($data);
+            $data['endpoint'] = 1;
+            $response = $this->classroomService->getClassroomsByDisponibility($data); 
 
             $status = 200; 
             return response()->json($response, $status);

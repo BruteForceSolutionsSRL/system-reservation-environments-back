@@ -279,7 +279,6 @@ class ClassroomServiceImpl implements ClassroomService
         $usedClassrooms = []; 
         foreach ($classrooms as $classroom) 
             $usedClassrooms[$classroom['classroom_id']] = 0; 
-
         $reservations = $this->reservationRepository->getReservations(
             [
                 'dates' => [
@@ -300,13 +299,31 @@ class ClassroomServiceImpl implements ClassroomService
                 )
             ]
         );
-        
-        foreach ($reservations as $reservation) 
-        foreach ($reservation['classrooms'] as $classroom)
-            $usedClassrooms[$classroom['classroom_id']] = 1;
+
+        if (array_key_exists('endpoint', $data)) {
+            foreach ($reservations as $reservation) 
+            foreach ($reservation['classrooms'] as $classroom) {
+                if (!array_key_exists($classroom['classroom_id'], $usedClassrooms))
+                    $usedClassrooms[$classroom['classroom_id']] = 0;
+                
+                if ($usedClassrooms[$classroom['classroom_id']] == 1) 
+                    continue;
+
+                if ($reservation['reservation_status'] == 'PENDIENTE') 
+                    $usedClassrooms[$classroom['classroom_name']] = 2; 
+                else $usedClassrooms[$classroom['classroom_id']] = 1;
+            }
+        } else {
+            foreach ($reservations as $reservation) 
+            foreach ($reservation['classrooms'] as $classroom)
+                $usedClassrooms[$classroom['classroom_id']] = 1;
+        }
     
         foreach ($classrooms as $classroom) 
-        if ($usedClassrooms[$classroom['classroom_id']] == 0) {
+        if ($usedClassrooms[$classroom['classroom_id']] != 1) {
+            $classroom['requested'] = 0;
+            if ($usedClassrooms[$classroom['classroom_id']] == 2) 
+                $classroom['requested'] = 1;
             $result = array_merge($result, [$classroom]);
         }
         return $result;
