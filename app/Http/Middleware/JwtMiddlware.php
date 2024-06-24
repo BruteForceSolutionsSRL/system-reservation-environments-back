@@ -32,7 +32,6 @@ class JwtMiddlware
      */
     public function handle(Request $request, Closure $next, ...$permissions)
     {
-        
         try {
             $user = JWTAuth::parseToken()->authenticate();
             
@@ -45,7 +44,7 @@ class JwtMiddlware
             } else if ($e instanceof TokenExpiredException) {
                 return response()->json(
                     ['status' => 'Token expirado'], 
-                    401
+                    402
                 );
             } else {
                 return response()->json(
@@ -66,7 +65,6 @@ class JwtMiddlware
         }
 
         if (!empty($permissions)) {
-            
             $data = [
                 'person_id' => $person->id,
                 'permissions' => $permissions
