@@ -3792,3 +3792,9 @@ Context: {"exception":{}}
 [2024-06-21 20:04:49][58] Processing: App\Jobs\MailSenderJob
 [2024-06-21 20:04:59][58] Processed:  App\Jobs\MailSenderJob
 [2024-06-21 20:05:00][57] Processed:  App\Jobs\MailSenderJob
+[2024-06-24 11:16:35][59] Processing: App\Jobs\MailSenderJob
+[2024-06-24 11:16:35][61] Processing: App\Jobs\MailSenderJob
+[2024-06-24 11:16:35][60] Processing: App\Jobs\MailSenderJob
+[2024-06-24 11:16:46][60] Processed:  App\Jobs\MailSenderJob
+[2024-06-24 11:16:46][61] Processed:  App\Jobs\MailSenderJob
+[2024-06-24 11:16:46][59] Processed:  App\Jobs\MailSenderJob
