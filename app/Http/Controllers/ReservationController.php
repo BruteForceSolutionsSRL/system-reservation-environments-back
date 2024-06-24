@@ -536,4 +536,12 @@ class ReservationController extends Controller
             'person_id.exists' => 'La persona debe ser una selección válida',
         ]);
     }
+
+    public function test(Request $request): Response {
+        try {
+            return response()->json($this->reservationService->test($request->all()), 200);
+        } catch (Exception $e) {
+            return response()->json(['error'=>$e->getMessage()], 500);
+        }
+    }
 }

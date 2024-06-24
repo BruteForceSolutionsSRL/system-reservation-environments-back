@@ -248,9 +248,7 @@ class ClassroomRepository extends Repository
             $classroom->classroom_status_id
         );
 
-        //$block = $this->blockRepository->getBlock($classroom->block_id);
         $block = $classroom->block;
-        //echo serialize($block);
         return [
             'classroom_id' => $classroom->id,
             'classroom_name' => $classroom->name,

@@ -3,11 +3,8 @@ namespace App\Service\ServiceImplementation;
 
 use App\Service\ReservationService;
 
-use Illuminate\Database\Eloquent\Collection;
-
 use App\Models\{
     Reservation,
-    Classroom,
 };
 use App\Repositories\{
     PersonRepository,
@@ -123,33 +120,36 @@ class ReservationServiceImpl implements ReservationService
      */
     public function reject(int $reservationId, string $message, int $personId): string
     {
-        $reservation = Reservation::find($reservationId);
+        $reservation = $this->reservationRepository->getReservation($reservationId);
 
-        if ($reservation == null) {
+        if ($reservation == []) {
             return 'No existe una solicitud con este ID';
         }
 
-        $reservationStatusId = $reservation->reservation_status_id;
-        if ($reservationStatusId == ReservationStatuses::rejected()) {
-            return 'Esta solicitud ya fue rechazada';
-        }
+        if ($reservation['reservation_status'] != 'PENDIENTE') 
+            return 'Esta solicitud ya fue atendida.';
 
-        if ($reservationStatusId == ReservationStatuses::pending()) {
-            $reservation->reservation_status_id = ReservationStatuses::rejected();
-            $reservation->save();
+        $reservation = $this->reservationRepository->updateReservationStatus(
+            $reservation['reservation_id'],
+            ReservationStatuses::rejected()
+        );
 
-            $this->notificationService->store(
-                $this->mailService->rejectReservation(
-                    $this->reservationRepository->formatOutput($reservation),
-                    PersonRepository::system(), 
-                    $message
-                )
-            );
+        $this->notificationService->store(
+            $this->mailService->rejectReservation(
+                $reservation,
+                PersonRepository::system(), 
+                $message
+            )
+        );
+        $this->acceptPendingByCollision(
+            [
+                'date' => $reservation['date'],
+                'time_slots' => $reservation['time_slot'],
+                'classrooms' => $reservation['classrooms']
+            ]
+        );
 
-            return 'La solicitud de reserva fue rechazada.';
-        } else {
-            return 'Esta solicitud ya fue atendida';
-        }
+        return 'La solicitud de reserva fue rechazada.';
     }
 
     /**
@@ -193,13 +193,11 @@ class ReservationServiceImpl implements ReservationService
     public function accept(int $reservationId, bool $ignoreFlag): string
     {
         $reservation = $this->reservationRepository->getReservation($reservationId);
-        if ($reservation == []) {
+        if ($reservation == []) 
             return 'La solicitud de reserva no existe';
-        }
 
-        if ($reservation['reservation_status'] != 'PENDIENTE') {
+        if ($reservation['reservation_status'] != 'PENDIENTE') 
             return 'Esta solicitud ya fue atendida';
-        }
 
         if ($this->isExpired($reservation)) {
             return 'Esta solicitud ya es expirada, no puede atenderse';
@@ -214,10 +212,9 @@ class ReservationServiceImpl implements ReservationService
             return 'La solicitud se rechazo, existen ambientes ocupados';
         }
 
-        if (!$ignoreFlag && ($this->alertReservation($reservation)['ok']!=0)) {
+        if (!$ignoreFlag && ($this->alertReservation($reservation)['ok'] != 0)) {
             return 'Tu solicitud debe ser revisada por un encargado responsable, producido por que existen advertencias en tu reserva.';
         }
-
         $reservation = $this->reservationRepository->updateReservationStatus(
             $reservation['reservation_id'],
             ReservationStatuses::accepted()
@@ -330,6 +327,27 @@ class ReservationServiceImpl implements ReservationService
      */
     private function checkAvailibility(array $reservation): bool
     {
+        serialize($this->reservationRepository->getReservations(
+            [
+                'dates' => [
+                    'date_start' => $reservation['date'], 
+                    'date_end' => $reservation['date']
+                ],
+                'reservation_statuses' => [
+                    ReservationStatuses::accepted()
+                ],
+                'time_slots' => $this->timeSlotService->getTimeSlotsSorted(
+                    $reservation['time_slot']
+                ),
+                'classrooms' => array_map(
+                    function ($classroom) 
+                    {
+                        return $classroom['classroom_id'];
+                    },
+                    $reservation['classrooms']
+                )
+            ]
+                ));
         return count($this->reservationRepository->getReservations(
             [
                 'dates' => [
@@ -355,7 +373,7 @@ class ReservationServiceImpl implements ReservationService
 
     /**
      * Check if a reservation in pending status have conflicts or is really `weird`
-     * @param Reservation $reservation
+     * @param array $reservation
      * @return array
      */
     public function alertReservation(array $reservation): array
@@ -390,7 +408,7 @@ class ReservationServiceImpl implements ReservationService
 
         $classrooms = [];
         foreach ($reservation['classrooms'] as $classroom) 
-            $classroom[$classroom['classroom_name']] = 0;
+            $classrooms[$classroom['classroom_name']] = 0;
 
         $reservationSet = $this->reservationRepository->getReservations(
             [
@@ -413,20 +431,27 @@ class ReservationServiceImpl implements ReservationService
                 )
             ]
         );
-
-        foreach ($reservationSet as $reservation) {
-            foreach ($reservation['classrooms'] as $classroom) {
+        foreach ($reservationSet as $reservationIterable) {
+            if ($reservation['reservation_id'] == $reservationIterable['reservation_id'])
+                continue;
+            foreach ($reservationIterable['classrooms'] as $classroom) {
                 if (!array_key_exists($classroom['classroom_name'], $classrooms)) 
-                    continue;
+                    $classrooms[$classroom['classroom_name']] = 0;
                 if ($classrooms[$classroom['classroom_name']] == 0) {
                     $classrooms[$classroom['classroom_name']] = 1;
-                    array_merge($result['classroom']['list'], $classroom['classroom_name']);
                 }
             }
         }
 
-        if (count($result['classroom']['list']) != 0) 
-            $result['classroom']['message'] .= 'Existen ambientes que se quieren ocupar.';
+        foreach ($reservation['classrooms'] as $classroom) 
+            if ( ($classrooms[$classroom['classroom_name']] == 1)) {
+                array_push($result['classroom']['list'], $classroom['classroom_name']);
+            }
+
+        if (count($result['classroom']['list']) != 0) {
+            $result['classroom']['message'] .= 'Existen ambientes que se quieren ocupar con competencia de docentes.';
+            $result['ok'] = 1;
+        }
         return $result;
     }
 
@@ -568,5 +593,54 @@ class ReservationServiceImpl implements ReservationService
         $now = Carbon::now();
         $requestedHour = Carbon::parse($reservation['date'].' '.$reservation['time_slot'][0])->addHours(4); 
         return ($now > $requestedHour);
+    }
+
+    /**
+     * Accept automatically if a reservation is unique and in the classrooms specified
+     * @param array $data
+     * @return none
+     */
+    private function acceptPendingByCollision(array $data): void 
+    {
+        $reservations = $this->reservationRepository->getReservations(
+            [
+                'dates' => [
+                    'date_start' => $data['date'], 
+                    'date_end' => $data['date']
+                ],
+                'reservation_statuses' => [
+                    ReservationStatuses::pending()
+                ],
+                'time_slots' => $this->timeSlotService->getTimeSlotsSorted($data['time_slots']),
+                'classrooms' => array_map(
+                    function ($classroom) {
+                        return $classroom['classroom_id'];
+                    }, $data['classrooms']
+                )
+            ]
+        );
+        if (count($reservations) == 1) {
+            $reservation = $reservations[0];
+            $this->accept($reservation['reservation_id'], false);    
+        }
+    }
+
+    public function test(array $reservation): array
+    {
+        return $this->reservationRepository->getReservations(
+            [
+                'dates' => [
+                    'date_start' => $reservation['date'], 
+                    'date_end' => $reservation['date']
+                ],
+                'reservation_statuses' => [
+                    ReservationStatuses::pending()
+                ],
+                'time_slots' => $this->timeSlotService->getTimeSlotsSorted(
+                    $reservation['time_slot']
+                ),
+                'classrooms' => $reservation['classrooms']
+            ]
+                );
     }
 }

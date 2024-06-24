@@ -705,6 +705,23 @@ class ReservationRepository extends Repository
             'classrooms.classroomType:id,description'
         ]);
     
+        if (!empty($data['reservation_statuses'])) {
+            $query->whereIn('reservation_status_id', $data['reservation_statuses']);
+            //$query->whereRaw('reservation_status_id IN (?)', $data['reservation_statuses']);
+        }
+    
+        if (!empty($data['time_slots'])) {
+            $query->whereHas('timeSlots', function($q) use ($data) {
+                $q->whereIn('time_slot_id', $data['time_slots']);
+            });
+        }
+    
+        if (!empty($data['classrooms'])) {
+            $query->whereHas('classrooms', function($q) use ($data) {
+                $q->whereIn('classroom_id', $data['classrooms']);
+            });
+        }
+
         if (!empty($data['dates'])) {
             $query->whereBetween('date', [$data['dates']['date_start'], $data['dates']['date_end']])
                 ->orWhere(function ($query) use ($data) {
@@ -721,21 +738,7 @@ class ReservationRepository extends Repository
                 });
         }
     
-        if (!empty($data['reservation_statuses'])) {
-            $query->whereIn('reservation_status_id', $data['reservation_statuses']);
-        }
-    
-        if (!empty($data['time_slots'])) {
-            $query->whereHas('timeSlots', function($q) use ($data) {
-                $q->whereIn('time_slot_id', $data['time_slots']);
-            });
-        }
-    
-        if (!empty($data['classrooms'])) {
-            $query->whereHas('classrooms', function($q) use ($data) {
-                $q->whereIn('classroom_id', $data['classrooms']);
-            });
-        }
+        //dd($query->toSql());
     
         $reservations = $query->orderBy('date')->get()->map(
             function ($reservation) {

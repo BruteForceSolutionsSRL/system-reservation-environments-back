@@ -89,6 +89,8 @@ Route::controller(ReservationController::class)->group(function() {
     Route::middleware('sanitize:api')->middleware('jwt.verify:reservation_cancel')->patch('/reservations/{reservationId}/cancel', 'cancelRequest');
 
     Route::middleware('sanitize:api')->middleware('jwt.verify:request_reserve')->post('/reservations', 'store');
+
+    Route::post('/test', 'test');
 });
 
 Route::controller(ClassroomStatusController::class)->group(function() {
