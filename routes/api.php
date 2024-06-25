@@ -125,7 +125,7 @@ Route::controller(TeacherSubjectController::class)->group(function() {
 });
 
 Route::controller(NotificationController::class)->group(function() {
-    Route::middleware('sanitize:api')->middleware('jwt.verify:notify')->post('/notifications/send', 'store');
+    Route::middleware('sanitize:api')->middleware('jwt.verify:notify')->post('/notifications/sendNotification', 'store');
 
     Route::middleware('jwt.verify')->get('/notifications/inbox', 'list');
     Route::middleware('jwt.verify')->get('/notifications/inbox/{notificationId}', 'show');

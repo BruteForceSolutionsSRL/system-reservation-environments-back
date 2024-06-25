@@ -43,9 +43,10 @@ class MailerServiceImpl implements MailerService
 		$emailData = [
             'title' => 'SOLICITUD DE RESERVA #'.$reservation['reservation_id'].' PENDIENTE', 
             'body' => 'Se envio la solicitud #'.$reservation['reservation_id'],
-            'type' => NotificationTypeRepository::accepted(),
+            'type' => NotificationTypeRepository::informative(),
             'sendBy' => $sender, 
             'to' => [],
+            'sended' => 1,
 		];
 		$this->getPersonsByReservation($emailData, $reservation);
 
