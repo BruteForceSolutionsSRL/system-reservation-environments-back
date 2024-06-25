@@ -614,23 +614,4 @@ class ReservationServiceImpl implements ReservationService
             $this->accept($reservation['reservation_id'], false);
         }
     }
-
-    public function test(array $reservation): array
-    {
-        return $this->reservationRepository->getReservations(
-            [
-                'dates' => [
-                    'date_start' => $reservation['date'],
-                    'date_end' => $reservation['date']
-                ],
-                'reservation_statuses' => [
-                    ReservationStatuses::pending()
-                ],
-                'time_slots' => $this->timeSlotService->getTimeSlotsSorted(
-                    $reservation['time_slot']
-                ),
-                'classrooms' => $reservation['classrooms']
-            ]
-                );
-    }
 }
