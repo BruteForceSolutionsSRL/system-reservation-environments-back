@@ -742,7 +742,7 @@ class ReservationRepository extends Repository
         }
     
         //dd($query->toSql());
-    
+        //echo $query->toSql();
         $reservations = $query->orderBy('date')->get()->map(
             function ($reservation) {
                 return $this->formatOutput($reservation);

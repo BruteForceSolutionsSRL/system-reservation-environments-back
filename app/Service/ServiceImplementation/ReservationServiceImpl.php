@@ -327,27 +327,6 @@ class ReservationServiceImpl implements ReservationService
      */
     private function checkAvailibility(array $reservation): bool
     {
-        serialize($this->reservationRepository->getReservations(
-            [
-                'dates' => [
-                    'date_start' => $reservation['date'], 
-                    'date_end' => $reservation['date']
-                ],
-                'reservation_statuses' => [
-                    ReservationStatuses::accepted()
-                ],
-                'time_slots' => $this->timeSlotService->getTimeSlotsSorted(
-                    $reservation['time_slot']
-                ),
-                'classrooms' => array_map(
-                    function ($classroom) 
-                    {
-                        return $classroom['classroom_id'];
-                    },
-                    $reservation['classrooms']
-                )
-            ]
-                ));
         return count($this->reservationRepository->getReservations(
             [
                 'dates' => [
