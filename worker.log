@@ -3798,3 +3798,17 @@ Context: {"exception":{}}
 [2024-06-24 11:16:46][60] Processed:  App\Jobs\MailSenderJob
 [2024-06-24 11:16:46][61] Processed:  App\Jobs\MailSenderJob
 [2024-06-24 11:16:46][59] Processed:  App\Jobs\MailSenderJob
+[2024-06-25 12:54:17][151] Processing: App\Jobs\MailSenderJob
+[2024-06-25 12:54:17][150] Processing: App\Jobs\MailSenderJob
+[2024-06-25 12:54:24][150] Processed:  App\Jobs\MailSenderJob
+[2024-06-25 12:54:25][151] Processed:  App\Jobs\MailSenderJob
+[2024-06-25 12:57:14][152] Processing: App\Jobs\MailSenderJob
+[2024-06-25 12:57:16][153] Processing: App\Jobs\MailSenderJob
+[2024-06-25 12:57:16][154] Processing: App\Jobs\MailSenderJob
+[2024-06-25 12:57:21][152] Processed:  App\Jobs\MailSenderJob
+[2024-06-25 12:57:21][153] Processed:  App\Jobs\MailSenderJob
+[2024-06-25 12:57:21][154] Processed:  App\Jobs\MailSenderJob
+[2024-06-25 13:02:06][155] Processing: App\Jobs\MailSenderJob
+[2024-06-25 13:02:12][155] Processed:  App\Jobs\MailSenderJob
+[2024-06-25 13:08:15][156] Processing: App\Jobs\MailSenderJob
+[2024-06-25 13:08:22][156] Processed:  App\Jobs\MailSenderJob
