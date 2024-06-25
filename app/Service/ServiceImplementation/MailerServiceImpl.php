@@ -43,9 +43,10 @@ class MailerServiceImpl implements MailerService
 		$emailData = [
             'title' => 'SOLICITUD DE RESERVA #'.$reservation['reservation_id'].' PENDIENTE', 
             'body' => 'Se envio la solicitud #'.$reservation['reservation_id'],
-            'type' => NotificationTypeRepository::accepted(),
+            'type' => NotificationTypeRepository::informative(),
             'sendBy' => $sender, 
             'to' => [],
+            'sended' => 1,
 		];
 		$this->getPersonsByReservation($emailData, $reservation);
 
@@ -72,7 +73,7 @@ class MailerServiceImpl implements MailerService
 	/**
 	 * Create a Mailable class with data accepted reservation
 	 * @param array $data
-	 * @return void 
+	 * @return array 
 	 */
 	public function acceptReservation(array $reservation, int $sender): array
 	{
@@ -146,7 +147,7 @@ class MailerServiceImpl implements MailerService
 	/**
 	 * Create a Mailable class with data cancelled reservation
 	 * @param array $data
-	 * @return void 
+	 * @return array 
 	 */
 	public function cancelReservation(array $reservation, int $sender): array 
 	{

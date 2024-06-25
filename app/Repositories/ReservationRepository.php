@@ -25,10 +25,11 @@ class ReservationRepository extends Repository
     protected $model;
     private $timeSlotService;
     private $classroomLog;
+    private $timeSlotRepository; 
     function __construct()
     {
         $this->model = Reservation::class;
-
+        $this->timeSlotRepository = new TimeSlotRepository();
         $this->timeSlotService = new TimeSlotServiceImpl();
 
         $this->classroomLog = new ClassroomLogsRepository();
@@ -156,7 +157,7 @@ class ReservationRepository extends Repository
      */
     public function getRequestByTeacher(int $teacherId): array
     {
-        return $this->model::with([
+        $reservations =  $this->model::with([
             'reservationStatus:id,status',
             'reservationReason:id,reason',
             'timeSlots:id,time',
@@ -183,6 +184,8 @@ class ReservationRepository extends Repository
                     return $this->formatOutput($reservation);
                 }
             )->toArray();
+
+        return $reservations;
     }
 
     /**
@@ -262,7 +265,7 @@ class ReservationRepository extends Repository
      */
     public function getReservationsWithoutPendingRequestByTeacher(int $teacherId): array
     {
-        return $this->model::with([
+        $reservations = $this->model::with([
             'reservationStatus:id,status',
             'reservationReason:id,reason',
             'timeSlots:id,time',
@@ -273,13 +276,16 @@ class ReservationRepository extends Repository
             'classrooms.block:id,name',
             'classrooms.classroomType:id,description'
         ])->where('reservation_status_id', '!=', ReservationStatuses::pending())
-            ->whereHas('teacherSubjects', function ($query) use ($teacherId) {
-                $query->where('person_id', $teacherId);
-            })->orderBy('date')->get()->map(
+           ->whereHas('teacherSubjects', function ($query) use ($teacherId) {
+               $query->where('person_id', $teacherId);
+           })
+        ->orderBy('date')->get()->map(
                 function ($reservation) {
                     return $this->formatOutput($reservation);
                 }
             )->toArray();
+
+        return $reservations;
     }
 
     /**
@@ -358,10 +364,11 @@ class ReservationRepository extends Repository
     /** 
      * Store a new Reservation request
      * @param array $data
-     * @return Reservation
+     * @return array
      */
     public function save(array $data): array
     {
+        $data['time_slot_id'][1]--;
         $reservation = new Reservation();
         $reservation->number_of_students = $data['quantity'];
         $reservation->repeat = $data['repeat'];
@@ -468,6 +475,16 @@ class ReservationRepository extends Repository
         $timeSlots = $reservation->timeSlots;
         $priority = 0;
 
+        $times = []; 
+        foreach ($timeSlots as $timeSlot) {
+            if (empty($times)) array_push($times, $timeSlot->time);
+            else {
+                $id = $timeSlot->id;
+                $aux = $this->timeSlotRepository->getTimeSlotById($id+1);
+                array_push($times, $aux['time']);
+            }
+        }
+
         if (Carbon::now()->diffInDays(Carbon::parse($reservation->date)) <= 5) {
             $priority = 1;
         }
@@ -477,9 +494,10 @@ class ReservationRepository extends Repository
             'subject_name' => $teacherSubjects->first()->universitySubject->name,
             'quantity' => $reservation->number_of_students,
             'reservation_date' => $reservation->date,
-            'time_slot' => $timeSlots->map(function ($timeSlot) {
-                return $timeSlot->time;
-            })->toArray(),
+            'time_slot' => $times,
+            //'time_slot' => $timeSlots->map(function ($timeSlot) {
+            //    return $timeSlot->time;
+            //})->toArray(),
             'groups' => $teacherSubjects->map(function ($teacherSubject) {
                 $person = Person::find($teacherSubject->person_id);
                 return [
@@ -705,27 +723,12 @@ class ReservationRepository extends Repository
             'classrooms.classroomType:id,description'
         ]);
     
-        if (!empty($data['dates'])) {
-            $query->whereBetween('date', [$data['dates']['date_start'], $data['dates']['date_end']])
-                ->orWhere(function ($query) use ($data) {
-                    $query->where('repeat', '>', 0)
-                        ->where('date', '<=', $data['dates']['date_start'])
-                        ->where(function ($query) use ($data) {
-                            $query->whereRaw('MOD(DATEDIFF(date, ?), `repeat`) = 0', [$data['dates']['date_start']])
-                                ->orWhereRaw('`repeat` - MOD(DATEDIFF(date, ?), `repeat`) <= DATEDIFF(?, ?)', [
-                                    $data['dates']['date_start'],
-                                    $data['dates']['date_end'],
-                                    $data['dates']['date_start']
-                                ]);
-                        });
-                });
-        }
-    
         if (!empty($data['reservation_statuses'])) {
             $query->whereIn('reservation_status_id', $data['reservation_statuses']);
         }
     
         if (!empty($data['time_slots'])) {
+            $data['time_slots'][1]--;
             $query->whereHas('timeSlots', function($q) use ($data) {
                 $q->whereBetween('time_slot_id', $data['time_slots']);
             });
@@ -735,6 +738,26 @@ class ReservationRepository extends Repository
             $query->whereHas('classrooms', function($q) use ($data) {
                 $q->whereIn('classroom_id', $data['classrooms']);
             });
+        }
+
+        if (!empty($data['dates'])) {
+            $query->where(
+                function ($query) use ($data) {
+                    $query->whereBetween('date', [$data['dates']['date_start'], $data['dates']['date_end']])
+                    ->orWhere(function ($query) use ($data) {
+                        $query->where('repeat', '>', 0)
+                            ->where('date', '<=', $data['dates']['date_start'])
+                            ->where(function ($query) use ($data) {
+                                $query->whereRaw('MOD(DATEDIFF(date, ?), `repeat`) = 0', [$data['dates']['date_start']])
+                                    ->orWhereRaw('`repeat` - MOD(DATEDIFF(date, ?), `repeat`) <= DATEDIFF(?, ?)', [
+                                        $data['dates']['date_start'],
+                                        $data['dates']['date_end'],
+                                        $data['dates']['date_start']
+                                    ]);
+                            });
+                    });    
+                }
+            );
         }
     
         $reservations = $query->orderBy('date')->get()->map(

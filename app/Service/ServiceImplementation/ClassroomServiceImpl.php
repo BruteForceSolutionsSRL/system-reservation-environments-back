@@ -201,67 +201,55 @@ class ClassroomServiceImpl implements ClassroomService
     public function getClassroomByDisponibility(array $data): array
     {
         $classroomList = [];
-
-        $times = $data['time_slot_id'];
-        sort($times);
-
-        $acceptedStatus = ReservationStatuses::accepted();
-        $pendingStatus = ReservationStatuses::pending();
-
-        foreach ($data['classroom_id'] as $classroomId) {
-            $classroom = $this->classroomRepository->getClassroomById($classroomId);
-
-            if (count($classroom) == 0) continue;
-
-            $element = array();
-            $element['classroom_name'] = $classroom['classroom_name'];
-
-            $reservations = $this->reservationRepository
-                ->getActiveReservationsWithDateStatusAndClassroom(
-                    [$acceptedStatus, $pendingStatus],
-                    $data['date'],
-                    $classroomId
-                );
-
-            for ($timeSlotId = $times[0]; $timeSlotId <= $times[1]; $timeSlotId++) {
-                $index = $this->timeSlotRepository
-                    ->getTimeSlotById($timeSlotId)['time'];
-                $element[$index] = [
-                    'valor' => 0,
-                    'message' => 'Disponible'
-                ];
+        $reservations = $this->reservationRepository->getReservations(
+            [
+                'dates' => [
+                    'date_start' => $data['date'], 
+                    'date_end' => $data['date']
+                ],
+                'reservation_statuses' => [
+                    ReservationStatuses::pending(), 
+                    ReservationStatuses::accepted()
+                ],
+                'time_slots' => $data['time_slot_id'],
+                'classrooms' => $data['classroom_id']
+            ]
+        );
+        $dp = [];
+        foreach ($reservations as $reservation) {
+            $accepted = $reservation['reservation_status'] == 'ACEPTADO';
+            foreach ($reservation['classrooms'] as $classroom) {
+                if (!array_key_exists($classroom['classroom_id'], $dp)) 
+                    $dp[$classroom['classroom_id']] = [];
+                $times = $this->timeSlotService->getTimeSlotsSorted($reservation['time_slot']);
+                for ($id = $times[0]; $id < $times[1]; $id++) {
+                    $index = $this->timeSlotRepository->getTimeSlotById($id)['time'];
+                    if (!array_key_exists($index, $dp[$classroom['classroom_id']]))
+                        $dp[$classroom['classroom_id']][$index] = 2;
+                    if ($dp[$classroom['classroom_id']][$index] == 1) continue;
+                    if ($accepted) 
+                        $dp[$classroom['classroom_id']][$index] = 1;
+                }
             }
+        }
+        foreach ($data['classroom_id'] as $classroomId) {
+            $classroom = $this->classroomRepository->getClassroomById($classroomId); 
+            $element = ['classroom_name' => $classroom['classroom_name']]; 
 
-            foreach ($reservations as $reservation) {
-                $timesReservation = $this->timeSlotService->getTimeSlotsSorted(
-                    $reservation->timeSlots->map(
-                        function ($timeSlot) {
-                            return $timeSlot->time;
-                        }
-                    )->toArray()
-                );
-                $isAccepted = $reservation->reservation_status_id == $acceptedStatus;
-
-                for (
-                    $timeSlotId = max($timesReservation[0], $times[0]);
-                    $timeSlotId <= min($times[1], $timesReservation[1]);
-                    $timeSlotId++
-                ) {
-                    $index = $this->timeSlotRepository
-                        ->getTimeSlotById($timeSlotId)['time'];
-
-                    if ($element[$index]['valor'] == 1) continue;
-                    if ($isAccepted) {
-                        $element[$index]['valor'] = 1;
-                        $element[$index]['message'] = 'Ocupado';
-                    } else {
-                        $element[$index]['valor'] = 2;
-                        $element[$index]['message'] = 'En revision';
-                    }
+            for ($id = $data['time_slot_id'][0]; $id <= $data['time_slot_id'][1]; $id++) {
+                $index = $this->timeSlotRepository->getTimeSlotById($id)['time']; 
+                if ((!array_key_exists($classroom['classroom_id'], $dp)) || 
+                (!array_key_exists($index, $dp[$classroom['classroom_id']]))) {
+                    $element[$index] = ['valor' => 0, 'message' => 'Disponible'];
+                } else {
+                    $element[$index] = ['valor' => $dp[$classroom['classroom_id']][$index]];
+                    if ($element[$index]['valor'] == 1) $element[$index]['message'] = 'Ocupado';
+                    else $element[$index]['message'] = 'En revision';
                 }
             }
             array_push($classroomList, $element);
         }
+        
         return $classroomList;
     }
 
