@@ -727,7 +727,7 @@ class ReservationRepository extends Repository
     
         if (!empty($data['time_slots'])) {
             $query->whereHas('timeSlots', function($q) use ($data) {
-                $q->whereIn('time_slot_id', $data['time_slots']);
+                $q->whereBetween('time_slot_id', $data['time_slots']);
             });
         }
     

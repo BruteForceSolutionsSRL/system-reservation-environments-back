@@ -333,7 +333,7 @@ class ClassroomServiceImpl implements ClassroomService
     /**
      * Function suggest a set of classrooms for a booking
      * @param array $data
-     * @return string
+     * @return array
      */
     public function suggestClassrooms(array $data): array
     {
