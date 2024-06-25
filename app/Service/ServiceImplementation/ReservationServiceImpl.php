@@ -3,19 +3,15 @@ namespace App\Service\ServiceImplementation;
 
 use App\Service\ReservationService;
 
-use Illuminate\Database\Eloquent\Collection;
-
 use App\Models\{
     Reservation,
-    Person,
-    Classroom,
 };
 use App\Repositories\{
     PersonRepository,
     ReservationStatusRepository as ReservationStatuses,
-    ReservationRepository, 
-    NotificationTypeRepository
+    ReservationRepository
 };
+use Carbon\Carbon;
 
 class ReservationServiceImpl implements ReservationService
 {
@@ -25,6 +21,7 @@ class ReservationServiceImpl implements ReservationService
     private $mailService;
     private $timeSlotService;
     private $notificationService;
+    private $classroomService;
 
     public function __construct()
     {
@@ -34,6 +31,7 @@ class ReservationServiceImpl implements ReservationService
         $this->timeSlotService = new TimeSlotServiceImpl();
         $this->mailService = new MailerServiceImpl();
         $this->notificationService = new NotificationServiceImpl();
+        $this->classroomService = new ClassroomReservationsTakerServiceImpl();
     }
 
     /**
@@ -100,7 +98,7 @@ class ReservationServiceImpl implements ReservationService
         if ($teacher === []) {
             return ['message' => 'No existe el docente'];
         }
-        return $this->reservationRepository->getAllRequestByTeacher($teacherId);
+        return $this->reservationRepository->getAllActiveRequestByUser($teacherId);
     }
 
     /**
@@ -122,46 +120,36 @@ class ReservationServiceImpl implements ReservationService
      */
     public function reject(int $reservationId, string $message, int $personId): string
     {
-        $reservation = Reservation::find($reservationId);
+        $reservation = $this->reservationRepository->getReservation($reservationId);
 
-        if ($reservation == null) {
+        if ($reservation == []) {
             return 'No existe una solicitud con este ID';
         }
 
-        $reservationStatusId = $reservation->reservation_status_id;
-        if ($reservationStatusId == ReservationStatuses::rejected()) {
-            return 'Esta solicitud ya fue rechazada';
-        }
+        if ($reservation['reservation_status'] != 'PENDIENTE')
+            return 'Esta solicitud ya fue atendida.';
 
-        if ($reservationStatusId == ReservationStatuses::pending()) {
-            $reservation->reservation_status_id = ReservationStatuses::rejected();
-            $reservation->save();
+        $reservation = $this->reservationRepository->updateReservationStatus(
+            $reservation['reservation_id'],
+            ReservationStatuses::rejected()
+        );
 
-            $emailData = $this->notificationService->store(
-                [
-                    'title' => 'SOLICITUD DE RESERVA #'.$reservation->id.' RECHAZADA', 
-                    'body' => 'Se rechazo la solicitud #'.$reservation->id.' '.$message,
-                    'type' => NotificationTypeRepository::rejected(),
-                    'sendBy' => $personId, 
-                    'to' => $reservation->teacherSubjects->map(
-                        function ($teacher) 
-                        {
-                            return $teacher->person_id;
-                        }
-                    )
-                ]
-            );
-            $emailData = array_merge(
-                $emailData, 
-                $this->reservationRepository->formatOutput($reservation)
-            );
+        $this->notificationService->store(
+            $this->mailService->rejectReservation(
+                $reservation,
+                PersonRepository::system(),
+                $message
+            )
+        );
+        $this->acceptPendingByCollision(
+            [
+                'date' => $reservation['date'],
+                'time_slots' => $reservation['time_slot'],
+                'classrooms' => $reservation['classrooms']
+            ]
+        );
 
-            $this->mailService->rejectReservation($emailData);
-
-            return 'La solicitud de reserva fue rechazada.';
-        } else {
-            return 'Esta solicitud ya fue atendida';
-        }
+        return 'La solicitud de reserva fue rechazada.';
     }
 
     /**
@@ -188,23 +176,22 @@ class ReservationServiceImpl implements ReservationService
         $reservation->reservation_status_id = ReservationStatuses::cancelled();
         $reservation->save();
 
-        $emailData = $this->notificationService->store(
-            [
-                'title' => 'SOLICITUD DE RESERVA #'.$reservation->id.' CANCELADA', 
-                'body' => 'Se cancela la solicitud #'.$reservation->id,
-                'type' => NotificationTypeRepository::cancelled(),
-                'sendBy' => $this->personRepository->system(), 
-                'to' => $reservation->teacherSubjects->map(
-                    function ($teacher) 
-                    {
-                        return $teacher->person_id;
-                    }
-                )
-            ]
-        );    
-        $emailData = array_merge($emailData, $this->reservationRepository->formatOutput($reservation));
+        $this->notificationService->store(
+            $this->mailService->cancelReservation(
+                $this->reservationRepository->formatOutput($reservation),
+                PersonRepository::system()
+            )
+        );
 
-        $this->mailService->cancelReservation($emailData);
+        $reservation = $this->reservationRepository->getReservation($reservation->id);
+
+        $this->acceptPendingByCollision(
+            [
+                'date' => $reservation['date'],
+                'time_slots' => $reservation['time_slot'],
+                'classrooms' => $reservation['classrooms']
+            ]
+        );
 
         return 'La solicitud de reserva fue cancelada.';
     }
@@ -214,63 +201,71 @@ class ReservationServiceImpl implements ReservationService
      * @param int $reservationId
      * @return string
      */
-    public function accept(int $reservationId): string
+    public function accept(int $reservationId, bool $ignoreFlag): string
     {
-        $reservation = Reservation::find($reservationId);
-        if ($reservation == null) {
+        $reservation = $this->reservationRepository->getReservation($reservationId);
+        if ($reservation == [])
             return 'La solicitud de reserva no existe';
+
+        if ($reservation['reservation_status'] != 'PENDIENTE')
+            return 'Esta solicitud ya fue atendida';
+
+        if ($this->isExpired($reservation)) {
+            return 'Esta solicitud ya es expirada, no puede atenderse';
         }
 
-        $reservationStatus = $reservation->reservationStatus->id;
-        if ($reservationStatus != ReservationStatuses::pending()) {
-            return 'Esta solicitud ya fue atendida';
-        }
         if (!$this->checkAvailibility($reservation)) {
             $this->reject(
-                $reservation->id,
-                'Se rechazo su solicitud, contacte con un administrador',
+                $reservation['reservation_id'],
+                'Se rechazo su solicitud, existe una reserva de ambientes que ya fue atendida',
                 PersonRepository::system()
             );
-            return  'La solicitud no puede aceptarse, existen ambientes ocupados';
+            return 'La solicitud se rechazo, existen ambientes ocupados';
         }
 
-        $reservation->reservation_status_id = ReservationStatuses::accepted();
-        $reservation->save();
-
-        $message = '';
-
-        $times = $this->timeSlotService->getTimeSlotsSorted($reservation->timeSlots);
-        foreach ($reservation->classrooms as $classroom) {
-            $reservationSet = $this->reservationRepository
-                ->getActiveReservationsWithDateStatusClassroomTimes(
-                    [ReservationStatuses::pending()],
-                    $reservation->date,
-                    $classroom->id,
-                    $times
-                );
-            foreach ($reservationSet as $reservationIterable)
-                $message .= $this->reject(
-                    $reservationIterable->id,
-                    'Se rechazo su solicitud, contacte con un administrador',
-                    PersonRepository::system()
-                );
+        if (!$ignoreFlag && ($this->alertReservation($reservation)['ok'] != 0)) {
+            return 'Tu solicitud debe ser revisada por un encargado responsable, producido por que existen advertencias en tu reserva.';
         }
+        $reservation = $this->reservationRepository->updateReservationStatus(
+            $reservation['reservation_id'],
+            ReservationStatuses::accepted()
+        );
 
-        $emailData = $this->notificationService->store(
+        $reservationSet = $this->reservationRepository->getReservations(
             [
-                'title' => 'SOLICITUD DE RESERVA #'.$reservation->id.' ACEPTADA', 
-                'body' => 'Se acepto la solicitud #'.$reservation->id,
-                'type' => NotificationTypeRepository::accepted(),
-                'sendBy' => $this->personRepository->system(), 
-                'to' => $reservation->teacherSubjects->map(
-                    function ($teacher) 
+                'dates' => [
+                    'date_start' => $reservation['date'],
+                    'date_end' => $reservation['date']
+                ],
+                'reservation_statuses' => [
+                    ReservationStatuses::pending()
+                ],
+                'time_slots' => $this->timeSlotService->getTimeSlotsSorted(
+                    $reservation['time_slot']
+                ),
+                'classrooms' => array_map(
+                    function ($classroom)
                     {
-                        return $teacher->person_id;
-                    }
+                        return $classroom['classroom_id'];
+                    },
+                    $reservation['classrooms']
                 )
             ]
-        );    
-        $this->mailService->acceptReservation($emailData);
+        );
+
+        foreach ($reservationSet as $reservationIterable)
+            $this->reject(
+                $reservationIterable['reservation_id'],
+                'Se rechazo su solicitud, dado que las aulas solicitadas fueron asignadas a otra solicitud',
+                PersonRepository::system()
+            );
+
+        $this->notificationService->store(
+            $this->mailService->acceptReservation(
+                $reservation,
+                PersonRepository::system()
+            )
+        );
 
         return 'La reserva fue aceptada correctamente';
     }
@@ -278,17 +273,30 @@ class ReservationServiceImpl implements ReservationService
     /**
      * Function to store full data about a request and automatic accept/reject
      * @param array $data
-     * @return string
+     * @return mixed
      */
     public function store(array $data): string
     {
-        $block_id = -1;
-        foreach ($data['classroom_id'] as $classroomId) {
-            $classroom = Classroom::find($classroomId);
-            if ($block_id == -1) $block_id = $classroom->block_id;
-            if ($classroom->block_id != $block_id) {
-                return  'Los ambientes no pertenecen al bloque';
-            }
+        if (!array_key_exists('classroom_id', $data) || count($data['classroom_id']) == 0) {
+            $data['classroom_id'] = $this->classroomService->suggestClassrooms(
+                [
+                    'date' => $data['date'],
+                    'time_slot_id' => $data['time_slot_id'],
+                    'block_id' => $data['block_id'],
+                    'quantity' => $data['quantity']
+                ]
+            );
+            if (empty($data['classroom_id']) || ($data['classroom_id'] == ['No existe una sugerencia apropiada']))
+                return 'No existen ambientes disponibles que cumplan con los requerimientos de la solicitud';
+            $data['classroom_id'] = array_map(
+                function ($classroom) {
+                    return $classroom['classroom_id'];
+                }, $data['classroom_id']
+            );
+        }
+
+        if (!$this->classroomService->sameBlock($data['classroom_id'])) {
+            return 'Los ambientes no pertenecen al bloque';
         }
 
         if (!array_key_exists('repeat', $data)) {
@@ -297,46 +305,14 @@ class ReservationServiceImpl implements ReservationService
 
         $reservation = $this->reservationRepository->save($data);
 
-        $emailData = $this->mailService->createReservation(
-            $this->reservationRepository->formatOutput($reservation), 
-            PersonRepository::system()
+        $this->notificationService->store(
+            $this->mailService->createReservation(
+                $reservation,
+                PersonRepository::system()
+            )
         );
 
-        $this->notificationService->store($emailData);
-
-        if ($this->checkAvailibility($reservation)) {
-            if ($this->alertReservation($reservation)['ok'] != 0) {
-                return  'Tu solicitud debe ser revisada por un administrador, se enviara una notificacion para mas detalles';
-            }
-            $reservation->reservation_status_id = ReservationStatuses::accepted();
-            $reservation->save();
-
-            $emailData = $this->notificationService->store(
-                [
-                    'title' => 'SOLICITUD DE RESERVA #'.$reservation->id.' ACEPTADA', 
-                    'body' => 'Se acepto la solicitud #'.$reservation->id,
-                    'type' => NotificationTypeRepository::accepted(),
-                    'sendBy' => $this->personRepository->system(), 
-                    'to' => $reservation->teacherSubjects->map(
-                        function ($teacher) 
-                        {
-                            return $teacher->person_id;
-                        }
-                    )
-                ]
-            );    
-
-            $emailData = array_merge($emailData, $this->reservationRepository->formatOutput($reservation));
-
-            $this->mailService->acceptReservation($emailData);
-            return 'Tu solicitud de reserva fue aceptada';
-        } else {
-            return $this->reject(
-                $reservation->id,
-                'Se rechazo su solicitud, contacte con un administrador',
-                PersonRepository::system()
-            );
-        }
+        return $this->accept($reservation['reservation_id'], false);
     }
 
     /**
@@ -346,8 +322,8 @@ class ReservationServiceImpl implements ReservationService
      */
     public function getConflict(int $reservationId): array
     {
-        $reservation = Reservation::find($reservationId);
-        if ($reservation == null) {
+        $reservation = $this->reservationRepository->getReservation($reservationId);
+        if ($reservation == []) {
             return ['meesage' => 'La reserva no existe'];
         }
         $result = $this->alertReservation($reservation);
@@ -357,32 +333,40 @@ class ReservationServiceImpl implements ReservationService
 
     /**
      * Function to check availability for all classrooms to do a reservation in a step
-     * @param Reservation $reservation
+     * @param array $reservation
      * @return boolean
      */
-    private function checkAvailibility(Reservation $reservation): bool
+    private function checkAvailibility(array $reservation): bool
     {
-        $time = $this->timeSlotService->getTimeSlotsSorted($reservation->timeSlots);
-        foreach ($reservation->classrooms as $classroom) {
-            $reservations = $this->reservationRepository
-                ->getActiveReservationsWithDateStatusClassroomTimes(
-                    [ReservationStatuses::accepted()],
-                    $reservation->date,
-                    $classroom->id,
-                    $time
-                );
-            if (count($reservations) != 0)
-                return false;
-        }
-        return true;
+        return count($this->reservationRepository->getReservations(
+            [
+                'dates' => [
+                    'date_start' => $reservation['date'],
+                    'date_end' => $reservation['date']
+                ],
+                'reservation_statuses' => [
+                    ReservationStatuses::accepted()
+                ],
+                'time_slots' => $this->timeSlotService->getTimeSlotsSorted(
+                    $reservation['time_slot']
+                ),
+                'classrooms' => array_map(
+                    function ($classroom)
+                    {
+                        return $classroom['classroom_id'];
+                    },
+                    $reservation['classrooms']
+                )
+            ]
+        )) == 0;
     }
 
     /**
      * Check if a reservation in pending status have conflicts or is really `weird`
-     * @param Reservation $reservation
+     * @param array $reservation
      * @return array
      */
-    public function alertReservation(Reservation $reservation): array
+    public function alertReservation(array $reservation): array
     {
         $result = [
             'quantity' => '',
@@ -392,91 +376,86 @@ class ReservationServiceImpl implements ReservationService
             ],
             'ok' => 0
         ];
-        $totalCapacity = $this->getTotalCapacity($reservation->classrooms);
-        if ($totalCapacity < $reservation->number_of_students) {
-            $result['quantity'] .= 'la cantidad de estudiantes excede la capacidad de estudiantes.\n';
-            $result['ok'] = 1;
-        }
+        $totalCapacity = $this->getTotalCapacity($reservation['classrooms']);
 
-        $usagePercent = $reservation->number_of_students / $totalCapacity * 100;
+        $usagePercent = $reservation['quantity'] / $totalCapacity * 100;
         if ($usagePercent < 50.0) {
-            $message = 'la capacidad de los ambientes solicitados es muy elevada para la capacidad de ambientes solicitados.\n';
+            $message = 'la capacidad de los ambientes solicitados es muy elevada para la cantidad de estudiantes.';
             $result['quantity'] .= $message;
             $result['ok'] = 1;
         }
 
-        if ($this->getTotalFloors($reservation->classrooms) > 2) {
+        if ($usagePercent > 150.0) {
+            $result['quantity'].='La capacidad de los ambientes solicitados en muy baja para la cantidad de estudiantes';
             $result['ok'] = 1;
-            $message = 'los ambientes solicitados, se encuentran en mas de 2 pisos diferentes\n';
+        }
+
+        if ($this->getTotalFloors($reservation['classrooms']) > 2) {
+            $result['ok'] = 1;
+            $message = 'los ambientes solicitados, se encuentran en mas de 2 pisos diferentes.';
             $result['classroom']['message'] .= $message;
         }
 
-        foreach ($reservation->classrooms as $classroom) {
-            $reservations = $this->reservationRepository
-                ->getActiveReservationsWithDateStatusAndClassroom(
-                    [ReservationStatuses::pending()],
-                    $reservation->date,
-                    $classroom->id
-                );
-            if (count($reservations) > 1) {
-                $result['ok'] = 1;
-                array_push($result['classroom']['list'], $classroom->name);
+        $classrooms = [];
+        foreach ($reservation['classrooms'] as $classroom)
+            $classrooms[$classroom['classroom_name']] = 0;
+
+        $reservationSet = $this->reservationRepository->getReservations(
+            [
+                'dates' => [
+                    'date_start' => $reservation['date'],
+                    'date_end' => $reservation['date']
+                ],
+                'reservation_statuses' => [
+                    ReservationStatuses::pending()
+                ],
+                'time_slots' => $this->timeSlotService->getTimeSlotsSorted(
+                    $reservation['time_slot']
+                ),
+                'classrooms' => array_map(
+                    function ($classroom)
+                    {
+                        return $classroom['classroom_id'];
+                    },
+                    $reservation['classrooms']
+                )
+            ]
+        );
+        foreach ($reservationSet as $reservationIterable) {
+            if ($reservation['reservation_id'] == $reservationIterable['reservation_id'])
+                continue;
+            foreach ($reservationIterable['classrooms'] as $classroom) {
+                if (!array_key_exists($classroom['classroom_name'], $classrooms))
+                    $classrooms[$classroom['classroom_name']] = 0;
+                if ($classrooms[$classroom['classroom_name']] == 0) {
+                    $classrooms[$classroom['classroom_name']] = 1;
+                }
             }
         }
 
-        $result['classroom']['list'] = array_unique($result['classroom']['list']);
+        foreach ($reservation['classrooms'] as $classroom)
+            if ( ($classrooms[$classroom['classroom_name']] == 1)) {
+                array_push($result['classroom']['list'], $classroom['classroom_name']);
+            }
+
+        if (count($result['classroom']['list']) != 0) {
+            $result['classroom']['message'] .= 'Existen ambientes que se quieren ocupar con competencia de docentes.';
+            $result['ok'] = 1;
+        }
         return $result;
     }
 
     /**
      * Function to get Total Capacity of a set of classrooms
-     * @param Collection $classrooms
+     * @param array $classrooms
      * @return int
      */
-    public function getTotalCapacity(Collection $classrooms): int
+    public function getTotalCapacity(array $classrooms): int
     {
         $total = 0;
         foreach ($classrooms as $classroom)
-            $total += $classroom->capacity;
+            $total += $classroom['capacity'];
         return $total;
-    }
-
-    /**
-     * Indicates if a reservation is inside the date and time slots
-     * @param Reservation $reservation
-     * @param string $date
-     * @param array $times
-     * @return bool
-     */
-    private function isInside(
-        Reservation $reservation,
-        string $date,
-        array $times
-    ): bool {
-        if ($date == $reservation->date) {
-            $time = $this->timeSlotService
-                ->getTimeSlotsSorted($reservation->timeSlots);
-            if (!($time[1] <= $times[0] || $time[0] >= $times[1])) {
-                return true;
-            }
-        } else {
-            $initialDate = new \DateTime($date);
-            if ($reservation->repeat > 0) {
-                $goalDate = new \DateTime($reservation->date);
-                $repeat = $reservation->repeat;
-
-                $difference = $initialDate->diff($goalDate)->days;
-                if ($difference % $repeat == 0) {
-                    $time = $this->timeSlotService
-                        ->getTimeSlotsSorted($reservation->timeSlots);
-                    if (!(($time[1] <= $times[0]) || ($time[0] >= $times[1]))) {
-                        return true;
-                    }
-                }
-            }
-
-        }
-        return false;
     }
 
     /**
@@ -500,19 +479,17 @@ class ReservationServiceImpl implements ReservationService
      * @param array $classrooms
      * @return int
      */
-    private function getTotalFloors($classrooms): int
+    private function getTotalFloors(array $classrooms): int
     {
         $dp = [];
-        $usedFloors = 0;
         foreach ($classrooms as $classroom) {
-            $floor = $classroom->floor;
-            if (!array_key_exists($floor, $dp)) $dp[$floor] = 0;
-            if ($dp[$floor] == 0) {
+            $floor = $classroom['floor'];
+            if (!array_key_exists($floor, $dp))
+                $dp[$floor] = 0;
+            if ($dp[$floor] == 0)
                 $dp[$floor] = 1;
-                $usedFloors++;
-            }
         }
-        return $usedFloors;
+        return count($dp);
     }
 
     /**
@@ -536,7 +513,7 @@ class ReservationServiceImpl implements ReservationService
             foreach ($pendingReservations as $reservationId) {
                 $this->reject(
                     $reservationId,
-                    'Se rechazo su solicitud, contacte con un administrador',
+                    'Se rechazo su solicitud, un ambiente en especifico de su solicitud acaba de ser actualizado',
                     PersonRepository::system()
                 );
             }
@@ -546,7 +523,27 @@ class ReservationServiceImpl implements ReservationService
             return ['El ambiente no está asociado a ninguna reserva.'];
         }
     }
-    
+
+    /**
+     * Cancel accepted reservations and reject pending reservations in an array
+     * @param array $reservations
+     * @return none
+     */
+    public function cancelAndRejectReservations(array $reservations): void
+    {
+        foreach ($reservations as $reservation) {
+            if ($reservation['reservation_status'] == 'ACEPTADO') {
+                $this->cancel($reservation['reservation_id']);
+            } else {
+                $this->reject(
+                    $reservation['reservation_id'],
+                    'Se rechazo la solicitud de reserva, contacte con el encargado para mayor detalle',
+                    PersonRepository::system()
+                );
+            }
+        }
+    }
+
     /**
      * Function to get reservations accepted, pending and reject
      * @param int $classromId
@@ -574,5 +571,47 @@ class ReservationServiceImpl implements ReservationService
     public function getReports(array $data): array
     {
         return $this->reservationRepository->getReports($data);
+    }
+
+    /**
+     * Function to check if a reservation is expired
+     * @param array $reservation
+     * @return bool
+     */
+    public function isExpired(array $reservation): bool
+    {
+        $now = Carbon::now();
+        $requestedHour = Carbon::parse($reservation['date'].' '.$reservation['time_slot'][0])->addHours(4);
+        return ($now > $requestedHour);
+    }
+
+    /**
+     * Accept automatically if a reservation is unique and in the classrooms specified
+     * @param array $data
+     * @return none
+     */
+    private function acceptPendingByCollision(array $data): void
+    {
+        $reservations = $this->reservationRepository->getReservations(
+            [
+                'dates' => [
+                    'date_start' => $data['date'],
+                    'date_end' => $data['date']
+                ],
+                'reservation_statuses' => [
+                    ReservationStatuses::pending()
+                ],
+                'time_slots' => $this->timeSlotService->getTimeSlotsSorted($data['time_slots']),
+                'classrooms' => array_map(
+                    function ($classroom) {
+                        return $classroom['classroom_id'];
+                    }, $data['classrooms']
+                )
+            ]
+        );
+        if (count($reservations) == 1) {
+            $reservation = $reservations[0];
+            $this->accept($reservation['reservation_id'], false);
+        }
     }
 }

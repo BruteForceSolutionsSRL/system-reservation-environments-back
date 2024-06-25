@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
+
 use Illuminate\Http\{
     JsonResponse as Response,
     Request
