@@ -283,8 +283,19 @@ class ReservationController extends Controller
                     404
                 ); 
 
+            $result = $this->reservationService->store($data);
+
+            if ($result == 'No existen ambientes disponibles que cumplan con los requerimientos de la solicitud')
+                return response()->json(['message' => $result], 400);
+
+            if ($result == 'La solicitud se rechazo, existen ambientes ocupados')
+                return response()->json(['message' => $result], 201);
+
+            if ($result == 'La reserva fue aceptada correctamente')
+                return response()->json(['message' => $result], 202);
+
             return response()->json(
-                ['message' => $this->reservationService->store($data)], 
+                ['message' =>$result ], 
                 200
             );
         } catch (Exception $e) {
@@ -323,6 +334,7 @@ class ReservationController extends Controller
                     }
                 }
             ],
+            'block_id' => 'required|int|exists:blocks,id',
         ], [
             'quantity.required' => 'El número de estudiantes es obligatorio.',
             'quantity.integer' => 'El número de estudiantes debe ser un valor entero.',
@@ -353,10 +365,15 @@ class ReservationController extends Controller
     public function assign(int $reservationId, Request $request): Response
     {
         try {
-            $message = $this->reservationService->accept($reservationId); 
+            $message = $this->reservationService->accept($reservationId, true); 
             if ($message == 'No existe una solicitud con este ID') {
                 return response()->json(['message' => $message], 404);
             }
+            
+            if ($message == 'Esta solicitud ya es expirada, no puede atenderse') {
+                return response()->json(['message' => $message], 400);
+            }
+
             return response()->json(['message' => $message], 200);
         } catch (Exception $e) {
             return response()->json([

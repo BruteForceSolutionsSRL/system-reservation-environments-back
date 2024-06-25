@@ -71,7 +71,7 @@ Route::controller(ReservationReasonController::class)->group(function() {
 });
 
 Route::controller(ReservationStatusController::class)->group(function() {
-    Route::group(['middleware' => ['jwt.verify,permissions:report']], function () {
+    Route::group(['middleware' => ['jwt.verify','permissions:report']], function () {
         Route::get('/reservations/statuses', 'list'); 
     });
 });
@@ -106,7 +106,7 @@ Route::controller(ClassroomStatusController::class)->group(function() {
 });
 
 Route::controller(ClassroomTypeController::class)->group(function() {
-    Route::group(['middleware' => ['jwt.verify,permissions:environment_register,environment_update']], function () {
+    Route::group(['middleware' => ['jwt.verify','permissions:environment_register,environment_update']], function () {
         Route::get('/classrooms/types', 'list');
     });
 });
@@ -122,18 +122,19 @@ Route::controller(ClassroomController::class)->group(function() {
         Route::middleware('permissions:environment_remove')->delete('/classrooms/delete/{classroomId}','destroy');
     });  
 
-    Route::group(['middleware' => ['sanitize:api,jwt.verify']], function () {
+    Route::group(['middleware' => ['sanitize:api','jwt.verify']], function () {
         Route::middleware('permissions:request_reserve')->post('/classrooms/reservation/suggest', 'suggestClassrooms');
         Route::post('/classrooms/disponibility', 'getClassroomByDisponibility');
         Route::middleware('permissions:environment_register')->post('/classrooms', 'store');
         Route::post('/classrooms/stats', 'getClassroomStats');
+        Route::post('/classrooms/disponible', 'getClassroomsByDisponibility');
 
         Route::middleware('permissions:environment_update')->put('/classrooms/{classroomId}', 'update');  
     });
 });
 
 Route::controller(TeacherSubjectController::class)->group(function() {
-    Route::group(['middleware' => ['jwt.verify,permissions:request_reserve,report']], function () {
+    Route::group(['middleware' => ['jwt.verify','permissions:request_reserve,report']], function () {
         Route::get('/teacher-subjects/teacher/{teacherId}', 'subjectsByTeacher');
         Route::get('/teacher-subjects/subject/{universitySubjectID}', 'teachersBySubject');
     });
@@ -143,10 +144,10 @@ Route::controller(NotificationController::class)->group(function() {
     Route::group(['middleware' => ['jwt.verify']], function () {
         Route::get('/notifications/inbox', 'list');
         Route::get('/notifications/inbox/{notificationId}', 'show');
-    });
+    });   
 
-    Route::group(['middleware' => ['sanitize:api,jwt.verify']], function () {
-        Route::middleware('permissions:notify')->post('/notifications/send', 'store');
+    Route::group(['middleware' => ['sanitize:api','jwt.verify']], function () {
+        Route::middleware('permissions:notify')->post('/notifications/sendNotification', 'store');
     });
 });
 
@@ -159,7 +160,7 @@ Route::controller(BlockController::class)->group(function() {
         Route::middleware('permissions:block_remove')->delete('/blocks/{block_id}', 'destroy'); 
     });
 
-    Route::group(['middleware' => ['sanitize:api,jwt.verify']], function () {
+    Route::group(['middleware' => ['sanitize:api','jwt.verify']], function () {
         Route::middleware('permissions:block_register')->post('/blocks', 'store'); 
 
         Route::middleware('permissions:block_update')->put('/blocks/{block_id}', 'update');

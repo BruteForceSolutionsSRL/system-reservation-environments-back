@@ -22,7 +22,6 @@ class JwtMiddlware
      */
     public function handle(Request $request, Closure $next)
     {
-        
         try {
             $token = JWTAuth::parseToken();
             if ($token->getClaim('type') === 'refresh') {
