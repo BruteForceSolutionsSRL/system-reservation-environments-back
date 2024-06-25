@@ -216,13 +216,14 @@ class ClassroomServiceImpl implements ClassroomService
             ]
         );
         $dp = [];
+        //echo serialize($reservations);
         foreach ($reservations as $reservation) {
             $accepted = $reservation['reservation_status'] == 'ACEPTADO';
             foreach ($reservation['classrooms'] as $classroom) {
                 if (!array_key_exists($classroom['classroom_id'], $dp)) 
                     $dp[$classroom['classroom_id']] = [];
                 $times = $this->timeSlotService->getTimeSlotsSorted($reservation['time_slot']);
-                for ($id = $times[0]; $id <= $times[1]; $id++) {
+                for ($id = $times[0]; $id < $times[1]; $id++) {
                     $index = $this->timeSlotRepository->getTimeSlotById($id)['time'];
                     if (!array_key_exists($index, $dp[$classroom['classroom_id']]))
                         $dp[$classroom['classroom_id']][$index] = 2;

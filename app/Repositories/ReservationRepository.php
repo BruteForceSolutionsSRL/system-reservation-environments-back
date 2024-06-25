@@ -25,10 +25,11 @@ class ReservationRepository extends Repository
     protected $model;
     private $timeSlotService;
     private $classroomLog;
+    private $timeSlotRepository; 
     function __construct()
     {
         $this->model = Reservation::class;
-
+        $this->timeSlotRepository = new TimeSlotRepository();
         $this->timeSlotService = new TimeSlotServiceImpl();
 
         $this->classroomLog = new ClassroomLogsRepository();
@@ -362,6 +363,7 @@ class ReservationRepository extends Repository
      */
     public function save(array $data): array
     {
+        $data['time_slot_id'][1]--;
         $reservation = new Reservation();
         $reservation->number_of_students = $data['quantity'];
         $reservation->repeat = $data['repeat'];
@@ -468,6 +470,16 @@ class ReservationRepository extends Repository
         $timeSlots = $reservation->timeSlots;
         $priority = 0;
 
+        $times = []; 
+        foreach ($timeSlots as $timeSlot) {
+            if (empty($times)) array_push($times, $timeSlot->time);
+            else {
+                $id = $timeSlot->id;
+                $aux = $this->timeSlotRepository->getTimeSlotById($id+1);
+                array_push($times, $aux['time']);
+            }
+        }
+
         if (Carbon::now()->diffInDays(Carbon::parse($reservation->date)) <= 5) {
             $priority = 1;
         }
@@ -477,9 +489,10 @@ class ReservationRepository extends Repository
             'subject_name' => $teacherSubjects->first()->universitySubject->name,
             'quantity' => $reservation->number_of_students,
             'reservation_date' => $reservation->date,
-            'time_slot' => $timeSlots->map(function ($timeSlot) {
-                return $timeSlot->time;
-            })->toArray(),
+            'time_slot' => $times,
+            //'time_slot' => $timeSlots->map(function ($timeSlot) {
+            //    return $timeSlot->time;
+            //})->toArray(),
             'groups' => $teacherSubjects->map(function ($teacherSubject) {
                 $person = Person::find($teacherSubject->person_id);
                 return [
@@ -710,8 +723,9 @@ class ReservationRepository extends Repository
         }
     
         if (!empty($data['time_slots'])) {
+            $data['time_slots'][1]--;
             $query->whereHas('timeSlots', function($q) use ($data) {
-                $q->whereIn('time_slot_id', $data['time_slots']);
+                $q->whereBetween('time_slot_id', $data['time_slots']);
             });
         }
     
