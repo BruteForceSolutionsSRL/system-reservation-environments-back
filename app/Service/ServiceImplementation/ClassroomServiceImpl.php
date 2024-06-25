@@ -205,9 +205,6 @@ class ClassroomServiceImpl implements ClassroomService
         $times = $data['time_slot_id'];
         sort($times);
 
-        $acceptedStatus = ReservationStatuses::accepted();
-        $pendingStatus = ReservationStatuses::pending();
-
         foreach ($data['classroom_id'] as $classroomId) {
             $classroom = $this->classroomRepository->getClassroomById($classroomId);
 
@@ -216,13 +213,20 @@ class ClassroomServiceImpl implements ClassroomService
             $element = array();
             $element['classroom_name'] = $classroom['classroom_name'];
 
-            $reservations = $this->reservationRepository
-                ->getActiveReservationsWithDateStatusAndClassroom(
-                    [$acceptedStatus, $pendingStatus],
-                    $data['date'],
-                    $classroomId
-                );
-
+            $reservations = $this->reservationRepository->getReservations(
+                [
+                    'date' => [
+                        'date_start' => $data['date'], 
+                        'date_end' => $data['date']
+                    ],
+                    'reservation_statuses' => [
+                        ReservationStatuses::accepted(), 
+                        ReservationStatuses::pending()
+                    ],
+                    'time_slots' => $times,
+                    'classrooms' => [$classroomId]
+                ]
+            );
             for ($timeSlotId = $times[0]; $timeSlotId <= $times[1]; $timeSlotId++) {
                 $index = $this->timeSlotRepository
                     ->getTimeSlotById($timeSlotId)['time'];
@@ -233,14 +237,8 @@ class ClassroomServiceImpl implements ClassroomService
             }
 
             foreach ($reservations as $reservation) {
-                $timesReservation = $this->timeSlotService->getTimeSlotsSorted(
-                    $reservation->timeSlots->map(
-                        function ($timeSlot) {
-                            return $timeSlot->time;
-                        }
-                    )->toArray()
-                );
-                $isAccepted = $reservation->reservation_status_id == $acceptedStatus;
+                $timesReservation = $this->timeSlotService->getTimeSlotsSorted($reservation['time_slot']);
+                $isAccepted = $reservation['reservation_status'] == 'ACEPTADO';
 
                 for (
                     $timeSlotId = max($timesReservation[0], $times[0]);

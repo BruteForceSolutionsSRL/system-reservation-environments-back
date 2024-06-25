@@ -707,7 +707,6 @@ class ReservationRepository extends Repository
     
         if (!empty($data['reservation_statuses'])) {
             $query->whereIn('reservation_status_id', $data['reservation_statuses']);
-            //$query->whereRaw('reservation_status_id IN (?)', $data['reservation_statuses']);
         }
     
         if (!empty($data['time_slots'])) {
@@ -723,19 +722,23 @@ class ReservationRepository extends Repository
         }
 
         if (!empty($data['dates'])) {
-            $query->whereBetween('date', [$data['dates']['date_start'], $data['dates']['date_end']])
-                ->orWhere(function ($query) use ($data) {
-                    $query->where('repeat', '>', 0)
-                        ->where('date', '<=', $data['dates']['date_start'])
-                        ->where(function ($query) use ($data) {
-                            $query->whereRaw('MOD(DATEDIFF(date, ?), `repeat`) = 0', [$data['dates']['date_start']])
-                                ->orWhereRaw('`repeat` - MOD(DATEDIFF(date, ?), `repeat`) <= DATEDIFF(?, ?)', [
-                                    $data['dates']['date_start'],
-                                    $data['dates']['date_end'],
-                                    $data['dates']['date_start']
-                                ]);
-                        });
-                });
+            $query->where(
+                function ($query) use ($data) {
+                    $query->whereBetween('date', [$data['dates']['date_start'], $data['dates']['date_end']])
+                    ->orWhere(function ($query) use ($data) {
+                        $query->where('repeat', '>', 0)
+                            ->where('date', '<=', $data['dates']['date_start'])
+                            ->where(function ($query) use ($data) {
+                                $query->whereRaw('MOD(DATEDIFF(date, ?), `repeat`) = 0', [$data['dates']['date_start']])
+                                    ->orWhereRaw('`repeat` - MOD(DATEDIFF(date, ?), `repeat`) <= DATEDIFF(?, ?)', [
+                                        $data['dates']['date_start'],
+                                        $data['dates']['date_end'],
+                                        $data['dates']['date_start']
+                                    ]);
+                            });
+                    });    
+                }
+            );
         }
     
         //dd($query->toSql());
