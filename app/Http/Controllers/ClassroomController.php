@@ -111,11 +111,8 @@ class ClassroomController extends Controller
         try {
             $validator = $this->validateClassroomDataUpdate($request);
             if ($validator->fails()) {
-                $message = '';
-                foreach ($validator->errors()->all() as $value)
-                    $message = $message . $value . '.';
                 return response()->json(
-                    ['message' => $message],
+                    ['message' => implode('.', $validator->errors()->all())],
                     400
                 );
             }
@@ -126,7 +123,7 @@ class ClassroomController extends Controller
             if ($block['block_maxfloor'] < $data['floor_number']) {
                 return response()->json(
                     ['messagge' =>
-                    'El numero de piso es mayor a la maximo piso del bloque seleccionado'],
+                    'El numero de piso elegido es mayor al maximo piso del bloque seleccionado, por favor seleccione un numero de piso menor.'],
                     400
                 );
             }
@@ -134,12 +131,11 @@ class ClassroomController extends Controller
             $classroom = $this->classroomService->getClassroomByID($data['classroom_id']);
 
             if (($block['block_maxclassrooms'] == count($block['block_classrooms']))
-                 && ($classroom['block_id'] != $data['block_id'])) {
+                  && ($classroom['block_id'] != $data['block_id'])) 
                 return response()->json(
-                    ['message' => 'El bloque llego a su maxima cantidad de ambientes registrados'],
+                    ['message' => 'El bloque llego a su maxima cantidad de ambientes registrados, por favor elija otro bloque.'],
                     400
                 );
-            }
 
             return response()->json(
                 ['message' => $this->classroomService->update($data)],
@@ -168,11 +164,11 @@ class ClassroomController extends Controller
             $block = $this->blockService->getBlock($blockId);
             if ($block == []) {
                 return response()->json(
-                    ['message' => 'El ID del bloque debe ser valido'],
+                    ['message' => 'El ID del bloque debe ser valido.'],
                     400
                 );
             }
-            return response()->Json(
+            return response()->json(
                 $this->classroomService->getDisponibleClassroomsByBlock($blockId),
                 200
             );
@@ -253,28 +249,23 @@ class ClassroomController extends Controller
         try {
             $validator = $this->validateClassroomData($request);
 
-            if ($validator->fails()) {
-                $message = '';
-                foreach ($validator->errors()->all() as $value)
-                    $message = $message . $value . '.';
+            if ($validator->fails()) 
                 return response()->json(
-                    ['message' => $message],
+                    ['message' => implode('.', $validator->errors()->all())],
                     400
                 );
-            }
 
             $data = $validator->validated();
 
             $block = $this->blockService->getBlock($data['block_id']);
-            if ($block['block_maxfloor'] < $data['floor_number']) {
+            if ($block['block_maxfloor'] < $data['floor_number']) 
                 return response()->json(
-                    ['messagge' =>
-                    'El numero de piso es mayor a la maximo piso del bloque seleccionado'],
+                    ['message' =>
+                    'El numero de piso es mayor a la maximo piso del bloque seleccionado, por favor seleccione un numero de piso menor o igual a '.$data['block_maxfloor'].'.'],
                     400
                 );
-            }
 
-            if ($block['block_maxclassrooms'] == count($block['block_classrooms']))
+            if ($block['block_maxclassrooms'] === count($block['block_classrooms']))
                 return response()->json(
                     ['message' => 'El bloque llego a su maxima cantidad de ambientes registrados'],
                     404
@@ -417,14 +408,13 @@ class ClassroomController extends Controller
     public function getClassroomByDisponibility(Request $request): Response
     {
         try {
-
             $validator = $this->validateDisponibilityData($request);
-            if ($validator->fails()) {
-                $message = '';
-                foreach ($validator->errors()->all() as $value)
-                    $message .= $value . '.';
-                return response()->json(['message' => $message], 400);
-            }
+            if ($validator->fails()) 
+                return response()->json(
+                    ['message' => implode('.',$validator->errors()->all())], 
+                    400
+                );
+
             $data = $validator->validated();
             return response()->json(
                 $this->classroomService->getClassroomByDisponibility($data),
@@ -509,19 +499,18 @@ class ClassroomController extends Controller
         try {
             $validator = $this->validateSuggestionData($request);
 
-            if ($validator->fails()) {
-                $message = '';
-                foreach ($validator->errors()->all() as $value)
-                    $message .= $value . '.';
-                return response()->json(['message' => $message], 400);
-            }
+            if ($validator->fails()) 
+                return response()->json(
+                    ['message' => implode($validator->errors()->all())], 
+                    400);
 
             $data = $validator->validated();
             $data['endpoint'] = 1;
-            $response = $this->classroomService->getClassroomsByDisponibility($data); 
 
-            $status = 200; 
-            return response()->json($response, $status);
+            return response()->json(
+                $this->classroomService->getClassroomsByDisponibility($data), 
+                200
+            );
         } catch (Exception $e) {
             return response()->json(
                 [
@@ -543,18 +532,16 @@ class ClassroomController extends Controller
         try {
             $validator = $this->validateSuggestionData($request);
 
-            if ($validator->fails()) {
-                $message = '';
-                foreach ($validator->errors()->all() as $value)
-                    $message .= $value . '.';
-                return response()->json(['message' => $message], 400);
-            }
+            if ($validator->fails()) 
+                return response()->json(
+                    ['message' => implode('.', $validator->errors()->all())], 
+                    400
+                );
 
             $data = $validator->validated();
 
             $response = $this->classroomService->suggestClassrooms($data);
 
-            $status = 200; 
             if (
                 ((array_key_exists('message', $response)) && 
                 ($response['message'] == 'No existe una sugerencia apropiada'))
@@ -562,7 +549,7 @@ class ClassroomController extends Controller
             ) 
                 return response()->json(['message' => $response[0]], 404);
 
-            return response()->json($response, $status);
+            return response()->json($response, 200);
         } catch (Exception $e) {
             return response()->json(
                 [
@@ -633,22 +620,18 @@ class ClassroomController extends Controller
     {
         try {
             $validator = $this->validateRetriveLastClassroomData($request);
-            if ($validator->fails()) {
-                $message = '';
-                foreach ($validator->errors()->all() as $value)
-                    $message .= $value . '.';
+            if ($validator->fails()) 
                 return response()->json(
-                    ['message' => $message],
+                    ['message' => implode('.', $validator->errors()->all())],
                     400
                 );
-            }
 
             $data = $validator->validated();
 
             $classroom = $this->classroomService->retriveLastClassroom($data);
             if (count($classroom) <= 0) {
                 return response()->json(
-                    ['message' => 'Aula no encontrada'],
+                    ['message' => 'Aula no encontrada, por favor intente de nuevo mas tarde'],
                     404
                 );
             }
@@ -697,13 +680,15 @@ class ClassroomController extends Controller
     {
         try {
             $isDeleted = $this->classroomService->isDeletedClassroom($classroomId);
-            if ($isDeleted) {
+            if ($isDeleted) 
                 return response()->json(
                     ['message' => 'El ambiente ya fue eliminado o no existe'],
                     404
                 );
-            }
-            return response()->json($this->classroomService->deleteByClassroomId($classroomId));
+
+            return response()->json(
+                $this->classroomService->deleteByClassroomId($classroomId)
+            );
         } catch (Exception $e) {
             return response()->json(
                 [
@@ -724,15 +709,12 @@ class ClassroomController extends Controller
     {
         try {
             $validator = $this->validateGetClassroomStatsData($request);
-            if ($validator->fails()) {
-                $message = '';
-                foreach ($validator->errors()->all() as $value)
-                    $message .= $value . '.';
+            if ($validator->fails()) 
                 return response()->json(
-                    ['message' => $message],
+                    ['message' => implode($validator->errors()->all())],
                     400
                 );
-            }
+
             $data = $validator->validated();
             $report = $this->classroomService->getClassroomStats($data);
             if (empty($report)) {
@@ -741,6 +723,7 @@ class ClassroomController extends Controller
                     404
                 );
             }
+
             return response()->json(
                 $report,
                 200
@@ -788,4 +771,4 @@ class ClassroomController extends Controller
             'date_end.after_or_equal' => 'La fecha de fin debe ser mayor o igual a la fecha de inicio'          
         ]);
     }
-}   
+}
