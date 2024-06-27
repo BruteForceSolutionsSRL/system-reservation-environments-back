@@ -164,6 +164,7 @@ Route::controller(BlockController::class)->group(function() {
         Route::middleware('permissions:block_register')->post('/blocks', 'store'); 
 
         Route::middleware('permissions:block_update')->put('/blocks/{block_id}', 'update');
+        Route::post('/blocks/reservation/special', 'listBlocksForSpecial'); 
     });    
 });
 

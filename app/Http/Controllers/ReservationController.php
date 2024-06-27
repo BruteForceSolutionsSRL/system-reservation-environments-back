@@ -1,8 +1,6 @@
 <?php
 namespace App\Http\Controllers;
 
-use Illuminate\Validation\Rule;
-
 use Exception;
 use Illuminate\Http\{
     JsonResponse as Response,
@@ -483,6 +481,98 @@ class ReservationController extends Controller
      * @return mixed
      */
     private function validateGetReportsData(Request $request)
+    {
+        return Validator::make($request->all(), [
+            'date_start' => '
+                required|
+                date',
+            'date_end' => '
+                required|
+                date|
+                after_or_equal:date_start',
+            'block_id' => '
+                nullable|
+                integer|
+                exists:blocks,id',
+            'classroom_id' => '
+                nullable|
+                integer|
+                exists:classrooms,id',
+            'reservation_status_id' => '
+                nullable|
+                integer|
+                exists:reservation_statuses,id',
+            'university_subject_id' => '
+                nullable|
+                integer|
+                exists:university_subjects,id',
+            'person_id' => '
+                nullable|
+                integer|
+                exists:people,id',
+        ], [
+            'date_start.required' => 'La fecha de inicio es obligatoria',
+            'date_start.date' => 'La fecha de incio debe tener un formato válido',
+            
+            'date_end.required' => 'La fecha de fin es obligatoria',
+            'date_end.date' => 'La fecha de fin debe tener un formato válido',
+            'date_end.after_or_equal' => 'La fecha de fin debe ser mayor o igual a la fecha de inicio',          
+            
+            'block_id.integer' => 'El bloque debe ser un valor entero',
+            'block_id.exists' => 'El bloque debe ser una selección válida',
+
+            'classroom_id.integer' => 'El id del ambiente tiene que tener un formato valido',
+            'classroom_id.exists' => 'El ambiente seleccionados no es válido',
+        
+            'reservation_status_id.integer' => 'El estado de la reserva debe ser un valor entero',
+            'reservation_status_id.exists' => 'El estado de la reserva debe ser una selección válida',
+
+            'university_subject_id.integer' => 'El ID de la asignatura universitaria debe ser un valor entero',
+            'university_subject_id.exists' => 'La asignatura universitaria debe ser una selección válida',
+
+            'person_id.integer' => 'El ID de la persona debe ser un valor entero',
+            'person_id.exists' => 'La persona debe ser una selección válida',
+        ]);
+    }
+
+    /**
+     * Endpoint function to accept a `special` reservation
+     * @param Request $request
+     * @return Response
+     */
+    public function storeSpecialRequest(Request $request): Response
+    {
+        try {
+            $validator = $this->validateSpecialReservation($request);
+
+            if ($validator->fails()) 
+                return response()->json(
+                    ['message' => implode('.', $validator->errors()->all())], 
+                    400
+                );
+
+            $data = $validator->validated();
+            return response()->json(
+                ['message' => $this->reservationService->saveSpecialReservation($data)], 
+                200
+            );
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'message' => 'Hubo un error en el servidor',
+                    'error' => $e->getMessage()
+                ],
+                500
+            );
+        }       
+    }
+
+    /** 
+     * Validate a single request for special reservation request
+     * @param Request $request
+     * @return mixed
+     */
+    private function validateSpecialReservation(Request $request) 
     {
         return Validator::make($request->all(), [
             'date_start' => '

@@ -30,7 +30,7 @@ class MailerServiceImpl implements MailerService
 	 */
 	public function sendMail(Mailable $mail, array $addresses): void
 	{
-		MailSenderJob::dispatch($addresses, $mail);
+		MailSenderJob::dispatch($addresses, $mail)->withTags(['mail']);
 	}
 
 	/**

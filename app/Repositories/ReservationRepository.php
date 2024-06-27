@@ -86,7 +86,6 @@ class ReservationRepository extends Repository
      */
     public function getReservationsWithoutPendingRequest(): array
     {
-
         return $this->model::with([
             'reservationStatus:id,status',
             'reservationReason:id,reason',
@@ -375,8 +374,10 @@ class ReservationRepository extends Repository
         $reservation->date = $data['date'];
         $reservation->reservation_reason_id = $data['reason_id'];
         $reservation->reservation_status_id = ReservationStatuses::pending();
-        $reservation->save();
+        if (array_key_exists('observation', $data))
+            $reservation->observation = $data['observation'];
 
+        $reservation->save();
         $reservation->teacherSubjects()->attach($data['group_id']);
         $reservation->classrooms()->attach($data['classroom_id']);
         $reservation->timeSlots()->attach($data['time_slot_id']);
@@ -474,6 +475,8 @@ class ReservationRepository extends Repository
         $teacherSubjects = $reservation->teacherSubjects;
         $timeSlots = $reservation->timeSlots;
         $priority = 0;
+        $createdAt = $reservation->created_at;
+        $updatedAt = $reservation->updatedAt;
 
         $times = []; 
         foreach ($timeSlots as $timeSlot) {
@@ -529,6 +532,9 @@ class ReservationRepository extends Repository
             'reservation_status' => $reservationStatus->status,
             'repeat' => $reservation->repeat,
             'date' => $reservation->date,
+            'observation' => $reservation->observation,
+            'created_at' => $createdAt,
+            'updated_at' => $updatedAt,
         ];
     }
 
@@ -758,6 +764,10 @@ class ReservationRepository extends Repository
                     });    
                 }
             );
+        }
+
+        if (!empty($data['priorities'])) {
+            $query->whereIn('priority', $data['priorities']);
         }
     
         $reservations = $query->orderBy('date')->get()->map(

@@ -5,15 +5,12 @@ use App\Repositories\{
     BlockRepository,
     BlockLogRepository,
     BlockStatusRepository,
-    ReservationStatusRepository as ReservationStatus,
     PersonRepository, 
     NotificationTypeRepository
 };
 
-use App\Models\{
-    Block
-};
-
+use App\Repositories\ReservationRepository;
+use App\Repositories\ReservationStatusRepository;
 use App\Service\{
     BlockService
 };
@@ -25,6 +22,7 @@ class BlockServiceImpl implements BlockService
     private $blockRepository; 
     private $blockLogRepository; 
     private $blockStatusRepository;
+    private $reservationRepository; 
 
     private $classroomService; 
     private $mailService; 
@@ -34,6 +32,7 @@ class BlockServiceImpl implements BlockService
         $this->blockRepository = new BlockRepository();
         $this->blockLogRepository = new BlockLogRepository();
         $this->blockStatusRepository = new BlockStatusRepository();
+        $this->reservationRepository = new ReservationRepository();
 
         $this->classroomService = new ClassroomServiceImpl();
         $this->mailService = new MailerServiceImpl();
@@ -195,5 +194,40 @@ class BlockServiceImpl implements BlockService
         $this->mailService->sendDeleteBlockEmail($emailData);
 
         return 'Se elimino el bloque '.$block['block_name']; 
+    }
+
+    /**
+     * Function list all blocks within number of classrooms requested by each block
+     * @param array $data
+     * @return array 
+     */
+    public function listBlocksForSpecialReservation(array $data): array 
+    {
+        $blocks = $this->getAllBlocks(); 
+        foreach ($blocks as $block) {
+            $classrooms = array_map(
+                function ($classroom) {
+                    return $classroom['classroom_id'];
+                },
+                $block['classrooms']
+            );           
+            $block['requested'] = count(
+                $this->reservationRepository->getReservations(
+                    [
+                        'dates' => [
+                            'date_start' => $data['date_start'],
+                            'date_end' => $data['date_end']
+                        ],
+                        'time_slots' => $data['time_slot_id'],
+                        'classrooms' => $classrooms,
+                        'reservation_statuses' => [
+                            ReservationStatusRepository::accepted(), 
+                            ReservationStatusRepository::rejected()
+                        ]
+                    ]
+                )
+            ); 
+        }
+        return $blocks;
     }
 }

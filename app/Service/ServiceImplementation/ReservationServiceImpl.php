@@ -614,4 +614,31 @@ class ReservationServiceImpl implements ReservationService
             $this->accept($reservation['reservation_id'], false);
         }
     }
+
+    /**
+     * Store a new reservation - accept it automatically and try to re-assign the accepted reservations.
+     * @param array $data
+     * @return string
+     */
+    public function saveSpecialReservation(array $data): string 
+    {
+        $data['time_slot_id'][1]--;
+        $specialReservationSet = $this->reservationRepository->getReservations(
+            [
+                'dates' => [
+                    'date_start' => $data['date_start'],
+                    'date_end' => $data['date_end']
+                ],
+                'time_slots' => $data['time_slot_id'],
+                'classrooms' => $data['classrooms'],
+                'priorities' => [1],
+            ]
+        );
+        // si existe un evento anterior, no se puede re-reasignar nunca.
+        if (!empty($specialReservationSet)) 
+            return 'No se puede realizar la reserva de tipo especial, dado que existen ambientes ya ocupados con otra actividad de reserva especial, por favor intente con otra fecha/periodos.';
+        $this->reservationRepository->save($data);
+        // debo realizar la re-asignacion
+        return 'Se realizo la reserva de tipo especial de manera correcta, para ver mas detalles revisar en el historial de solicitudes.';
+    }
 }
