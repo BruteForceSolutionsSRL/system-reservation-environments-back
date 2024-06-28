@@ -230,4 +230,42 @@ class BlockServiceImpl implements BlockService
         }
         return $blocks;
     }
+
+    /**
+     * Suggest best blocks by quantity, dates and time slots to do a special reservation
+     * @param array $data
+     * @return array
+     */
+    public function suggestBlocks(array $data): array 
+    {
+        $blocks = $this->listBlocksForSpecialReservation($data);
+        foreach ($blocks as $block) {
+            $block['capacity'] = 0; 
+            foreach ($block['classrooms'] as $classroom)
+                $block['capacity'] += $classroom['capacity'];
+        }
+
+        $INF = 1e6+1; 
+        $MAX_LEN = 1e5; 
+        $dp = array_fill(0, $MAX_LEN, $INF); 
+        $auxiliar = array_fill(0, $MAX_LEN, array()); 
+        $dp[0] = 0;
+        foreach ($blocks as $block)
+        for ($i = $MAX_LEN - 1; $i >= 0; $i--) {
+            $j = $i+$block['capacity']; 
+            if (($j < $MAX_LEN) && ($dp[$j] < $dp[$i] + $block['requested'])) {
+                $dp[$j] = $dp[$i]+$block['requested'];
+                $auxiliar[$j] = $auxiliar[$i]; 
+                array_push($auxiliar[$j], $block); 
+            }
+        }
+        $bestSuggest = -1;
+        for ($i = $data['quantity']; ($i < $MAX_LEN) && ($bestSuggest !== -1); $i++)
+        if ($dp[$i] !== $INF) {
+            $bestSuggest = $i;
+        }
+
+        if ($bestSuggest == -1) return ['No existe una sugerencia apropiada para la reserva especial.'];
+        return $auxiliar[$bestSuggest];
+    }
 }
