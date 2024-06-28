@@ -575,7 +575,7 @@ class ReservationController extends Controller
     private function validateSpecialReservation(Request $request) 
     {
         return Validator::make($request->all(), [
-            'quantity' => 'required|integer|min:25',
+            'quantity' => 'required|integer|min:100',
             'date_start' => 'required|date',
             'date_end' => 'required|date',
             'reason_id' => 'required|int|exists:reservation_reasons,id',
@@ -597,15 +597,16 @@ class ReservationController extends Controller
         ], [
             'quantity.required' => 'El número de estudiantes es obligatorio.',
             'quantity.integer' => 'El número de estudiantes debe ser un valor entero.',
-            'quantity:min' => 'La cantidad debe ser un numero positivo mayor o igual a 25',
-            'quantity:max' => 'La cantidad debe ser un numero positivo menor o igual a 500',
+            'quantity:min' => 'La cantidad debe ser un numero positivo mayor o igual a 100',
 
             'date_start.required' => 'La fecha es obligatoria.',
             'date_start.date' => 'La fecha debe ser un formato válido.',
             'date_end.required' => 'La fecha es obligatoria.',
             'date_end.date' => 'La fecha debe ser un formato válido.',
             'reason_id.required' => 'El motivo de la reserva es obligatorio.',
-            'reason_id.string' => 'El motivo de la reserva debe ser un texto.',
+            'reason_id.int' => 'El motivo de la reserva debe hacer referencia al motivo.',
+            'observation.required' => 'El titulo u observacion no debe ser nula.',
+            'observation.string' => 'El titulo y observacion debe ser una cadena de texto.',
 
             'classroom_id.*.required' => 'Se requiere al menos una aula.',
             'classroom_id.*.exists' => 'Una de las aulas seleccionadas no es válida.',
