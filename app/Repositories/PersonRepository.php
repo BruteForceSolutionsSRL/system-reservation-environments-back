@@ -25,6 +25,23 @@ class PersonRepository extends Repository
     }
 
     /**
+     * Store a new person
+     * @param array $data
+     * @return array
+     */
+    public function save(array $data): array 
+    {
+        $person = new $this->model;
+        $person->name = $data['name'];
+        $person->last_name = $data['last_name']; 
+        $person->user_name = $data['user_name']; 
+        $person->email = $data['email'];
+        $person->password = bcrypt($data['password']);
+        $person->save();
+        return $person->toArray();
+    }
+
+    /**
      * Retrieve a Person by its ID
      * @param int $personId
      * @return array
@@ -109,5 +126,17 @@ class PersonRepository extends Repository
             ->get()
             ->toArray();
         return !empty($permissions);
+	}
+
+    /**
+	 * Retrieve a list of roles a person has through a person ID
+	 * @param int $personId
+	 * @return array
+	 */
+	public function getRoles(int $personId):array 
+	{
+		$person = $this->model::find($personId); 
+        if ($person === null) return [];
+        return $person->roles()->pluck('name')->toArray();
 	}
 }
