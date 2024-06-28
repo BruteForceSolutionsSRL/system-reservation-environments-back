@@ -22,6 +22,7 @@ class ReservationServiceImpl implements ReservationService
     private $timeSlotService;
     private $notificationService;
     private $classroomService;
+    private $reservationAssignerService; 
 
     public function __construct()
     {
@@ -32,6 +33,7 @@ class ReservationServiceImpl implements ReservationService
         $this->mailService = new MailerServiceImpl();
         $this->notificationService = new NotificationServiceImpl();
         $this->classroomService = new ClassroomReservationsTakerServiceImpl();
+        $this->reservationAssignerService = new ReservationsAssignerServiceImpl();
     }
 
     /**
@@ -630,15 +632,35 @@ class ReservationServiceImpl implements ReservationService
                     'date_end' => $data['date_end']
                 ],
                 'time_slots' => $data['time_slot_id'],
-                'classrooms' => $data['classrooms'],
+                'classrooms' => $data['classroom_id'],
                 'priorities' => [1],
+                'reservation_statuses' => [
+                    ReservationStatuses::accepted()
+                ],
             ]
         );
-        // si existe un evento anterior, no se puede re-reasignar nunca.
         if (!empty($specialReservationSet)) 
             return 'No se puede realizar la reserva de tipo especial, dado que existen ambientes ya ocupados con otra actividad de reserva especial, por favor intente con otra fecha/periodos.';
         $this->reservationRepository->save($data);
-        // debo realizar la re-asignacion
+        $reservations = $this->reservationRepository->getReservations(
+            [
+                'reservation_statuses' => [
+                    ReservationStatuses::accepted(), 
+                    ReservationStatuses::pending()
+                ],
+                'dates' => [
+                    'date_start' => $data['date_start'],
+                    'date_end' => $data['date_end']
+                ],
+                'no_repeat' => 1,
+                'classrooms' => $data['classroom_id'],
+                'priorities' => [0],
+                'time_slots' => $data['time_slot_id'],
+            ]
+        );
+
+        $this->reservationAssignerService->reassign($reservations);
+
         return 'Se realizo la reserva de tipo especial de manera correcta, para ver mas detalles revisar en el historial de solicitudes.';
     }
 

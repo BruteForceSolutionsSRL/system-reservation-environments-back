@@ -464,14 +464,13 @@ class ReservationRepository extends Repository
     /**
      * Deletes all classrooms attached for a single reservation
      * @param int $reservationId
-     * @return array
+     * @return void
      */
-    public function detachReservationsClassrooms(int $reservationId): array 
+    public function detachReservationsClassrooms(int $reservationId): void 
     {
         $reservation = $this->model::find($reservationId); 
         $reservation->classrooms()->sync([]);
         $reservation->save();
-        return $this->formatOutput($reservation);
     }
 
     /**
@@ -770,6 +769,10 @@ class ReservationRepository extends Repository
             $query->whereHas('classrooms', function($q) use ($data) {
                 $q->whereIn('classroom_id', $data['classrooms']);
             });
+        }
+
+        if (!empty($data['no_repeat'])) {
+            $query->where('repeat', 0);
         }
 
         if (!empty($data['dates'])) {

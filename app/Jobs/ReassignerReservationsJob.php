@@ -12,13 +12,12 @@ use Illuminate\Queue\SerializesModels;
 use App\Service\ServiceImplementation\{
     ClassroomServiceImpl, 
     ReservationServiceImpl,
-    BlockServiceImpl
+    BlockServiceImpl,
+    TimeSlotServiceImpl
 };
 
 use App\Repositories\{
-    ReservationRepository, 
-    ReservationStatusRepository as ReservationStatus,
-    PersonRepository
+    ReservationRepository 
 };
 
 class ReassignerReservationsJob implements ShouldQueue
@@ -47,6 +46,7 @@ class ReassignerReservationsJob implements ShouldQueue
         $reservationService = new ReservationServiceImpl(); 
         $classroomService = new ClassroomServiceImpl();
         $blockService = new BlockServiceImpl();
+        $timeSlotService =  new TimeSlotServiceImpl();
 
         $reservationRepository = new ReservationRepository();
         $reservationsToRejectAndCancel = [];
@@ -57,7 +57,11 @@ class ReassignerReservationsJob implements ShouldQueue
                 $possibleAssignation = $classroomService->suggestClassrooms(
                     [
                         'block_id' => $block['block_id'],
-                        
+                        'quantity' => $reservation['quantity'],
+                        'date' => $reservation['date'],
+                        'time_slot_id' => $timeSlotService->getTimeSlotsSorted(
+                            $reservation['time_slot']
+                        ),
                     ]
                 );
                 if (!is_string($possibleAssignation[0])) {
@@ -77,6 +81,9 @@ class ReassignerReservationsJob implements ShouldQueue
                         $classrooms
                      )
                 );  
+                if ($reservation['reservation_status'] !== 'ACEPTADO') {
+                    $reservationService->accept($reservation['reservation_id'], false);
+                }
             } else {
                 array_push($reservationsToRejectAndCancel, $reservation);
             }
