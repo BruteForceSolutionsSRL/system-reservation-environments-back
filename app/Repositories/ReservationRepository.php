@@ -462,6 +462,32 @@ class ReservationRepository extends Repository
     }
 
     /**
+     * Deletes all classrooms attached for a single reservation
+     * @param int $reservationId
+     * @return array
+     */
+    public function detachReservationsClassrooms(int $reservationId): array 
+    {
+        $reservation = $this->model::find($reservationId); 
+        $reservation->classrooms()->sync([]);
+        $reservation->save();
+        return $this->formatOutput($reservation);
+    }
+
+    /**
+     * Attach classrooms for a reservation by its ID
+     * @param int $reservationId
+     * @param array $classrooms
+     * @return array
+     */
+    public function attachClassroomsReservation(int $reservationId, array $classrooms): array 
+    {
+        $reservation = $this->model::find($reservationId); 
+        $reservation->classrooms()->attach($classrooms);
+        return $this->formatOutput($reservation);
+    }
+
+    /**
      * Function to format from Reservation class to array
      * @param mixed $reservation
      * @return array

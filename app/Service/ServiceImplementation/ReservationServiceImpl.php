@@ -641,4 +641,19 @@ class ReservationServiceImpl implements ReservationService
         // debo realizar la re-asignacion
         return 'Se realizo la reserva de tipo especial de manera correcta, para ver mas detalles revisar en el historial de solicitudes.';
     }
+
+    /**
+     * Re-assign classrooms and notificate users. 
+     * @param int $reservationId
+     * @param array $classroms
+     * @return array
+     */
+    public function assignClassrooms($reservationId, $classrooms): void 
+    {
+        $this->reservationRepository->attachClassroomsReservation(
+            $reservationId, 
+            $classrooms
+        );
+        // falta el modulo de notificacion para cambio de ambientes <:v
+    }
 }
