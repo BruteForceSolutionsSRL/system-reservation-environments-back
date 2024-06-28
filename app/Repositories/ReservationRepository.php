@@ -378,8 +378,12 @@ class ReservationRepository extends Repository
             $reservation->observation = $data['observation'];
 
         $reservation->save();
-        $reservation->teacherSubjects()->attach($data['group_id']);
-        $reservation->classrooms()->attach($data['classroom_id']);
+        
+        if (!empty($data['group_id']))
+            $reservation->teacherSubjects()->attach($data['group_id']);
+        
+        if (!empty($date['classroom_id']))
+            $reservation->classrooms()->attach($data['classroom_id']);
         $reservation->timeSlots()->attach($data['time_slot_id']);
 
         return $this->formatOutput($reservation);

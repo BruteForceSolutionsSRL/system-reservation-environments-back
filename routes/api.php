@@ -96,6 +96,7 @@ Route::controller(ReservationController::class)->group(function() {
         Route::middleware('permissions:reservation_cancel')->patch('/reservations/{reservationId}/cancel', 'cancelRequest');
 
         Route::middleware('permissions:request_reserve')->post('/reservations', 'store');
+        Route::post('/reservations/special', 'storeSpecialRequest');
     }); 
 });
 

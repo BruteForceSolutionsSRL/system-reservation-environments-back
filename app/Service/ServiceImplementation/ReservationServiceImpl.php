@@ -639,9 +639,20 @@ class ReservationServiceImpl implements ReservationService
                 ],
             ]
         );
+
         if (!empty($specialReservationSet)) 
             return 'No se puede realizar la reserva de tipo especial, dado que existen ambientes ya ocupados con otra actividad de reserva especial, por favor intente con otra fecha/periodos.';
-        $this->reservationRepository->save($data);
+        $date = Carbon::parse($data['date_start']);
+        $dateEnd = Carbon::parse($data['date_end']);
+        for (; $date <= $dateEnd; $date = $date->addDay()) {
+            $reservation = $this->reservationRepository
+                ->save(array_merge($data, ['date' => $date->format('Y-m-d')]));
+                
+            $this->reservationRepository->updateReservationStatus(
+                $reservation['reservation_id'],
+                ReservationStatuses::accepted()
+            );
+        }
         $reservations = $this->reservationRepository->getReservations(
             [
                 'reservation_statuses' => [

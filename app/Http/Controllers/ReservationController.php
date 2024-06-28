@@ -575,55 +575,45 @@ class ReservationController extends Controller
     private function validateSpecialReservation(Request $request) 
     {
         return Validator::make($request->all(), [
-            'date_start' => '
-                required|
-                date',
-            'date_end' => '
-                required|
-                date|
-                after_or_equal:date_start',
-            'block_id' => '
-                nullable|
-                integer|
-                exists:blocks,id',
-            'classroom_id' => '
-                nullable|
-                integer|
-                exists:classrooms,id',
-            'reservation_status_id' => '
-                nullable|
-                integer|
-                exists:reservation_statuses,id',
-            'university_subject_id' => '
-                nullable|
-                integer|
-                exists:university_subjects,id',
-            'person_id' => '
-                nullable|
-                integer|
-                exists:people,id',
+            'quantity' => 'required|integer|min:25',
+            'date_start' => 'required|date',
+            'date_end' => 'required|date',
+            'reason_id' => 'required|int|exists:reservation_reasons,id',
+            'observation' => 'required|string',
+            'classroom_id.*' => 'nullable|exists:classrooms,id',
+            'time_slot_id.*' => 'required|exists:time_slots,id',
+            'time_slot_id' => [
+                'required',
+                'array',
+                function ($attribute, $value, $fail) {
+                    if (count($value) !== 2) {
+                        $fail('Debe seleccionar exactamente dos periodos de tiempo.');
+                    }else if ($value[1] <= $value[0]) {
+                        $fail('El segundo periodo debe ser mayor que el primero.');
+                    }
+                }
+            ],
+            'block_id.*' => 'nullable|int|exists:blocks,id',
         ], [
-            'date_start.required' => 'La fecha de inicio es obligatoria',
-            'date_start.date' => 'La fecha de incio debe tener un formato válido',
-            
-            'date_end.required' => 'La fecha de fin es obligatoria',
-            'date_end.date' => 'La fecha de fin debe tener un formato válido',
-            'date_end.after_or_equal' => 'La fecha de fin debe ser mayor o igual a la fecha de inicio',          
-            
-            'block_id.integer' => 'El bloque debe ser un valor entero',
-            'block_id.exists' => 'El bloque debe ser una selección válida',
+            'quantity.required' => 'El número de estudiantes es obligatorio.',
+            'quantity.integer' => 'El número de estudiantes debe ser un valor entero.',
+            'quantity:min' => 'La cantidad debe ser un numero positivo mayor o igual a 25',
+            'quantity:max' => 'La cantidad debe ser un numero positivo menor o igual a 500',
 
-            'classroom_id.integer' => 'El id del ambiente tiene que tener un formato valido',
-            'classroom_id.exists' => 'El ambiente seleccionados no es válido',
-        
-            'reservation_status_id.integer' => 'El estado de la reserva debe ser un valor entero',
-            'reservation_status_id.exists' => 'El estado de la reserva debe ser una selección válida',
+            'date_start.required' => 'La fecha es obligatoria.',
+            'date_start.date' => 'La fecha debe ser un formato válido.',
+            'date_end.required' => 'La fecha es obligatoria.',
+            'date_end.date' => 'La fecha debe ser un formato válido.',
+            'reason_id.required' => 'El motivo de la reserva es obligatorio.',
+            'reason_id.string' => 'El motivo de la reserva debe ser un texto.',
 
-            'university_subject_id.integer' => 'El ID de la asignatura universitaria debe ser un valor entero',
-            'university_subject_id.exists' => 'La asignatura universitaria debe ser una selección válida',
-
-            'person_id.integer' => 'El ID de la persona debe ser un valor entero',
-            'person_id.exists' => 'La persona debe ser una selección válida',
+            'classroom_id.*.required' => 'Se requiere al menos una aula.',
+            'classroom_id.*.exists' => 'Una de las aulas seleccionadas no es válida.',
+            'time_slot_id.*.required' => 'Se requieren los periodos de tiempo.',
+            'time_slot_id.*.exists' => 'Uno de los periodos de tiempo seleccionados no es válido.',
+            'time_slot_id.required' => 'Se requieren dos periodos de tiempo.',
+            'time_slot_id.array' => 'Los periodos de tiempo deben ser un arreglo.',
         ]);
+
     }
 }
