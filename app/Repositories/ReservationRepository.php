@@ -517,20 +517,13 @@ class ReservationRepository extends Repository
             }
         }
 
-        if (Carbon::now()->diffInDays(Carbon::parse($reservation->date)) <= 5) {
-            $priority = 1;
-        }
+        $subjectName = 'RESERVA ESPECIAL'; 
+        if ($teacherSubjects->first() !== null) 
+            $subjectName = $teacherSubjects->first()->universitySubject->name;
 
-        return [
-            'reservation_id' => $reservation->id,
-            'subject_name' => $teacherSubjects->first()->universitySubject->name,
-            'quantity' => $reservation->number_of_students,
-            'reservation_date' => $reservation->date,
-            'time_slot' => $times,
-            //'time_slot' => $timeSlots->map(function ($timeSlot) {
-            //    return $timeSlot->time;
-            //})->toArray(),
-            'groups' => $teacherSubjects->map(function ($teacherSubject) {
+        $groups = ['teacher_name' => 'ADMINISTRACION DEL SISTEMA SURA - FCYT.']; 
+        if ($teacherSubjects->first() !== null) {
+            $groups = $teacherSubjects->map(function ($teacherSubject) {
                 $person = Person::find($teacherSubject->person_id);
                 return [
                     'teacher_name' => $person->name . ' ' . $person->last_name,
@@ -538,8 +531,27 @@ class ReservationRepository extends Repository
                     'person_email' => $person->email,
                     'person_id' => $teacherSubject->person_id,
                 ];
-            })->toArray(),
-            'block_name' => $classrooms->first()->block->name,
+            })->toArray();
+        }
+
+        if (Carbon::now()->diffInDays(Carbon::parse($reservation->date)) <= 5) {
+            $priority = 1;
+        }
+
+        $output =  [
+            'reservation_id' => $reservation->id,
+            'subject_name' => $subjectName,
+            'quantity' => $reservation->number_of_students,
+            'reservation_date' => $reservation->date,
+            'time_slot' => $times,
+            'groups' => $groups,
+            'block_name' => array_unique(
+                $classrooms->map(
+                    function ($classroom) {
+                        return $classroom->block->name;
+                    }
+                )->toArray()
+            ),
             'classrooms' => $classrooms->map(
                 function ($classroom) use ($reservation) {
                     $classroomData = $this->classroomLog->retriveLastClassroom(
@@ -562,9 +574,72 @@ class ReservationRepository extends Repository
             'repeat' => $reservation->repeat,
             'date' => $reservation->date,
             'observation' => $reservation->observation,
+            'parent_id' => $reservation->parent_id,
             'created_at' => $createdAt,
             'updated_at' => $updatedAt,
         ];
+        if ((count($output['block_name']) == 1) && 
+            ($reservation->priority == 0)) 
+                $output['block_name'] = $output['block_name'][0];
+        return $output;
+    }
+
+    /**
+     * Retrieve a list of all special reservations
+     * @return array 
+     */
+    public function getActiveSpecialReservations(): array 
+    {
+        $reservations = $this->model::where('priority', 1)
+            ->where('date', '>=', Carbon::now()->format('Y-m-d'))
+            ->where('reservation_status_id', ReservationStatuses::accepted())
+            ->get();
+        $dp = [];
+        $result = [];
+        foreach ($reservations as $reservation) {
+            if (array_key_exists($reservation->parent_id, $dp)) {
+                array_push($dp[$reservation->parent_id], $reservation->id);
+                continue;
+            }
+            $dp[$reservation->parent_id] = [$reservation->id]; 
+            array_push($result, $this->formatOutputSpecial($reservation));
+        }
+        return array_map(
+            function ($reservation) use ($dp) {
+                $reservation['reservation_ids'] = $dp[$reservation['parent_id']];
+                return $reservation;
+            }, $result
+        );
+    }
+
+    /**
+     * Get a single special reservation by its id (for any of all reservations leafs)
+     * @param int $reservation
+     * @return array
+     */
+    public function getSpecialReservation(int $reservationId): array 
+    {
+        return $this->formatOutputSpecial($this->model::find($reservationId));
+    }
+
+    /**
+     * Format output for a single reservation 
+     * @param $reservation
+     * @return array
+     */
+    public function formatOutputSpecial($reservation): array 
+    {
+        $reservationSet = $this->model::where('priority', 1)
+            ->where('parent_id', $reservation->parent_id)
+            ->get();
+        $reservation = $this->formatOutput($reservation);
+        $reservation['date_start'] = $reservation['date'];
+        $reservation['date_end'] = $reservation['date'];
+        foreach ($reservationSet as $reservationIterator) {
+            $reservation['date_start'] = min($reservation['date_start'], $reservationIterator->date);
+            $reservation['date_end'] = max($reservation['date_end'], $reservationIterator->date);            
+        }
+        return $reservation;
     }
 
     /**

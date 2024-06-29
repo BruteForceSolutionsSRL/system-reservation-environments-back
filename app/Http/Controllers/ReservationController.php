@@ -536,6 +536,28 @@ class ReservationController extends Controller
     }
 
     /**
+     * Retrieve a list of all special reservation 
+     * @return Response 
+     */
+    public function getActiveSpecialReservations(): Response 
+    {
+        try {
+            return response()->json(
+                $this->reservationService->getActiveSpecialReservations(), 
+                200
+            );
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'message' => 'Hubo un error en el servidor',
+                    'error' => $e->getMessage()
+                ],
+                500
+            );
+        }
+    }
+
+    /**
      * Endpoint function to accept a `special` reservation
      * @param Request $request
      * @return Response

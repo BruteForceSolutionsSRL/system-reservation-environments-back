@@ -689,4 +689,8 @@ class ReservationServiceImpl implements ReservationService
         );
         // falta el modulo de notificacion para cambio de ambientes <:v
     }
+    public function getActiveSpecialReservations(): array 
+    {
+        return $this->reservationRepository->getActiveSpecialReservations();
+    }
 }
