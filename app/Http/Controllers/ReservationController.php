@@ -233,6 +233,28 @@ class ReservationController extends Controller
     }
 
     /**
+     * Cancel a accepted special request-booking
+     * @param int $reservationId
+     * @param Request $request
+     * @return Response
+     */
+    public function cancelSpecialRequest(int $reservationId, Request $request): Response
+    {
+        try {
+            $message = $this->reservationService->cancel($reservationId); 
+            if ($message == 'No existe una solicitud con este ID') {
+                return response()->json(['message' => $message], 404);
+            }
+            return response()->json(['message' => $message], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Ocurrio un error al cancelar la solicitud.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Cancel a pending/accepted request-booking
      * @param int $reservationId
      * @param Request $request
