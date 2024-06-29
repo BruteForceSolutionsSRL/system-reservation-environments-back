@@ -172,22 +172,17 @@ class BlockController extends Controller
     {
         try {
             $validator = $this->validateBlockData($request); 
-            if ($validator->fails()) {
-                $message = '';
-                foreach ($validator->errors()->all() as $value)
-                    $message = $message . $value . '.';
-                
+            if ($validator->fails()) 
                 return response()->json(
-                    ['message' => $message],
+                    ['message' => implode('.', $validator->errors()->all())],
                     400
                 );
-            }
 
             $data = $validator->validated();
 
-            if (count($this->blockService->findByName($data['block_name'])) != 0)
+            if (empty($this->blockService->findByName($data['block_name'])))
                 return response()->json(
-                    ['message' => 'El nombre del bloque ya existe'], 
+                    ['message' => 'El nombre del bloque '.$data['block_name'].' ya existe, por favor escriba otro nombre.'], 
                     400
                 );
 
@@ -216,16 +211,11 @@ class BlockController extends Controller
     {
         try {
             $validator = $this->validateBlockData($request); 
-            if ($validator->fails()) {
-                $message = '';
-                foreach ($validator->errors()->all() as $value)
-                    $message = $message . $value . '.';
-                
+            if ($validator->fails()) 
                 return response()->json(
-                    ['message' => $message],
+                    ['message' => implode('.', $validator->errors()->all())],
                     400
                 );
-            }
 
             $data = $validator->validated();
 
@@ -239,7 +229,7 @@ class BlockController extends Controller
 
             if (count($block['block_classrooms']) > $data['block_maxclassrooms'])
                 return response()->json(
-                    ['message' => 'La capacidad de ambientes no debe ser menor a la cantidad actual'], 
+                    ['message' => 'La capacidad de ambientes no debe ser menor a la cantidad actual de ambientes pertenecientes al bloque en especifico.'], 
                     400
                 );
 
@@ -249,7 +239,7 @@ class BlockController extends Controller
 
             if ($max_floor > $data['block_maxfloor']) 
                 return response()->json(
-                    ['message' => 'La cantidad de pisos debe ser mayor o igual al piso de los ambientes existentes'], 
+                    ['message' => 'La piso maximo seleccionado debe ser mayor o igual al piso de los ambientes existentes pertenecientes al bloque.'], 
                     400
                 );
 
@@ -290,7 +280,14 @@ class BlockController extends Controller
 
             if (!empty($enabledClassrooms)) 
                 return response()->json(
-                    ['message' => 'Existen ambientes habilitados en el bloque'], 
+                    ['message' => 'Existen los siguientes ambiente habilitados en el bloque: '.implode(',', 
+                            array_map(
+                                function ($classroom) {
+                                    return $classroom['classroom_name'];
+                                }, $enabledClassrooms
+                            )
+                        )
+                    ], 
                     400
                 );
 

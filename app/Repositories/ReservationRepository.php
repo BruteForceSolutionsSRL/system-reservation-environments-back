@@ -512,7 +512,7 @@ class ReservationRepository extends Repository
             if (empty($times)) array_push($times, $timeSlot->time);
             else {
                 $id = $timeSlot->id;
-                $aux = $this->timeSlotRepository->getTimeSlotById($id+1);
+                $aux = $this->timeSlotRepository->getTimeSlotById(min($id+1, 21));
                 array_push($times, $aux['time']);
             }
         }
