@@ -137,7 +137,7 @@ class MailerServiceImpl implements MailerService
 		$this->sendMail(
 			new ReservationNotificationMailer(
 				$emailData,
-				ReservationStatus::accepted()
+				ReservationStatus::rejected()
 			), 
 			$addresses
 		);
