@@ -23,6 +23,7 @@ class ReservationServiceImpl implements ReservationService
     private $notificationService;
     private $classroomService;
     private $reservationAssignerService; 
+    private $blockService;
 
     public function __construct()
     {
@@ -34,6 +35,7 @@ class ReservationServiceImpl implements ReservationService
         $this->notificationService = new NotificationServiceImpl();
         $this->classroomService = new ClassroomReservationsTakerServiceImpl();
         $this->reservationAssignerService = new ReservationsAssignerServiceImpl();
+        $this->blockService = new BlockServiceImpl();
     }
 
     /**
@@ -308,6 +310,9 @@ class ReservationServiceImpl implements ReservationService
 
         if (!array_key_exists('repeat', $data)) {
             $data['repeat'] = 0;
+        }
+        if (!array_key_exists('priority', $data)) {
+            $data['priority'] = 0;
         }
 
         $reservation = $this->reservationRepository->save($data);
@@ -630,6 +635,28 @@ class ReservationServiceImpl implements ReservationService
     public function saveSpecialReservation(array $data): string 
     {
         $data['time_slot_id'][1]--;
+        if (empty($data['block_id'])) {
+            $data['block_id'] = array_map(
+                function ($block) {
+                    return $block['block_id'];
+                }, $this->blockService->suggestBlocks($data)
+            );
+        }
+        $classrooms = $data['classroom_id'];
+        if (empty($classrooms)) {
+            foreach ($data['block_id'] as $blockId) {
+                $classrooms = array_merge(
+                    $classrooms, 
+                    array_map(
+                        function ($classroom) {
+                            return $classroom['classroom_id'];
+                        },
+                        $this->classroomService->getClassroomsByBlock($blockId)
+                    )
+                );
+            }    
+            $data['classroom_id'] = $classrooms;
+        }
         $specialReservationSet = $this->reservationRepository->getReservations(
             [
                 'dates' => [
@@ -645,10 +672,18 @@ class ReservationServiceImpl implements ReservationService
             ]
         );
 
-        if (!empty($specialReservationSet)) 
+        if (!empty($specialReservationSet)) {
             return 'No se puede realizar la reserva de tipo especial, dado que existen ambientes ya ocupados con otra actividad de reserva especial, por favor intente con otra fecha/periodos.';
+        }
+
+        if (!array_key_exists('repeat', $data)) {
+            $data['repeat'] = 0;
+        }
+        $data['priority'] = 1;
+
         $date = Carbon::parse($data['date_start']);
         $dateEnd = Carbon::parse($data['date_end']);
+        $data['time_slot_id'][1]++;
         for (; $date <= $dateEnd; $date = $date->addDay()) {
             $reservation = $this->reservationRepository
                 ->save(array_merge($data, ['date' => $date->format('Y-m-d')]));
@@ -657,6 +692,7 @@ class ReservationServiceImpl implements ReservationService
                 $reservation['reservation_id'],
                 ReservationStatuses::accepted()
             );
+            $data['parent_id'] = $reservation['parent_id'];
         }
         $reservations = $this->reservationRepository->getReservations(
             [
@@ -674,9 +710,7 @@ class ReservationServiceImpl implements ReservationService
                 'time_slots' => $data['time_slot_id'],
             ]
         );
-
         $this->reservationAssignerService->reassign($reservations);
-
         return 'Se realizo la reserva de tipo especial de manera correcta, para ver mas detalles revisar en el historial de solicitudes.';
     }
 

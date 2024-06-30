@@ -617,7 +617,8 @@ class ReservationController extends Controller
             'date_end' => 'required|date',
             'reason_id' => 'required|int|exists:reservation_reasons,id',
             'observation' => 'required|string',
-            'classroom_id.*' => 'nullable|exists:classrooms,id',
+            'classroom_id' => 'array',
+            'classroom_id.*' => 'exists:classrooms,id',
             'time_slot_id.*' => 'required|exists:time_slots,id',
             'time_slot_id' => [
                 'required',
@@ -630,6 +631,7 @@ class ReservationController extends Controller
                     }
                 }
             ],
+            'block_id' => 'array',
             'block_id.*' => 'nullable|int|exists:blocks,id',
         ], [
             'quantity.required' => 'El número de estudiantes es obligatorio.',

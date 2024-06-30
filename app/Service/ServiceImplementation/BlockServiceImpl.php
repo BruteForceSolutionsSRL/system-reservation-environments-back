@@ -204,12 +204,12 @@ class BlockServiceImpl implements BlockService
     public function listBlocksForSpecialReservation(array $data): array 
     {
         $blocks = $this->getAllBlocks(); 
-        foreach ($blocks as $block) {
+        foreach ($blocks as &$block) {
             $classrooms = array_map(
                 function ($classroom) {
                     return $classroom['classroom_id'];
                 },
-                $block['classrooms']
+                $block['block_classrooms']
             );           
             $block['requested'] = count(
                 $this->reservationRepository->getReservations(
@@ -239,9 +239,9 @@ class BlockServiceImpl implements BlockService
     public function suggestBlocks(array $data): array 
     {
         $blocks = $this->listBlocksForSpecialReservation($data);
-        foreach ($blocks as $block) {
+        foreach ($blocks as &$block) {
             $block['capacity'] = 0; 
-            foreach ($block['classrooms'] as $classroom)
+            foreach ($block['block_classrooms'] as $classroom)
                 $block['capacity'] += $classroom['capacity'];
         }
 
@@ -253,16 +253,17 @@ class BlockServiceImpl implements BlockService
         foreach ($blocks as $block)
         for ($i = $MAX_LEN - 1; $i >= 0; $i--) {
             $j = $i+$block['capacity']; 
-            if (($j < $MAX_LEN) && ($dp[$j] < $dp[$i] + $block['requested'])) {
+            if (($j < $MAX_LEN) && ($dp[$j] > $dp[$i] + $block['requested'])) {
                 $dp[$j] = $dp[$i]+$block['requested'];
                 $auxiliar[$j] = $auxiliar[$i]; 
                 array_push($auxiliar[$j], $block); 
             }
         }
         $bestSuggest = -1;
-        for ($i = $data['quantity']; ($i < $MAX_LEN) && ($bestSuggest !== -1); $i++)
-        if ($dp[$i] !== $INF) {
-            $bestSuggest = $i;
+        for ($i = $data['quantity']; ($i < $MAX_LEN) && ($bestSuggest == -1); $i++) {
+            if ($dp[$i] < $INF) {
+                $bestSuggest = $i;
+            }   
         }
 
         if ($bestSuggest == -1) return ['No existe una sugerencia apropiada para la reserva especial.'];
