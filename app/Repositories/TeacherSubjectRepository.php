@@ -77,7 +77,7 @@ class TeacherSubjectRepository
 
     /**
      * Transform Person to array
-     * @param Person $teacher
+     * @param array $teacher
      * @return array
      */
     private function formatOutputTeacher($teacher): array

@@ -79,6 +79,7 @@ Route::controller(ReservationStatusController::class)->group(function() {
 Route::controller(ReservationController::class)->group(function() {
     Route::group(['middleware' => ['jwt.verify']], function () {
         Route::get('/reservations', 'list');
+        Route::get('/reservations/special', 'getActiveSpecialReservations');
         Route::middleware('permissions:reservation_handling')->get('/reservations/pending', 'getPendingRequests');
         Route::get('/reservations/teacher/{teacherId}/open', 'listRequestsByTeacher');
         Route::middleware('permissions:reservation_cancel')->get('/reservations/teacher/{teacherId}', 'listAllRequestsByTeacher');
@@ -96,6 +97,7 @@ Route::controller(ReservationController::class)->group(function() {
         Route::middleware('permissions:reservation_cancel')->patch('/reservations/{reservationId}/cancel', 'cancelRequest');
 
         Route::middleware('permissions:request_reserve')->post('/reservations', 'store');
+        Route::post('/reservations/special', 'storeSpecialRequest');
     }); 
 });
 
@@ -164,6 +166,7 @@ Route::controller(BlockController::class)->group(function() {
         Route::middleware('permissions:block_register')->post('/blocks', 'store'); 
 
         Route::middleware('permissions:block_update')->put('/blocks/{block_id}', 'update');
+        Route::post('/blocks/reservation/special', 'listBlocksForSpecial'); 
     });    
 });
 

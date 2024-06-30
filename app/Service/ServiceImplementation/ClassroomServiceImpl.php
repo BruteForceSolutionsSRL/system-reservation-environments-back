@@ -63,7 +63,8 @@ class ClassroomServiceImpl implements ClassroomService
      */
     public function getAllClassroomsWithStatistics(): array
     {
-        $classroomsStatistics = $this->classroomRepository->getAllClassroomsWithStatistics();
+        $classroomsStatistics = $this->classroomRepository
+            ->getAllClassroomsWithStatistics();
         return $classroomsStatistics;
     }
 
@@ -158,7 +159,7 @@ class ClassroomServiceImpl implements ClassroomService
 
         $this->mailService->sendCreationClassroomEmail($emailData);
 
-        return "El ambiente fue creado exitosamente.";
+        return 'El ambiente '.$classroom['classroom_name'].' fue creado exitosamente.';
     }
 
     /**
@@ -189,7 +190,7 @@ class ClassroomServiceImpl implements ClassroomService
 
         $this->mailService->sendUpdateClassroomEmail($emailData);
 
-        return "El ambiente fue actualizado correctamente";
+        return 'El ambiente '.$classroom['classroom_name'].' fue actualizado correctamente';
     }
 
     /**
@@ -341,6 +342,7 @@ class ClassroomServiceImpl implements ClassroomService
             $classroomSets[$classroom['floor']]['quantity'] += $classroom['capacity'];
             array_push($classroomSets[$classroom['floor']]['list'], $classroom);
         }
+
         $MAX_LEN = 1e4 + 10;
         $INF = 1e6;
         $dp = array_fill(0, $MAX_LEN + 1, $INF);
@@ -360,7 +362,15 @@ class ClassroomServiceImpl implements ClassroomService
                 }
 
         $bestSuggest = -1;
-        for ($i = $data['quantity']; $i <= min($data['quantity']*4, $MAX_LEN); $i++) {
+        for (
+            $i = $data['quantity']; 
+            ($i <= $MAX_LEN) && 
+            (
+                ($i <= 5*$data['quantity']) || 
+                ($bestSuggest == -1)
+            ); 
+            $i++
+        ) {
             if (($bestSuggest == -1) || ($dp[$bestSuggest] < $dp[$i])) {
                 if ($dp[$i] < $INF) 
                     $bestSuggest = $i;
@@ -402,7 +412,10 @@ class ClassroomServiceImpl implements ClassroomService
 
         $res = array();
         $piv = $bestSuggest;
-        if ($dp[$piv] == -1)
+        if (($dp[$piv] == -1) || 
+            ($piv > 1.5*$data['quantity']) || 
+            ($piv < 0.5*$data['quantity'])
+        )
             return ['No existe una sugerencia apropiada'];
 
         while ($piv != 0) {
@@ -459,7 +472,7 @@ class ClassroomServiceImpl implements ClassroomService
 
         $this->mailService->sendDeleteClassroomEmail($emailData);
 
-        return ['message' => 'Ambiente eliminado exitosamente.'];
+        return ['message' => 'Ambiente '.$classroom['classroom_name'].' eliminado exitosamente.'];
     }
 
     /**
@@ -504,7 +517,7 @@ class ClassroomServiceImpl implements ClassroomService
             );
         }
 
-        return 'Ambiente deshabilitado correctamente';
+        return 'Ambiente '.$classroom['classroom_name'].' deshabilitado correctamente';
     }
 
     /**

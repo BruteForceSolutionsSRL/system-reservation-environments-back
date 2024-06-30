@@ -61,6 +61,7 @@ class TimeSlotRepository extends Repository
      */
     private function formatOutput(TimeSlot $timeSlot): array
     {
+        if ($timeSlot == null) return [];
         return [
             'time_slot_id' => $timeSlot->id,
             'time' => $timeSlot->time,
