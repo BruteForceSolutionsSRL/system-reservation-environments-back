@@ -160,7 +160,7 @@ class ReservationServiceImpl implements ReservationService
      * @param int $reservationId
      * @return string
      */
-    public function cancel(int $reservationId): string
+    public function cancel(int $reservationId, string $message): string
     {
         $reservation = Reservation::find($reservationId);
 
@@ -182,7 +182,8 @@ class ReservationServiceImpl implements ReservationService
         $this->notificationService->store(
             $this->mailService->cancelReservation(
                 $this->reservationRepository->formatOutput($reservation),
-                PersonRepository::system()
+                PersonRepository::system(),
+                $message
             )
         );
 
@@ -519,7 +520,10 @@ class ReservationServiceImpl implements ReservationService
 
         if (!empty($acceptedReservations) || !empty($pendingReservations)) {
             foreach ($acceptedReservations as $reservationId) {
-                $this->cancel($reservationId);
+                $this->cancel(
+                    $reservationId,
+                    'Razon de la cancelacion de su reserva es la deshabilitacion/eliminacion de un ambiente correspondiente a esta reserva'
+                );
             }
 
             foreach ($pendingReservations as $reservationId) {
@@ -541,15 +545,18 @@ class ReservationServiceImpl implements ReservationService
      * @param array $reservations
      * @return none
      */
-    public function cancelAndRejectReservations(array $reservations): void
+    public function cancelAndRejectReservations(array $reservations, string $message): void
     {
         foreach ($reservations as $reservation) {
             if ($reservation['reservation_status'] == 'ACEPTADO') {
-                $this->cancel($reservation['reservation_id']);
+                $this->cancel(
+                    $reservation['reservation_id'],
+                    $message
+                );
             } else {
                 $this->reject(
                     $reservation['reservation_id'],
-                    'Se rechazo la solicitud de reserva, contacte con el encargado para mayor detalle',
+                    $message,
                     PersonRepository::system()
                 );
             }
@@ -722,11 +729,16 @@ class ReservationServiceImpl implements ReservationService
      */
     public function assignClassrooms($reservationId, $classrooms): void 
     {
-        $this->reservationRepository->attachClassroomsReservation(
+        $reservation = $this->reservationRepository->attachClassroomsReservation(
             $reservationId, 
             $classrooms
         );
-        // falta el modulo de notificacion para cambio de ambientes <:v
+        $this->notificationService->store(
+            $this->mailService->reassingReservation(
+                $reservation, 
+                PersonRepository::system()
+            )
+        );
     }
     public function getActiveSpecialReservations(): array 
     {

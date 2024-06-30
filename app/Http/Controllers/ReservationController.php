@@ -11,17 +11,20 @@ use Carbon\Carbon;
 
 use App\Service\ServiceImplementation\{
     ReservationServiceImpl,
-    TimeSlotServiceImpl
+    TimeSlotServiceImpl,
+    PersonServiceImpl
 };
 
 class ReservationController extends Controller
 {
     private $reservationService;
     private $timeSlotService; 
+    private $personService; 
     public function __construct()
     {
         $this->reservationService = new ReservationServiceImpl();
         $this->timeSlotService = new TimeSlotServiceImpl();
+        $this->personService = new PersonServiceImpl();
     }
 
     /**
@@ -248,7 +251,13 @@ class ReservationController extends Controller
     public function cancelRequest(int $reservationId, Request $request): Response
     {
         try {
-            $message = $this->reservationService->cancel($reservationId); 
+            $personId = $request['session_id'];
+            $person = $this->personService->getUser($personId);
+
+            $message = $this->reservationService->cancel(
+                $reservationId,
+                'Razon de la cancelacion es: El usuario: '.$person['person_fullname'].' cancelo la reserva'
+            ); 
             
             $pos = strpos($message, 'No existe');
             if ($pos !== false) 
