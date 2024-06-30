@@ -158,7 +158,10 @@ class ReservationController extends Controller
      * @param Request $request
      * @return Response
      */
-    public function getAllRequestsExceptPendingByTeacher(int $teacherId, Request $request): Response
+    public function getAllRequestsExceptPendingByTeacher(
+        int $teacherId, 
+        Request $request
+    ): Response
     {
         try {
             return response()->json(
@@ -189,9 +192,9 @@ class ReservationController extends Controller
         try {
             $reservation = $this->reservationService
                 ->getReservation($reservationId); 
-            if ($reservation == []) {
+            if (empty($reservation)) {
                 return response()->json([
-                    'message' => 'La reserva no existe'
+                    'message' => 'La reserva a la que trata de acceder no existe.'
                 ], 404);
             }
             return response()->json($reservation, 200);
@@ -220,9 +223,15 @@ class ReservationController extends Controller
                 $request->input('message'),
                 $request['session_id']
             ); 
-            if ($message == 'No existe una solicitud con este ID') {
+            $pos = strpos($mssage, 'No existe'); 
+            if ($pos !== false) 
                 return response()->json(['message' => $message], 404);
-            }
+            
+            $pos = strpos($mssage, 'expirada');
+            if ($pos !== false) 
+                return response()->json(['message' => $message], 400);
+            
+
             return response()->json(['message' => $message], 200);
         } catch (Exception $e) {
             return response()->json([
@@ -242,9 +251,16 @@ class ReservationController extends Controller
     {
         try {
             $message = $this->reservationService->cancel($reservationId); 
-            if ($message == 'No existe una solicitud con este ID') {
+            
+            $pos = strpos($message, 'No existe');
+            if ($pos !== false) 
                 return response()->json(['message' => $message], 404);
-            }
+            
+            $pos = strpos($mssage, 'expirada');
+            if ($pos !== false) 
+                return response()->json(['message' => $message], 400);
+            
+
             return response()->json(['message' => $message], 200);
         } catch (Exception $e) {
             return response()->json([
@@ -264,12 +280,11 @@ class ReservationController extends Controller
         try {
             $validator = $this->validateReservationData($request);
 
-            if ($validator->fails()) {
-                $message = '';
-                foreach ($validator->errors()->all() as $value)
-                    $message .= $value . ' ';
-                return response()->json(['message' => $message], 400);
-            }
+            if ($validator->fails()) 
+                return response()->json(
+                    ['message' => implode('.', $validator->errors()->all())], 
+                    400
+                );
 
             $data = $validator->validated();
 
@@ -279,23 +294,23 @@ class ReservationController extends Controller
             $now = Carbon::now();
             if ($now >= $requestedHour)
                 return response()->json(
-                    ['message' => 'La hora elegida ya paso, no es posible realizar una reserva'], 
+                    ['message' => 'La hora elegida ya paso, no es posible realizar una reserva, intente seleccionar una hora mayor.'], 
                     404
                 ); 
 
             $result = $this->reservationService->store($data);
-
-            if ($result == 'No existen ambientes disponibles que cumplan con los requerimientos de la solicitud')
+            $pos = strpos($result, 'No existen');
+            if ($pos !== false)
                 return response()->json(['message' => $result], 400);
-
-            if ($result == 'La solicitud se rechazo, existen ambientes ocupados')
+            $pos = strpos($result, 'rechazo'); 
+            if ($pos !== false)
                 return response()->json(['message' => $result], 201);
-
-            if ($result == 'La reserva fue aceptada correctamente')
+            $pos = strpos($result, 'aceptada');
+            if ($pos !== false)
                 return response()->json(['message' => $result], 202);
 
             return response()->json(
-                ['message' =>$result ], 
+                ['message' =>$result], 
                 200
             );
         } catch (Exception $e) {
@@ -366,13 +381,14 @@ class ReservationController extends Controller
     {
         try {
             $message = $this->reservationService->accept($reservationId, true); 
-            if ($message == 'No existe una solicitud con este ID') {
+            $pos = strpos($message, 'No existe');
+            if ($pos !== false) 
                 return response()->json(['message' => $message], 404);
-            }
             
-            if ($message == 'Esta solicitud ya es expirada, no puede atenderse') {
+            $pos = strpos($mssage, 'expirada');
+            if ($pos !== false) 
                 return response()->json(['message' => $message], 400);
-            }
+            
 
             return response()->json(['message' => $message], 200);
         } catch (Exception $e) {
@@ -419,7 +435,7 @@ class ReservationController extends Controller
         try {
             $reservations = $this->reservationService
                 ->getAllReservationsByClassroom($classromId); 
-            if ($reservations === []) {
+            if (empty($reservations)) {
                 response()->json(
                     ['message' => 'El ambiente no tiene reservaciones pendientes o aceptadas.'],
                     404
@@ -447,19 +463,18 @@ class ReservationController extends Controller
         try {
             $validator = $this->validateGetReportsData($request);
 
-            if ($validator->fails()) {
-                $message = '';
-                foreach ($validator->errors()->all() as $value)
-                    $message .= $value . ' ';
-                return response()->json(['message' => $message], 400);
-            } 
+            if ($validator->fails()) 
+                return response()->json(
+                    ['message' => implode('.', $validator->errors()->all())], 
+                    400
+                );
 
             $data = $validator->validated();
             $report = $this->reservationService->getReports($data);
             if (empty($report['report'])) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'No data found',
+                    'message' => 'No se encontraron datos.',
                 ], 404);
             }
             return response()->json(

@@ -489,6 +489,11 @@ class ReservationRepository extends Repository
             $priority = 1;
         }
 
+        $createdAt = Carbon::parse($reservation->created_at); 
+        $updatedAt = Carbon::parse($reservation->updated_at);
+        $createdAt->setTimeZone('America/New_York');
+        $updatedAt->setTimeZone('America/New_York');        
+
         return [
             'reservation_id' => $reservation->id,
             'subject_name' => $teacherSubjects->first()->universitySubject->name,
@@ -529,6 +534,8 @@ class ReservationRepository extends Repository
             'reservation_status' => $reservationStatus->status,
             'repeat' => $reservation->repeat,
             'date' => $reservation->date,
+            'created_at' => $createdAt,
+            'updated_at' => $updatedAt,
         ];
     }
 
