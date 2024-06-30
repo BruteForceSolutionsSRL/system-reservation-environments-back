@@ -505,7 +505,7 @@ class ReservationRepository extends Repository
         $timeSlots = $reservation->timeSlots;
         $priority = 0;
         $createdAt = $reservation->created_at;
-        $updatedAt = $reservation->updatedAt;
+        $updatedAt = $reservation->updated_at;
 
         $times = []; 
         foreach ($timeSlots as $timeSlot) {
@@ -573,6 +573,7 @@ class ReservationRepository extends Repository
             'reservation_status' => $reservationStatus->status,
             'repeat' => $reservation->repeat,
             'date' => $reservation->date,
+            'special' => $reservation->priority,
             'observation' => $reservation->observation,
             'parent_id' => $reservation->parent_id,
             'created_at' => $createdAt,
@@ -887,4 +888,24 @@ class ReservationRepository extends Repository
         return $reservations;
     }
 
+    /**
+     * Function to retrive a special set of special reservations thruogh parent ID
+     * @param int $parentId
+     * @return mixed
+     */
+    public function getSpecialReservations(int $parentId)
+    {
+        return $this->model::with([
+            'reservationStatus:id,status',
+            'reservationReason:id,reason',
+            'timeSlots:id,time',
+            'teacherSubjects:id,group_number,person_id,university_subject_id',
+            'teacherSubjects.person:id,name,last_name',
+            'teacherSubjects.universitySubject:id,name',
+            'classrooms:id,name,capacity,block_id',
+            'classrooms.block:id,name',
+            'classrooms.classroomType:id,description'
+        ])->where('parent_id', $parentId)
+        ->get();
+    }
 }

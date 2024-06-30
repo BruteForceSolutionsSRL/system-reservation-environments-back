@@ -62,8 +62,9 @@ class PersonRepository extends Repository
         return $this->model::whereHas('roles', 
             function ($query) use ($roles) 
             {
-                foreach ($roles as $rol)
-                    $query->orWhere('roles.id', $rol);
+                $query->whereIn('roles.id', $roles);
+                /* foreach ($roles as $rol)
+                    $query->orWhere('roles.id', $rol); */
             }
         )->where('id', '!=', $this->system())
         ->get()->map(

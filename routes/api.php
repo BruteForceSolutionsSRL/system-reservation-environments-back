@@ -76,7 +76,7 @@ Route::controller(ReservationStatusController::class)->group(function() {
     });
 });
 
-Route::controller(ReservationController::class)->group(function() {
+Route::controller(ReservationController::class)->group(function() { 
     Route::group(['middleware' => ['jwt.verify']], function () {
         Route::get('/reservations', 'list');
         Route::get('/reservations/special', 'getActiveSpecialReservations');
@@ -95,6 +95,7 @@ Route::controller(ReservationController::class)->group(function() {
         Route::middleware('permissions:reservation_handling')->patch('/reservations/{reservationId}/reject', 'rejectReservation');
         Route::middleware('permissions:reservation_handling')->patch('/reservations/{reservationId}/assign', 'assign');
         Route::middleware('permissions:reservation_cancel')->patch('/reservations/{reservationId}/cancel', 'cancelRequest');
+        Route::middleware('permissions:special_reservation')->patch('/reservations/{reservationId}/special/cancel','specialCancel');
 
         Route::middleware('permissions:request_reserve')->post('/reservations', 'store');
         Route::post('/reservations/special', 'storeSpecialRequest');

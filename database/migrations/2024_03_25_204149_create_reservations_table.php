@@ -18,8 +18,6 @@ class CreateReservationsTable extends Migration
             $table->id();
             $table->integer('number_of_students');
             $table->integer('repeat');
-            $table->longText('observation');
-            $table->integer('priority');
             $table->date('date');
             $table->longText('observation')->nullable();
             $table->unsignedBigInteger('parent_id')->nullable();

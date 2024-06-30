@@ -5,11 +5,13 @@ use App\Service\ReservationService;
 
 use App\Models\{
     Reservation,
+    ReservationStatus,
 };
 use App\Repositories\{
     PersonRepository,
     ReservationStatusRepository as ReservationStatuses,
-    ReservationRepository
+    ReservationRepository,
+    RoleRepository
 };
 use Carbon\Carbon;
 
@@ -17,6 +19,7 @@ class ReservationServiceImpl implements ReservationService
 {
     private $personRepository;
     private $reservationRepository;
+    private $roleRepository;
 
     private $mailService;
     private $timeSlotService;
@@ -28,6 +31,7 @@ class ReservationServiceImpl implements ReservationService
     {
         $this->personRepository = new PersonRepository();
         $this->reservationRepository = new ReservationRepository();
+        $this->roleRepository = new RoleRepository();
 
         $this->timeSlotService = new TimeSlotServiceImpl();
         $this->mailService = new MailerServiceImpl();
@@ -195,6 +199,50 @@ class ReservationServiceImpl implements ReservationService
         );
 
         return 'La solicitud de reserva fue cancelada correctamente.';
+    }
+
+     /**
+     * Function to cancel a accepted special reservation based on its ID
+     * @param int $specialReservationId
+     * @return string
+     */
+    public function specialCancel(int $specialReservationId): string
+    {
+        $specialReservationParent = Reservation::find($specialReservationId);
+
+        if ($specialReservationParent == null) {
+            return 'No existe una reserva con este ID';
+        }
+
+        $reservationStatusId = $specialReservationParent->reservation_status_id;
+        if ($reservationStatusId == ReservationStatuses::cancelled()) {
+            return 'Esta solicitud ya fue cancelada';
+        }
+        if ($reservationStatusId == ReservationStatuses::rejected()) {
+            return 'Esta solicitud ya fue rechazada';
+        }
+
+        $specialReservations = $this->reservationRepository->getSpecialReservations($specialReservationParent->parent_id);
+
+        $specialReservationsFormat = [];
+
+        foreach ($specialReservations as $specialReservation) {
+            $this->reservationRepository->updateReservationStatus($specialReservation->id, ReservationStatuses::cancelled());
+            $specialReservationsFormat[] = $this->reservationRepository->formatOutputSpecial($specialReservation);
+        }
+
+        $administratorRol = [$this->roleRepository->administrator()];
+
+        array_push($specialReservationsFormat[0]['groups'], $this->personRepository->getUsersByRole($administratorRol));
+
+        $this->notificationService->store(
+            $this->mailService->specialCancelReservation(
+                $specialReservationsFormat[0],
+                PersonRepository::system()
+            )
+        );
+
+        return 'La reserva fue cancelada.';
     }
 
     /**
