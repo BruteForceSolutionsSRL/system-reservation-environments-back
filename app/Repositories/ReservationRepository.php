@@ -376,13 +376,14 @@ class ReservationRepository extends Repository
         $reservation->reservation_status_id = ReservationStatuses::pending();
         if (array_key_exists('observation', $data))
             $reservation->observation = $data['observation'];
+        else $reservation->observation = 'Ninguna';
 
         $reservation->save();
         
         if (!empty($data['group_id']))
             $reservation->teacherSubjects()->attach($data['group_id']);
         
-        if (!empty($date['classroom_id']))
+        if (!empty($data['classroom_id']))
             $reservation->classrooms()->attach($data['classroom_id']);
         $reservation->timeSlots()->attach($data['time_slot_id']);
 
