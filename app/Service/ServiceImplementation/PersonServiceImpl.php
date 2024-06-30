@@ -21,6 +21,16 @@ class PersonServiceImpl implements PersonService
 	}
 
 	/**
+	 * Retrieve a array with data save of a person
+	 * @param array $data
+	 * @return array
+	 */
+	public function store(array $data): array
+	{
+		return $this->personRepository->save($data);
+	}
+
+	/**
 	 * Retrieve a single User within its ID
 	 * @param int $id
 	 * @return array
@@ -61,6 +71,16 @@ class PersonServiceImpl implements PersonService
 	 */
 	public function havePermission(array $data):bool 
 	{
-		return $this->personRepository->havePermission($data);;
+		return $this->personRepository->havePermission($data);
+	}
+
+	/**
+	 * Retrieve a list of roles a person has through a person ID
+	 * @param int $personId
+	 * @return array
+	 */
+	public function getRoles(int $personId):array 
+	{
+		return $this->personRepository->getRoles($personId);
 	}
 }

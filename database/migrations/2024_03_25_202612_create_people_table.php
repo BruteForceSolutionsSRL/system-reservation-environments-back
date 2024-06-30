@@ -18,7 +18,9 @@ class CreatePeopleTable extends Migration
             $table->id();
             $table->string('name');
             $table->string('last_name');
+            $table->string('user_name')->unique();
             $table->string('email')->unique();
+            $table->string('password');
             $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
             $table->timestamp('updated_at')->default(DB::raw('CURRENT_TIMESTAMP'));
         });
