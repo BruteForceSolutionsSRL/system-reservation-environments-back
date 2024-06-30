@@ -48,8 +48,8 @@ class ReservationNotificationMailer extends Mailable
                 return $this->subject('SOLICITUD DE RESERVA CANCELADA')
                     ->view($dir.'cancel');
             default: 
-                return $this->subject('SOLICITUD DE RESERVA CANCELADA')
-                    ->view($dir.'cancel');
+                return $this->subject('CAMBIO DE AMBIENTES DE SOLICITUD DE RESERVA DE AMBIENTES')
+                    ->view($dir.'reassign');
         }
     }
 }

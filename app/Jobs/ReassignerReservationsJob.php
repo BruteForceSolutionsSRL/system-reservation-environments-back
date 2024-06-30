@@ -88,6 +88,9 @@ class ReassignerReservationsJob implements ShouldQueue
                 array_push($reservationsToRejectAndCancel, $reservation);
             }
         }
-        $reservationService->cancelAndRejectReservations($reservationsToRejectAndCancel);
+        $reservationService->cancelAndRejectReservations(
+            $reservationsToRejectAndCancel,
+            'Se rechazo su reserva, dado que existe un evento/reserva especial que requiere el uso de los ambientes que estaban reservados a su nombre, para informacion mas detallada contacte con el administrador.'
+        );
     }
 }

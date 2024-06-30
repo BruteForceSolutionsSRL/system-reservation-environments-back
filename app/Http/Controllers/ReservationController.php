@@ -11,17 +11,20 @@ use Carbon\Carbon;
 
 use App\Service\ServiceImplementation\{
     ReservationServiceImpl,
-    TimeSlotServiceImpl
+    TimeSlotServiceImpl,
+    PersonServiceImpl
 };
 
 class ReservationController extends Controller
 {
     private $reservationService;
     private $timeSlotService; 
+    private $personService; 
     public function __construct()
     {
         $this->reservationService = new ReservationServiceImpl();
         $this->timeSlotService = new TimeSlotServiceImpl();
+        $this->personService = new PersonServiceImpl();
     }
 
     /**
@@ -270,7 +273,13 @@ class ReservationController extends Controller
     public function cancelRequest(int $reservationId, Request $request): Response
     {
         try {
-            $message = $this->reservationService->cancel($reservationId); 
+            $personId = $request['session_id'];
+            $person = $this->personService->getUser($personId);
+
+            $message = $this->reservationService->cancel(
+                $reservationId,
+                'Razon de la cancelacion es: El usuario: '.$person['person_fullname'].' cancelo la reserva'
+            ); 
             
             $pos = strpos($message, 'No existe');
             if ($pos !== false) 
@@ -639,7 +648,8 @@ class ReservationController extends Controller
             'date_end' => 'required|date',
             'reason_id' => 'required|int|exists:reservation_reasons,id',
             'observation' => 'required|string',
-            'classroom_id.*' => 'nullable|exists:classrooms,id',
+            'classroom_id' => 'array',
+            'classroom_id.*' => 'exists:classrooms,id',
             'time_slot_id.*' => 'required|exists:time_slots,id',
             'time_slot_id' => [
                 'required',
@@ -652,6 +662,7 @@ class ReservationController extends Controller
                     }
                 }
             ],
+            'block_id' => 'array',
             'block_id.*' => 'nullable|int|exists:blocks,id',
         ], [
             'quantity.required' => 'El número de estudiantes es obligatorio.',

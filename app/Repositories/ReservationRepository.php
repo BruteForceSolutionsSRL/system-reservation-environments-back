@@ -374,15 +374,26 @@ class ReservationRepository extends Repository
         $reservation->date = $data['date'];
         $reservation->reservation_reason_id = $data['reason_id'];
         $reservation->reservation_status_id = ReservationStatuses::pending();
-        if (array_key_exists('observation', $data))
+        $reservation->priority = $data['priority'];
+        if (array_key_exists('observation', $data)) {
             $reservation->observation = $data['observation'];
-
+        }
+        else {
+            $reservation->observation = 'Ninguna';
+        }
+        if (array_key_exists('parent_id', $data))
+            $reservation->parent_id = $data['parent_id'];
+        
         $reservation->save();
         
+        if ($reservation->parent_id == NULL) {
+            $reservation->parent_id = $reservation->id;
+            $reservation->save();
+        }
         if (!empty($data['group_id']))
             $reservation->teacherSubjects()->attach($data['group_id']);
         
-        if (!empty($date['classroom_id']))
+        if (!empty($data['classroom_id']))
             $reservation->classrooms()->attach($data['classroom_id']);
         $reservation->timeSlots()->attach($data['time_slot_id']);
 
@@ -570,6 +581,7 @@ class ReservationRepository extends Repository
             )->toArray(),
             'reason_name' => $reservationReason->reason,
             'priority' => $priority,
+            'special' => $reservation->priority,
             'reservation_status' => $reservationStatus->status,
             'repeat' => $reservation->repeat,
             'date' => $reservation->date,

@@ -45,4 +45,9 @@ class ClassroomReservationsTakerServiceImpl
         $this->initClassroom();
         return $this->classroomService->suggestClassrooms($data);
     }
+    public function getClassroomsByBlock(int $blockId): array 
+    {
+        $this->initClassroom();
+        return $this->classroomService->getClassroomsByBlock($blockId);
+    } 
 }

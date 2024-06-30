@@ -12,8 +12,8 @@ interface ReservationService
     function listAllRequestsByTeacher(int $teacherId): array;
     function getAllReservationsExceptPendingByTeacher(int $teacherId): array;
     function reject(int $reservationId, string $message, int $personId): string;
-    function cancel(int $reservationId): string;
-    function specialCancel(int $reservationId): string;
+    function cancel(int $reservationId, string $message): string;
+    function specialCancel(int $specialReservationId): string;
     function accept(int $reservationId, bool $ignoreFlag): string;
     function store(array $data): string;
     function getConflict(int $reservationId): array;
