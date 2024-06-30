@@ -570,6 +570,7 @@ class ReservationRepository extends Repository
             )->toArray(),
             'reason_name' => $reservationReason->reason,
             'priority' => $priority,
+            'special' => $reservation->priority,
             'reservation_status' => $reservationStatus->status,
             'repeat' => $reservation->repeat,
             'date' => $reservation->date,

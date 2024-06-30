@@ -509,12 +509,32 @@ class ClassroomServiceImpl implements ClassroomService
         $reservations = $this->reservationService->getActiveReservationsByClassroom(
                 $classroom['classroom_id']
             );
+        $dp = [];
         foreach ($reservations as $reservation)
             if ($reservation['repeat'] == 0) {
-                $this->reservationService->reject($reservation['reservation_id'],
-                'Su reserva ha sido rechazada debido a que el ambiente '.$classroom['classroom_name'].' fue deshabilitado',
-                PersonRepository::system()
-            );
+                if ($reservation['special'] == 0) {
+                    $this->reservationService->reject(
+                        $reservation['reservation_id'],
+                        'Su reserva ha sido rechazada debido a que el ambiente '.$classroom['classroom_name'].' fue deshabilitado',
+                        PersonRepository::system()
+                    );    
+                } else {
+                    if (array_key_exists($reservation['parent_id'], $dp)) 
+                        continue;
+                    $dp[$reservation['parent_id']] = 1; 
+                    $capacity = 0; 
+                    $reservation = $this->reservationRepository
+                        ->getSpecialReservation($reservation['reservation_id']); 
+                    foreach ($reservation['classrooms'] as $classroom) {
+                        $classroomData = $this->getClassroomByID($classroom['classroom_id']);
+                        if ($classroomData['classroom_status_id'] == ClassroomStatusRepository::disabled()) 
+                            continue;
+                        $capacity += $classroomData['capacity'];
+                    }    
+                    if ($capacity < $reservation['quantity']) {
+                        //$this->cancelSpecial($reservation['reservation_ids']);
+                    }
+                }
         }
 
         return 'Ambiente '.$classroom['classroom_name'].' deshabilitado correctamente';
