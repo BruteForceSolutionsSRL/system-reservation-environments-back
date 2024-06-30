@@ -19,6 +19,9 @@ class CreateReservationsTable extends Migration
             $table->integer('number_of_students');
             $table->integer('repeat');
             $table->date('date');
+            $table->longText('observation')->nullable();
+            $table->unsignedBigInteger('parent_id')->nullable();
+            $table->integer('priority')->default(0);
             $table->unsignedBigInteger('reservation_status_id');
             $table->unsignedBigInteger('reservation_reason_id');
             $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));

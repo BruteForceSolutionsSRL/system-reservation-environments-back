@@ -5,11 +5,13 @@ use App\Service\ReservationService;
 
 use App\Models\{
     Reservation,
+    ReservationStatus,
 };
 use App\Repositories\{
     PersonRepository,
     ReservationStatusRepository as ReservationStatuses,
-    ReservationRepository
+    ReservationRepository,
+    RoleRepository
 };
 use Carbon\Carbon;
 
@@ -17,21 +19,25 @@ class ReservationServiceImpl implements ReservationService
 {
     private $personRepository;
     private $reservationRepository;
+    private $roleRepository;
 
     private $mailService;
     private $timeSlotService;
     private $notificationService;
     private $classroomService;
+    private $reservationAssignerService; 
 
     public function __construct()
     {
         $this->personRepository = new PersonRepository();
         $this->reservationRepository = new ReservationRepository();
+        $this->roleRepository = new RoleRepository();
 
         $this->timeSlotService = new TimeSlotServiceImpl();
         $this->mailService = new MailerServiceImpl();
         $this->notificationService = new NotificationServiceImpl();
         $this->classroomService = new ClassroomReservationsTakerServiceImpl();
+        $this->reservationAssignerService = new ReservationsAssignerServiceImpl();
     }
 
     /**
@@ -193,6 +199,50 @@ class ReservationServiceImpl implements ReservationService
         );
 
         return 'La solicitud de reserva fue cancelada correctamente.';
+    }
+
+     /**
+     * Function to cancel a accepted special reservation based on its ID
+     * @param int $specialReservationId
+     * @return string
+     */
+    public function specialCancel(int $specialReservationId): string
+    {
+        $specialReservationParent = Reservation::find($specialReservationId);
+
+        if ($specialReservationParent == null) {
+            return 'No existe una reserva con este ID';
+        }
+
+        $reservationStatusId = $specialReservationParent->reservation_status_id;
+        if ($reservationStatusId == ReservationStatuses::cancelled()) {
+            return 'Esta solicitud ya fue cancelada';
+        }
+        if ($reservationStatusId == ReservationStatuses::rejected()) {
+            return 'Esta solicitud ya fue rechazada';
+        }
+
+        $specialReservations = $this->reservationRepository->getSpecialReservations($specialReservationParent->parent_id);
+
+        $specialReservationsFormat = [];
+
+        foreach ($specialReservations as $specialReservation) {
+            $this->reservationRepository->updateReservationStatus($specialReservation->id, ReservationStatuses::cancelled());
+            $specialReservationsFormat[] = $this->reservationRepository->formatOutputSpecial($specialReservation);
+        }
+
+        $administratorRol = [$this->roleRepository->administrator()];
+
+        array_push($specialReservationsFormat[0]['groups'], $this->personRepository->getUsersByRole($administratorRol));
+
+        $this->notificationService->store(
+            $this->mailService->specialCancelReservation(
+                $specialReservationsFormat[0],
+                PersonRepository::system()
+            )
+        );
+
+        return 'La reserva fue cancelada.';
     }
 
     /**
@@ -618,5 +668,82 @@ class ReservationServiceImpl implements ReservationService
             $reservation = $reservations[0];
             $this->accept($reservation['reservation_id'], false);
         }
+    }
+
+    /**
+     * Store a new reservation - accept it automatically and try to re-assign the accepted reservations.
+     * @param array $data
+     * @return string
+     */
+    public function saveSpecialReservation(array $data): string 
+    {
+        $data['time_slot_id'][1]--;
+        $specialReservationSet = $this->reservationRepository->getReservations(
+            [
+                'dates' => [
+                    'date_start' => $data['date_start'],
+                    'date_end' => $data['date_end']
+                ],
+                'time_slots' => $data['time_slot_id'],
+                'classrooms' => $data['classroom_id'],
+                'priorities' => [1],
+                'reservation_statuses' => [
+                    ReservationStatuses::accepted()
+                ],
+            ]
+        );
+
+        if (!empty($specialReservationSet)) 
+            return 'No se puede realizar la reserva de tipo especial, dado que existen ambientes ya ocupados con otra actividad de reserva especial, por favor intente con otra fecha/periodos.';
+        $date = Carbon::parse($data['date_start']);
+        $dateEnd = Carbon::parse($data['date_end']);
+        for (; $date <= $dateEnd; $date = $date->addDay()) {
+            $reservation = $this->reservationRepository
+                ->save(array_merge($data, ['date' => $date->format('Y-m-d')]));
+                
+            $this->reservationRepository->updateReservationStatus(
+                $reservation['reservation_id'],
+                ReservationStatuses::accepted()
+            );
+        }
+        $reservations = $this->reservationRepository->getReservations(
+            [
+                'reservation_statuses' => [
+                    ReservationStatuses::accepted(), 
+                    ReservationStatuses::pending()
+                ],
+                'dates' => [
+                    'date_start' => $data['date_start'],
+                    'date_end' => $data['date_end']
+                ],
+                'no_repeat' => 1,
+                'classrooms' => $data['classroom_id'],
+                'priorities' => [0],
+                'time_slots' => $data['time_slot_id'],
+            ]
+        );
+
+        $this->reservationAssignerService->reassign($reservations);
+
+        return 'Se realizo la reserva de tipo especial de manera correcta, para ver mas detalles revisar en el historial de solicitudes.';
+    }
+
+    /**
+     * Re-assign classrooms and notificate users. 
+     * @param int $reservationId
+     * @param array $classroms
+     * @return array
+     */
+    public function assignClassrooms($reservationId, $classrooms): void 
+    {
+        $this->reservationRepository->attachClassroomsReservation(
+            $reservationId, 
+            $classrooms
+        );
+        // falta el modulo de notificacion para cambio de ambientes <:v
+    }
+    public function getActiveSpecialReservations(): array 
+    {
+        return $this->reservationRepository->getActiveSpecialReservations();
     }
 }

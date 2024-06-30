@@ -12,6 +12,8 @@ use App\Repositories\{
 
 use Carbon\Carbon;
 
+use Illuminate\Support\Facades\DB;
+
 class NotificationRepository 
 {
 	protected $model; 
@@ -139,7 +141,7 @@ class NotificationRepository
 			'to' => $receptors->map(
 				function ($user) use ($notification)
 				{
-					$person = \DB::table('notification_person')
+					$person = DB::table('notification_person')
 						->where('notification_id', $notification->id)
 						->where('person_id', $user->id)
 						->get()

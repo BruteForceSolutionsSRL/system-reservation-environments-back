@@ -16,6 +16,7 @@
         "laravel/tinker": "^2.0",
         "react/async": "^3.2",
         "react/promise": "^3.2",
+        "spatie/laravel-queueable-action": "^2.12",
         "tymon/jwt-auth": "^1.0"
     },
     "require-dev": {

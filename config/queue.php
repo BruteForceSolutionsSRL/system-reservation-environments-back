@@ -86,4 +86,14 @@ return [
         'table' => 'failed_jobs',
     ],
 
+    'workers' => [
+        'default' => [
+            'connection' => 'database',
+            'processes'  => 2,
+            'filter' => [
+                'tags' => ['mail', 'internal']
+            ]
+        ]
+    ],
+
 ];

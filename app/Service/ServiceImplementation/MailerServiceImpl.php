@@ -12,7 +12,8 @@ use App\Jobs\MailSenderJob;
 use App\Mail\{
 	ClassroomNotificationMailer,
 	ReservationNotificationMailer,
-	BlockNotificationMailer
+	BlockNotificationMailer,
+	SpecialReservationNotificationMailer
 }; 
 
 use App\Repositories\{
@@ -30,7 +31,7 @@ class MailerServiceImpl implements MailerService
 	 */
 	public function sendMail(Mailable $mail, array $addresses): void
 	{
-		MailSenderJob::dispatch($addresses, $mail);
+		MailSenderJob::dispatch($addresses, $mail);//->withTags(['mail']);
 	}
 
 	/**
@@ -146,7 +147,7 @@ class MailerServiceImpl implements MailerService
 
 	/**
 	 * Create a Mailable class with data cancelled reservation
-	 * @param array $data
+	 * @param array $reservation
 	 * @return array 
 	 */
 	public function cancelReservation(array $reservation, int $sender): array 
@@ -176,6 +177,45 @@ class MailerServiceImpl implements MailerService
 				$emailData,
 				ReservationStatus::cancelled()
 			), 
+			$addresses
+		);
+		return $emailData;
+	}
+
+	/**
+	 * Create a Mailable class with data cancelled special reservation
+	 * @param array $reservation
+	 * @return array 
+	 */
+	public function specialCancelReservation(array $reservation, int $sender): array 
+	{
+
+		$emailData = [
+			'title' => 'SOLICITUD DE RESERVA ESPECIAL #'.$reservation['reservation_id'].' CANCELADA',
+            'body' => 'Se cancelo la solicitud especial #'.$reservation['reservation_id'],
+            'type' => NotificationTypeRepository::cancelled(),
+            'sendBy' => $sender,
+			'sended' => 1,
+            'to' => []
+		];
+
+		$this->getPersonsBySpecialReservation($emailData, $reservation);
+
+        $emailData = array_merge($emailData, $reservation);
+		$addresses = $this->getAddresses($emailData['to']);
+		$emailData['to'] = array_unique(array_map(
+			function ($user) 
+			{
+				return $user['person_id'];
+			},
+			$emailData['to']
+		));
+		
+		$this->sendMail(
+			new SpecialReservationNotificationMailer(
+				$emailData,
+				ReservationStatus::cancelled()
+			),
 			$addresses
 		);
 		return $emailData;
@@ -277,6 +317,13 @@ class MailerServiceImpl implements MailerService
 	{
 		for ($i =0 ; $i < count($reservation['groups']); $i++) 
 			array_push($emailData['to'], $reservation['groups'][$i]);
+	}
+
+	private function getPersonsBySpecialReservation(array &$emailData, array $reservation): void
+	{
+		foreach ($reservation['groups'][0] as $administrator) {
+			array_push($emailData['to'], $administrator);
+		}
 	}
 
 	/**

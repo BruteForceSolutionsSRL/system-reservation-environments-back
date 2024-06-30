@@ -1,8 +1,6 @@
 <?php
 namespace App\Http\Controllers;
 
-use Illuminate\Validation\Rule;
-
 use Exception;
 use Illuminate\Http\{
     JsonResponse as Response,
@@ -223,11 +221,11 @@ class ReservationController extends Controller
                 $request->input('message'),
                 $request['session_id']
             ); 
-            $pos = strpos($mssage, 'No existe'); 
+            $pos = strpos($message, 'No existe'); 
             if ($pos !== false) 
                 return response()->json(['message' => $message], 404);
             
-            $pos = strpos($mssage, 'expirada');
+            $pos = strpos($message, 'expirada');
             if ($pos !== false) 
                 return response()->json(['message' => $message], 400);
             
@@ -236,6 +234,28 @@ class ReservationController extends Controller
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Ocurrio un error al rechazar la solicitud.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Cancel a accepted special request-booking
+     * @param int $specialReservationId
+     * @param Request $request
+     * @return Response
+     */
+    public function specialCancel(int $specialReservationId, Request $request): Response
+    {
+        try {
+            $message = $this->reservationService->specialCancel($specialReservationId); 
+            if ($message == 'No existe una reserva con este ID') {
+                return response()->json(['message' => $message], 404);
+            }
+            return response()->json(['message' => $message], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Ocurrio un error al cancelar la solicitud.',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -256,7 +276,7 @@ class ReservationController extends Controller
             if ($pos !== false) 
                 return response()->json(['message' => $message], 404);
             
-            $pos = strpos($mssage, 'expirada');
+            $pos = strpos($message, 'expirada');
             if ($pos !== false) 
                 return response()->json(['message' => $message], 400);
             
@@ -385,7 +405,7 @@ class ReservationController extends Controller
             if ($pos !== false) 
                 return response()->json(['message' => $message], 404);
             
-            $pos = strpos($mssage, 'expirada');
+            $pos = strpos($message, 'expirada');
             if ($pos !== false) 
                 return response()->json(['message' => $message], 400);
             
@@ -550,5 +570,110 @@ class ReservationController extends Controller
             'person_id.integer' => 'El ID de la persona debe ser un valor entero',
             'person_id.exists' => 'La persona debe ser una selección válida',
         ]);
+    }
+
+    /**
+     * Retrieve a list of all special reservation 
+     * @return Response 
+     */
+    public function getActiveSpecialReservations(): Response 
+    {
+        try {
+            return response()->json(
+                $this->reservationService->getActiveSpecialReservations(), 
+                200
+            );
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'message' => 'Hubo un error en el servidor',
+                    'error' => $e->getMessage()
+                ],
+                500
+            );
+        }
+    }
+
+    /**
+     * Endpoint function to accept a `special` reservation
+     * @param Request $request
+     * @return Response
+     */
+    public function storeSpecialRequest(Request $request): Response
+    {
+        try {
+            $validator = $this->validateSpecialReservation($request);
+
+            if ($validator->fails()) 
+                return response()->json(
+                    ['message' => implode('.', $validator->errors()->all())], 
+                    400
+                );
+
+            $data = $validator->validated();
+            return response()->json(
+                ['message' => $this->reservationService->saveSpecialReservation($data)], 
+                200
+            );
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'message' => 'Hubo un error en el servidor',
+                    'error' => $e->getMessage()
+                ],
+                500
+            );
+        }       
+    }
+
+    /** 
+     * Validate a single request for special reservation request
+     * @param Request $request
+     * @return mixed
+     */
+    private function validateSpecialReservation(Request $request) 
+    {
+        return Validator::make($request->all(), [
+            'quantity' => 'required|integer|min:100',
+            'date_start' => 'required|date',
+            'date_end' => 'required|date',
+            'reason_id' => 'required|int|exists:reservation_reasons,id',
+            'observation' => 'required|string',
+            'classroom_id.*' => 'nullable|exists:classrooms,id',
+            'time_slot_id.*' => 'required|exists:time_slots,id',
+            'time_slot_id' => [
+                'required',
+                'array',
+                function ($attribute, $value, $fail) {
+                    if (count($value) !== 2) {
+                        $fail('Debe seleccionar exactamente dos periodos de tiempo.');
+                    }else if ($value[1] <= $value[0]) {
+                        $fail('El segundo periodo debe ser mayor que el primero.');
+                    }
+                }
+            ],
+            'block_id.*' => 'nullable|int|exists:blocks,id',
+        ], [
+            'quantity.required' => 'El número de estudiantes es obligatorio.',
+            'quantity.integer' => 'El número de estudiantes debe ser un valor entero.',
+            'quantity:min' => 'La cantidad debe ser un numero positivo mayor o igual a 100',
+
+            'date_start.required' => 'La fecha es obligatoria.',
+            'date_start.date' => 'La fecha debe ser un formato válido.',
+            'date_end.required' => 'La fecha es obligatoria.',
+            'date_end.date' => 'La fecha debe ser un formato válido.',
+            'reason_id.required' => 'El motivo de la reserva es obligatorio.',
+            'reason_id.int' => 'El motivo de la reserva debe hacer referencia al motivo.',
+            'observation.required' => 'El titulo u observacion no debe ser nula.',
+            'observation.string' => 'El titulo y observacion debe ser una cadena de texto.',
+
+            'classroom_id.*.required' => 'Se requiere al menos una aula.',
+            'classroom_id.*.exists' => 'Una de las aulas seleccionadas no es válida.',
+            'time_slot_id.*.required' => 'Se requieren los periodos de tiempo.',
+            'time_slot_id.*.exists' => 'Uno de los periodos de tiempo seleccionados no es válido.',
+            'time_slot_id.required' => 'Se requieren dos periodos de tiempo.',
+            'time_slot_id.array' => 'Los periodos de tiempo deben ser un arreglo.',
+        ]);
+
     }
 }
