@@ -50,6 +50,72 @@ class BlockController extends Controller
     }
 
     /**
+     * Retrieve a list of all blocks with statistics of used classrooms by dates and time_slots
+     * @param Request $request 
+     * @return Response
+     */
+    public function listBlocksForSpecial(Request $request): Response 
+    {
+        try {
+
+            $validator = $this->validateForListBlocks($request); 
+            if ($validator->fails()) 
+                return response()->json(
+                    ['message' => implode(',', $validator->errors()->all())],
+                    400
+                );
+            $data = $validator->validated();
+            return response()->json(
+                $this->blockService->listBlocksForSpecialReservation($data), 
+                200
+            );
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'message' => 'Hubo un error en el servidor',
+                    'error' => $e->getMessage()
+                ],
+                500
+            );
+        }
+    }
+
+    /**
+     * Validate body data passed to validate date and time slots 
+     * @param Request $request
+     * @return mixed
+     */
+    private function validateForListBlocks(Request $request)
+    {
+        return Validator::make($request->all(), [
+            'date_start' => 'required|date',
+            'date_end' => 'required|date',
+            'time_slot_id.*' => 'required|exists:time_slots,id',
+            'time_slot_id' => [
+                'required',
+                'array',
+                function ($attribute, $value, $fail) {
+                    if (count($value) !== 2) {
+                        $fail('Debe seleccionar exactamente dos periodos de tiempo.');
+                    }else if ($value[1] <= $value[0]) {
+                        $fail('El segundo periodo debe ser mayor que el primero.');
+                    }
+                }
+            ],
+        ], [
+            'date_start.required' => 'La fecha es obligatoria.',
+            'date_start.date' => 'La fecha debe ser un formato válido.',
+            'date_end.required' => 'La fecha es obligatoria.',
+            'date_end.date' => 'La fecha debe ser un formato válido.',
+            'time_slot_id.*.required' => 'Se requieren los periodos de tiempo.',
+            'time_slot_id.*.exists' => 'Uno de los periodos de tiempo seleccionados no es válido.',
+            'time_slot_id.required' => 'Se requieren dos periodos de tiempo.',
+            'time_slot_id.array' => 'Los periodos de tiempo deben ser un arreglo.',
+        ]);
+    }
+
+
+    /**
      * Retrieve a single block by its ID
      * @param int $blockId
      * @param Request $request
@@ -106,22 +172,17 @@ class BlockController extends Controller
     {
         try {
             $validator = $this->validateBlockData($request); 
-            if ($validator->fails()) {
-                $message = '';
-                foreach ($validator->errors()->all() as $value)
-                    $message = $message . $value . '.';
-                
+            if ($validator->fails()) 
                 return response()->json(
-                    ['message' => $message],
+                    ['message' => implode('.', $validator->errors()->all())],
                     400
                 );
-            }
 
             $data = $validator->validated();
 
-            if (count($this->blockService->findByName($data['block_name'])) != 0)
+            if (empty($this->blockService->findByName($data['block_name'])))
                 return response()->json(
-                    ['message' => 'El nombre del bloque ya existe'], 
+                    ['message' => 'El nombre del bloque '.$data['block_name'].' ya existe, por favor escriba otro nombre.'], 
                     400
                 );
 
@@ -150,16 +211,11 @@ class BlockController extends Controller
     {
         try {
             $validator = $this->validateBlockData($request); 
-            if ($validator->fails()) {
-                $message = '';
-                foreach ($validator->errors()->all() as $value)
-                    $message = $message . $value . '.';
-                
+            if ($validator->fails()) 
                 return response()->json(
-                    ['message' => $message],
+                    ['message' => implode('.', $validator->errors()->all())],
                     400
                 );
-            }
 
             $data = $validator->validated();
 
@@ -173,7 +229,7 @@ class BlockController extends Controller
 
             if (count($block['block_classrooms']) > $data['block_maxclassrooms'])
                 return response()->json(
-                    ['message' => 'La capacidad de ambientes no debe ser menor a la cantidad actual'], 
+                    ['message' => 'La capacidad de ambientes no debe ser menor a la cantidad actual de ambientes pertenecientes al bloque en especifico.'], 
                     400
                 );
 
@@ -183,7 +239,7 @@ class BlockController extends Controller
 
             if ($max_floor > $data['block_maxfloor']) 
                 return response()->json(
-                    ['message' => 'La cantidad de pisos debe ser mayor o igual al piso de los ambientes existentes'], 
+                    ['message' => 'La piso maximo seleccionado debe ser mayor o igual al piso de los ambientes existentes pertenecientes al bloque.'], 
                     400
                 );
 
@@ -224,7 +280,14 @@ class BlockController extends Controller
 
             if (!empty($enabledClassrooms)) 
                 return response()->json(
-                    ['message' => 'Existen ambientes habilitados en el bloque'], 
+                    ['message' => 'Existen los siguientes ambiente habilitados en el bloque: '.implode(',', 
+                            array_map(
+                                function ($classroom) {
+                                    return $classroom['classroom_name'];
+                                }, $enabledClassrooms
+                            )
+                        )
+                    ], 
                     400
                 );
 

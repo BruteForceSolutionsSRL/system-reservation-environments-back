@@ -4,10 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Tymon\JWTAuth\Facades\JWTAuth;
-use App\Models\{
-    Person,
-    User
-};
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Exceptions\{
     JWTException,
@@ -20,27 +16,32 @@ use Illuminate\Support\Facades\{
     Validator
 };
 
+use App\Service\ServiceImplementation\{
+    PersonServiceImpl
+};
+
 class AuthController extends Controller
 {
+    private $personService;
+
+    public function __construct()
+    {
+        $this->personService = new PersonServiceImpl();
+    }
     /**
-     * 
+     * Function to register people
      * @param Request $request
      * @return Response
      */
     public function register(Request $request): Response
     {
 
-        $data = $request->only('name','last_name','email','password');
-
-        $validator = Validator::make($data, [
-            'name' => 'required|string',
-            'last_name' => 'required|string',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|string|min:8|max:50',
-        ]);
+        $validator = $this->validatePersonData($request);
 
         if ($validator->fails()) {
-            $message = implode('.', $validator->errors()->all());
+            $message = '';
+            foreach ($validator->errors()->all() as $value)
+                $message = $message . $value . '.';
             return response()->json(
                 ['message' => $message],
                 400
@@ -49,23 +50,16 @@ class AuthController extends Controller
 
         $data = $validator->validated();
 
-        $person = Person::create([
-            'name' => $data['name'],
-            'last_name' => $data['last_name'],
-            'email' => $data['email']
-        ]);
+        $person = $this->personService->store($data);
 
-        $user = User::create([
-            'person_id' => $person->id,
-            'email' => $data['email'],
-            'password' => bcrypt($data['password'])
-        ]);
-
-
-        $credentials = $request->only('email','password');
+        $credentials = [
+            'id' => $person['id'],
+            'email' => $person['email'],
+            'password' => $data['password']
+        ];
 
         try {
-            if (!$token = JWTAuth::attempt(array_merge($credentials, ['person_id' => $user->person_id]))) {
+            if (!$token = JWTAuth::attempt($credentials)) {
                 return response()->json(
                     ['message' => 'Error token no generado'], 
                     401
@@ -85,12 +79,11 @@ class AuthController extends Controller
             [
                 'message' => 'Usuario creado exitosamente!',
                 'token' => $token,
-                'user' => [
-                    'user_id' => $user->id,
-                    'person_id' => $person->id,
-                    'name' => $person->name,
-                    'last_name' => $person->last_name,
-                    'email' => $person->email,
+                'person' => [
+                    'person_id' => $person['id'],
+                    'name' => $person['name'],
+                    'last_name' => $person['last_name'],
+                    'email' => $person['email']
                 ]
             ]
             ,201
@@ -98,34 +91,65 @@ class AuthController extends Controller
     }
 
     /**
-     * 
+     * Validate all data of person
+     * @param Request $request
+     * @return mixed
+     */
+    private function validatePersonData(Request $request)
+    {
+        return Validator::make($request->all(), [
+            'name' => 'required|string',
+            'last_name' => 'required|string',
+            'user_name' => 'required|string|unique:people',
+            'email' => 'required|email|unique:people',
+            'password' => 'required|string|min:8|max:50',
+        ],[
+            'name.required' => 'El/Los nombre/s del usuario es obligatorio',
+
+            'last_name.required' => 'El/Los apellido/s del usuario es obligatorio',
+
+            'user_name.required' => 'El nick name ya se encuentra en uso',
+            'user_name.unique' => 'El nick name no esta disponible',
+
+            'email.required' => 'El correo es obligatorio',
+            'email.email' => 'Ingrese un correo valido',
+            'email.unique' => 'El correo ya se encuentra registrado',
+
+            'password.required' => 'La contraseña es obligatoria',
+            'password.string' => 'La contraseña tiene que tener un formato valido',
+            'password.min' => 'La cantidad de caracteres minima para una contraseña es 8',
+            'password.max' => 'La cantidad de caracteres maxima para una contraseña es 50'
+        ]);
+    }
+
+    /**
+     * Handle a login request to the application
      * @param Request $request
      * @return Response
      */
     public function login(Request $request): Response
     {
 
-        $credentials = $request->only('email','password');
-
-        $validator = Validator::make($credentials, [
-            'email' => 'required|email',
-            'password' => 'required|string|min:8|max:50'
-        ], [
-            'email.required' => 'El correo es obligatorio',
-            'email.email' => 'El correo tiene que tener un formato valido',
-            'password.required' => 'La contraseña es obligatoria',
-            'password.string' => 'La contraseña tiene que tener un formato valido',
-            'password.min' => 'La cantidad de caracteres minima para una contraseña es 8',
-            'password.max' => 'La cantidad de caracteres maxima para una contraseña es 50'
-        ]);
+        $validator = $this->validateLoginData($request);
 
         if ($validator->fails()) {
-            $message = implode('.',$validator->errors()->all());
+            $message = '';
+            foreach ($validator->errors()->all() as $value)
+                $message = $message . $value . '.';
             return response()->json(
                 ['message' => $message],
                 400
             );
         }
+
+        $data = $validator->validated();
+
+        $login = filter_var($data['login'], FILTER_VALIDATE_EMAIL) ? 'email':'user_name';
+
+        $credentials = [
+            $login => $data['login'],
+            'password' => $data['password']
+        ];
 
         try {
             if (!$token = JWTAuth::claims(['type' => 'access'])->attempt($credentials)) {
@@ -144,19 +168,17 @@ class AuthController extends Controller
             );
         }
 
-        $user = Auth::user();
-        $person = $user->person;
-        $roles = $person->roles()->pluck('name');
+        $person = Auth::user();
+        $roles = $this->personService->getRoles($person->id);
 
         JWTAuth::factory()->setTTL(config('jwt.refresh_ttl'));
-        $refreshToken = JWTAuth::claims(['type' => 'refresh'])->fromUser($user);
+        $refreshToken = JWTAuth::claims(['type' => 'refresh'])->fromUser($person);
 
         return response()->json(
             [
                 'token' => $token,
                 'refresh_token' => $refreshToken,
                 'user' => [
-                    'user_id' => $user->id,
                     'person_id' => $person->id,
                     'name' => $person->name,
                     'last_name' => $person->last_name,
@@ -169,6 +191,26 @@ class AuthController extends Controller
     }
 
     /**
+     * Validate all data of person
+     * @param Request $request
+     * @return mixed
+     */
+    private function validateLoginData(Request $request)
+    {
+        return Validator::make($request->all(), [
+            'login' => 'required|string',
+            'password' => 'required|string|min:8|max:50'
+        ], [
+            'login.required' => 'Ingrese su correo o nombre de usuario',
+
+            'password.required' => 'La contraseña es obligatoria',
+            'password.string' => 'La contraseña tiene que tener un formato valido',
+            'password.min' => 'La cantidad de caracteres minima para una contraseña es 8',
+            'password.max' => 'La cantidad de caracteres maxima para una contraseña es 50'
+        ]);
+    }
+
+    /**
      * 
      * @param Request $request
      * @return Response
@@ -176,17 +218,43 @@ class AuthController extends Controller
     public function logout(Request $request):Response
     {
 
-        $token = $request->bearerToken();
+        $accessToken = $request->bearerToken();
+        $refreshToken = $request->header('Refresh_token');
         
-        if (!$token) {
+        if (!$accessToken) {
             return response()->json(
-                ['message' => 'Token no proporcionado'],
+                ['message' => 'Token de acceso no proporcionado'],
+                400
+            );
+        }
+
+        if (!$refreshToken) {
+            return response()->json(
+                ['message' => 'Token de refresco no proporcionado'],
                 400
             );
         }
 
         try {
-            JWTAuth::invalidate($token);
+            JWTAuth::setToken($accessToken);
+            if (JWTAuth::getPayload()->get('type') === 'access') {
+                JWTAuth::invalidate($accessToken);
+            } else {
+                return response()->json(
+                    ['message' => 'Token de acceso inválido'], 
+                    401
+                );
+            }
+            JWTAuth::setToken($refreshToken);
+            if (JWTAuth::getPayload()->get('type') === 'refresh') {
+                JWTAuth::invalidate($refreshToken);
+            } else {
+                return response()->json(
+                    ['message' => 'Token de refresco inválido'], 
+                    401
+                );
+            }
+            
             return response()->json(
                 [
                     'success' => true,
@@ -194,11 +262,22 @@ class AuthController extends Controller
                 ],
                 200
             );
+        } catch (TokenExpiredException $e) {
+            return response()->json(
+                ['message' => 'Token ya expirado'],
+                401
+            );
+        } catch (TokenInvalidException $e) {
+            return response()->json(
+                ['message' => 'Token inválido'],
+                401
+            );
         } catch (JWTException $e) {
             return response()->json(
                 [
                     'success' => false,
-                    'message' => $e->getMessage()
+                    'message' => 'Error al invalidar el token',
+                    'error' => $e->getMessage()
                 ],
                 500
             );
@@ -253,7 +332,7 @@ class AuthController extends Controller
     }
 
     /**
-     * 
+     * Function to verify the validity of a token
      * @param Request $request
      * @return Response
      */
@@ -303,7 +382,6 @@ class AuthController extends Controller
                     401
                 );
             }
-
             $newToken = JWTAuth::claims(['type' => 'access'])->refresh($refreshToken);
             return response()->json(
                 ['token' => $newToken], 

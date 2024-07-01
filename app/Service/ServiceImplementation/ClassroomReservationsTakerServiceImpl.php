@@ -33,6 +33,11 @@ class ClassroomReservationsTakerServiceImpl
         $this->initReservation();
         $this->reservationService->cancelAndRejectReservationsByClassroom($classroomId);
     }
+    public function specialCancel(int $reservationId): string
+    {
+        $this->initReservation(); 
+        return $this->reservationService->specialCancel($reservationId);
+    }
 
     // methods to assign to classroom Service
     public function sameBlock(array $classroomIds): bool
@@ -45,4 +50,9 @@ class ClassroomReservationsTakerServiceImpl
         $this->initClassroom();
         return $this->classroomService->suggestClassrooms($data);
     }
+    public function getClassroomsByBlock(int $blockId): array 
+    {
+        $this->initClassroom();
+        return $this->classroomService->getClassroomsByBlock($blockId);
+    } 
 }

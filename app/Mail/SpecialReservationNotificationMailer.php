@@ -3,12 +3,13 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
 use App\Repositories\ReservationStatusRepository as ReservationStatus;
 
-class ReservationNotificationMailer extends Mailable
+class SpecialReservationNotificationMailer extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -35,21 +36,15 @@ class ReservationNotificationMailer extends Mailable
     {
         $dir = 'mail/templates/reservation/';
         switch ($this->type) {
-            case ReservationStatus::pending():
-                return $this->subject('SOLICITUD DE RESERVA ENVIADA')
-                    ->view($dir.'create');
             case ReservationStatus::accepted(): 
-                return $this->subject('SOLICITUD DE RESERVA ACEPTADA')
-                    ->view($dir.'accept');
+                return $this->subject('RESERVA ESPECIAL ACEPTADA')
+                    ->view($dir.'specialAccept');
             case ReservationStatus::rejected(): 
-                return $this->subject('SOLICITUD DE RESERVA RECHAZADA')
-                    ->view($dir.'reject');
-            case ReservationStatus::cancelled(): 
-                return $this->subject('SOLICITUD DE RESERVA CANCELADA')
-                    ->view($dir.'cancel');
+                return $this->subject('RESERVA ESPECIAL RECHAZADA')
+                    ->view($dir.'specialReject');
             default: 
-                return $this->subject('CAMBIO DE AMBIENTES DE SOLICITUD DE RESERVA DE AMBIENTES')
-                    ->view($dir.'reassign');
+                return $this->subject('RESERVA ESPECIAL CANCELADA')
+                    ->view($dir.'specialCancel');
         }
     }
 }

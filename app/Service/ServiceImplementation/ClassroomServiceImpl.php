@@ -63,7 +63,8 @@ class ClassroomServiceImpl implements ClassroomService
      */
     public function getAllClassroomsWithStatistics(): array
     {
-        $classroomsStatistics = $this->classroomRepository->getAllClassroomsWithStatistics();
+        $classroomsStatistics = $this->classroomRepository
+            ->getAllClassroomsWithStatistics();
         return $classroomsStatistics;
     }
 
@@ -158,7 +159,7 @@ class ClassroomServiceImpl implements ClassroomService
 
         $this->mailService->sendCreationClassroomEmail($emailData);
 
-        return "El ambiente fue creado exitosamente.";
+        return 'El ambiente '.$classroom['classroom_name'].' fue creado exitosamente.';
     }
 
     /**
@@ -189,7 +190,7 @@ class ClassroomServiceImpl implements ClassroomService
 
         $this->mailService->sendUpdateClassroomEmail($emailData);
 
-        return "El ambiente fue actualizado correctamente";
+        return 'El ambiente '.$classroom['classroom_name'].' fue actualizado correctamente';
     }
 
     /**
@@ -329,7 +330,6 @@ class ClassroomServiceImpl implements ClassroomService
         $classroomSets = []; 
         $maxFloor = $this->blockRepository
             ->getBlock($data['block_id'])['block_maxfloor'];
-
         for ($i = 0; $i <= $maxFloor; $i++) 
             $classroomSets[$i] = [
                 'quantity' => 0,
@@ -337,10 +337,12 @@ class ClassroomServiceImpl implements ClassroomService
             ];
 
         for ($i = 0; $i < count($classroomSet); $i++) {
+
             $classroom = $classroomSet[$i];
             $classroomSets[$classroom['floor']]['quantity'] += $classroom['capacity'];
             array_push($classroomSets[$classroom['floor']]['list'], $classroom);
         }
+
         $MAX_LEN = 1e4 + 10;
         $INF = 1e6;
         $dp = array_fill(0, $MAX_LEN + 1, $INF);
@@ -358,14 +360,22 @@ class ClassroomServiceImpl implements ClassroomService
                         $pointerDp[$index] = $i;
                     }
                 }
-
         $bestSuggest = -1;
-        for ($i = $data['quantity']; $i <= min($data['quantity']*4, $MAX_LEN); $i++) {
+        for (
+            $i = $data['quantity']; 
+            ($i <= $MAX_LEN) && 
+            (
+                ($i <= 5*$data['quantity']) || 
+                ($bestSuggest == -1)
+            ); 
+            $i++
+        ) {
             if (($bestSuggest == -1) || ($dp[$bestSuggest] < $dp[$i])) {
                 if ($dp[$i] < $INF) 
                     $bestSuggest = $i;
             }
         }
+
         if (($bestSuggest == -1) || ($pointerDp[$bestSuggest] == -1)) {
             return ['No existe una sugerencia apropiada'];
         }
@@ -402,7 +412,10 @@ class ClassroomServiceImpl implements ClassroomService
 
         $res = array();
         $piv = $bestSuggest;
-        if ($dp[$piv] == -1)
+        if (($dp[$piv] == -1) || 
+            ($piv > 1.5*$data['quantity']) || 
+            ($piv < 0.5*$data['quantity'])
+        )
             return ['No existe una sugerencia apropiada'];
 
         while ($piv != 0) {
@@ -459,7 +472,7 @@ class ClassroomServiceImpl implements ClassroomService
 
         $this->mailService->sendDeleteClassroomEmail($emailData);
 
-        return ['message' => 'Ambiente eliminado exitosamente.'];
+        return ['message' => 'Ambiente '.$classroom['classroom_name'].' eliminado exitosamente.'];
     }
 
     /**
@@ -496,15 +509,35 @@ class ClassroomServiceImpl implements ClassroomService
         $reservations = $this->reservationService->getActiveReservationsByClassroom(
                 $classroom['classroom_id']
             );
+        $dp = [];
         foreach ($reservations as $reservation)
             if ($reservation['repeat'] == 0) {
-                $this->reservationService->reject($reservation['reservation_id'],
-                'Su reserva ha sido rechazada debido a que el ambiente '.$classroom['classroom_name'].' fue deshabilitado',
-                PersonRepository::system()
-            );
+                if ($reservation['special'] == 0) {
+                    $this->reservationService->reject(
+                        $reservation['reservation_id'],
+                        'Su reserva ha sido rechazada debido a que el ambiente '.$classroom['classroom_name'].' fue deshabilitado',
+                        PersonRepository::system()
+                    );    
+                } else {
+                    if (array_key_exists($reservation['parent_id'], $dp)) 
+                        continue;
+                    $dp[$reservation['parent_id']] = 1; 
+                    $capacity = 0; 
+                    $reservation = $this->reservationRepository
+                        ->getSpecialReservation($reservation['reservation_id']); 
+                    foreach ($reservation['classrooms'] as $classroom) {
+                        $classroomData = $this->getClassroomByID($classroom['classroom_id']);
+                        if ($classroomData['classroom_status_id'] == ClassroomStatusRepository::disabled()) 
+                            continue;
+                        $capacity += $classroomData['capacity'];
+                    }    
+                    if ($capacity < $reservation['quantity']) {
+                        $this->reservationService->specialCancel($reservation['parent_id']);
+                    }
+                }
         }
 
-        return 'Ambiente deshabilitado correctamente';
+        return 'Ambiente '.$classroom['classroom_name'].' deshabilitado correctamente';
     }
 
     /**

@@ -29,8 +29,9 @@ class JwtMiddlware
                     ['status' => 'Token de refresco no permitido'], 
                     401
                 );
-            }
-            $user = $token->authenticate();
+            } else if ($token->getClaim('type') === 'access') {
+                $person = $token->authenticate();
+            }     
         } catch (JWTException $e) {
             if ($e instanceof TokenInvalidException) {
                 return response()->json(
@@ -49,15 +50,6 @@ class JwtMiddlware
                     401
                 );
             }
-        }
-
-        $person = $user->person;
-
-        if (!$person) {
-            return response()->json(
-                ['status' => 'Usuario no tiene un perfil asociado'],
-                401
-            );
         }
         
         $request->merge(['session_id' => $person->id]);

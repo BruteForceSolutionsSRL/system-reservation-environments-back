@@ -5,15 +5,12 @@ use App\Repositories\{
     BlockRepository,
     BlockLogRepository,
     BlockStatusRepository,
-    ReservationStatusRepository as ReservationStatus,
     PersonRepository, 
     NotificationTypeRepository
 };
 
-use App\Models\{
-    Block
-};
-
+use App\Repositories\ReservationRepository;
+use App\Repositories\ReservationStatusRepository;
 use App\Service\{
     BlockService
 };
@@ -25,6 +22,7 @@ class BlockServiceImpl implements BlockService
     private $blockRepository; 
     private $blockLogRepository; 
     private $blockStatusRepository;
+    private $reservationRepository; 
 
     private $classroomService; 
     private $mailService; 
@@ -34,6 +32,7 @@ class BlockServiceImpl implements BlockService
         $this->blockRepository = new BlockRepository();
         $this->blockLogRepository = new BlockLogRepository();
         $this->blockStatusRepository = new BlockStatusRepository();
+        $this->reservationRepository = new ReservationRepository();
 
         $this->classroomService = new ClassroomServiceImpl();
         $this->mailService = new MailerServiceImpl();
@@ -195,5 +194,79 @@ class BlockServiceImpl implements BlockService
         $this->mailService->sendDeleteBlockEmail($emailData);
 
         return 'Se elimino el bloque '.$block['block_name']; 
+    }
+
+    /**
+     * Function list all blocks within number of classrooms requested by each block
+     * @param array $data
+     * @return array 
+     */
+    public function listBlocksForSpecialReservation(array $data): array 
+    {
+        $blocks = $this->getAllBlocks(); 
+        foreach ($blocks as &$block) {
+            $classrooms = array_map(
+                function ($classroom) {
+                    return $classroom['classroom_id'];
+                },
+                $block['block_classrooms']
+            );           
+            $block['requested'] = count(
+                $this->reservationRepository->getReservations(
+                    [
+                        'dates' => [
+                            'date_start' => $data['date_start'],
+                            'date_end' => $data['date_end']
+                        ],
+                        'time_slots' => $data['time_slot_id'],
+                        'classrooms' => $classrooms,
+                        'reservation_statuses' => [
+                            ReservationStatusRepository::accepted(), 
+                            ReservationStatusRepository::rejected()
+                        ]
+                    ]
+                )
+            ); 
+        }
+        return $blocks;
+    }
+
+    /**
+     * Suggest best blocks by quantity, dates and time slots to do a special reservation
+     * @param array $data
+     * @return array
+     */
+    public function suggestBlocks(array $data): array 
+    {
+        $blocks = $this->listBlocksForSpecialReservation($data);
+        foreach ($blocks as &$block) {
+            $block['capacity'] = 0; 
+            foreach ($block['block_classrooms'] as $classroom)
+                $block['capacity'] += $classroom['capacity'];
+        }
+
+        $INF = 1e6+1; 
+        $MAX_LEN = 1e5; 
+        $dp = array_fill(0, $MAX_LEN, $INF); 
+        $auxiliar = array_fill(0, $MAX_LEN, array()); 
+        $dp[0] = 0;
+        foreach ($blocks as $block)
+        for ($i = $MAX_LEN - 1; $i >= 0; $i--) {
+            $j = $i+$block['capacity']; 
+            if (($j < $MAX_LEN) && ($dp[$j] > $dp[$i] + $block['requested'])) {
+                $dp[$j] = $dp[$i]+$block['requested'];
+                $auxiliar[$j] = $auxiliar[$i]; 
+                array_push($auxiliar[$j], $block); 
+            }
+        }
+        $bestSuggest = -1;
+        for ($i = $data['quantity']; ($i < $MAX_LEN) && ($bestSuggest == -1); $i++) {
+            if ($dp[$i] < $INF) {
+                $bestSuggest = $i;
+            }   
+        }
+
+        if ($bestSuggest == -1) return ['No existe una sugerencia apropiada para la reserva especial.'];
+        return $auxiliar[$bestSuggest];
     }
 }

@@ -19,4 +19,12 @@ class RoleRepository
 			->first()
 			->id;
 	}
+
+	public function administrator()
+	{
+		return $this->model::where('name', 'ENCARGADO')
+			->get()
+			->first()
+			->id;
+	}
 }
