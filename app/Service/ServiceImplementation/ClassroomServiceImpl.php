@@ -330,7 +330,6 @@ class ClassroomServiceImpl implements ClassroomService
         $classroomSets = []; 
         $maxFloor = $this->blockRepository
             ->getBlock($data['block_id'])['block_maxfloor'];
-
         for ($i = 0; $i <= $maxFloor; $i++) 
             $classroomSets[$i] = [
                 'quantity' => 0,
@@ -338,6 +337,7 @@ class ClassroomServiceImpl implements ClassroomService
             ];
 
         for ($i = 0; $i < count($classroomSet); $i++) {
+
             $classroom = $classroomSet[$i];
             $classroomSets[$classroom['floor']]['quantity'] += $classroom['capacity'];
             array_push($classroomSets[$classroom['floor']]['list'], $classroom);
@@ -360,7 +360,6 @@ class ClassroomServiceImpl implements ClassroomService
                         $pointerDp[$index] = $i;
                     }
                 }
-
         $bestSuggest = -1;
         for (
             $i = $data['quantity']; 
@@ -376,6 +375,7 @@ class ClassroomServiceImpl implements ClassroomService
                     $bestSuggest = $i;
             }
         }
+
         if (($bestSuggest == -1) || ($pointerDp[$bestSuggest] == -1)) {
             return ['No existe una sugerencia apropiada'];
         }
@@ -532,7 +532,7 @@ class ClassroomServiceImpl implements ClassroomService
                         $capacity += $classroomData['capacity'];
                     }    
                     if ($capacity < $reservation['quantity']) {
-                        //$this->cancelSpecial($reservation['reservation_ids']);
+                        $this->reservationService->specialCancel($reservation['parent_id']);
                     }
                 }
         }

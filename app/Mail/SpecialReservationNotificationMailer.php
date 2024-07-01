@@ -38,10 +38,10 @@ class SpecialReservationNotificationMailer extends Mailable
         switch ($this->type) {
             case ReservationStatus::accepted(): 
                 return $this->subject('RESERVA ESPECIAL ACEPTADA')
-                    ->view($dir.'specialCancel');
+                    ->view($dir.'specialAccept');
             case ReservationStatus::rejected(): 
                 return $this->subject('RESERVA ESPECIAL RECHAZADA')
-                    ->view($dir.'specialCancel');
+                    ->view($dir.'specialReject');
             default: 
                 return $this->subject('RESERVA ESPECIAL CANCELADA')
                     ->view($dir.'specialCancel');

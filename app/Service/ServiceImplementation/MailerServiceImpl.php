@@ -227,12 +227,12 @@ class MailerServiceImpl implements MailerService
 	/**
 	 * Notificate a re-assignation for a single reservation
 	 * @param array $data
-	 * @return void
+	 * @return array
 	 */
 	public function reassingReservation(array $reservation, int $sender): array 
 	{
 		$emailData = [
-			'title' => 'CAMBIO DE AMBIENTES PARA LA SOLICITUD DE RESERVA '.$reservation['reservation_id'], 
+			'title' => 'CAMBIO DE AMBIENTES PARA LA SOLICITUD DE RESERVA #'.$reservation['reservation_id'], 
             'body' => 'Se realizo la reasignacion de ambientes a la solicitud #'.$reservation['reservation_id'].', para mas informacion sobre la razon de cambio contactar con el encargado.',
             'type' => NotificationTypeRepository::warning(),
             'sendBy' => $sender, 
@@ -241,7 +241,6 @@ class MailerServiceImpl implements MailerService
 		];
 
 		$this->getPersonsByReservation($emailData, $reservation);
-
         $emailData = array_merge($emailData, $reservation);
 		$addresses = $this->getAddresses($emailData['to']);
 		$emailData['to'] = array_unique(array_map(
@@ -251,7 +250,6 @@ class MailerServiceImpl implements MailerService
 			},
 			$emailData['to']
 		));
-
 		$this->sendMail(
 			new ReservationNotificationMailer(
 				$emailData,

@@ -218,9 +218,9 @@ class ReservationServiceImpl implements ReservationService
         }
 
         $reservationStatusId = $specialReservationParent->reservation_status_id;
-        if ($reservationStatusId == ReservationStatuses::cancelled()) {
+        /* if ($reservationStatusId == ReservationStatuses::cancelled()) {
             return 'Esta solicitud ya fue cancelada';
-        }
+        } */
         if ($reservationStatusId == ReservationStatuses::rejected()) {
             return 'Esta solicitud ya fue rechazada';
         }
@@ -596,7 +596,7 @@ class ReservationServiceImpl implements ReservationService
     public function cancelAndRejectReservations(array $reservations, string $message): void
     {
         foreach ($reservations as $reservation) {
-            if ($reservation['reservation_status'] == 'ACEPTADO') {
+            if ($reservation['reservation_status'] === 'ACEPTADO') { 
                 $this->cancel(
                     $reservation['reservation_id'],
                     $message
@@ -759,12 +759,13 @@ class ReservationServiceImpl implements ReservationService
                     'date_start' => $data['date_start'],
                     'date_end' => $data['date_end']
                 ],
-                'no_repeat' => 1,
                 'classrooms' => $data['classroom_id'],
                 'priorities' => [0],
+                'no_repeat' => 1,
                 'time_slots' => $data['time_slot_id'],
             ]
         );
+
         $this->reservationAssignerService->reassign($reservations);
         return 'Se realizo la reserva de tipo especial de manera correcta, para ver mas detalles revisar en el historial de solicitudes.';
     }
@@ -775,7 +776,7 @@ class ReservationServiceImpl implements ReservationService
      * @param array $classroms
      * @return array
      */
-    public function assignClassrooms($reservationId, $classrooms): void 
+    public function assignClassrooms($reservationId, $classrooms): array 
     {
         $reservation = $this->reservationRepository->attachClassroomsReservation(
             $reservationId, 
@@ -787,6 +788,7 @@ class ReservationServiceImpl implements ReservationService
                 PersonRepository::system()
             )
         );
+        return $reservation;
     }
     public function getActiveSpecialReservations(): array 
     {

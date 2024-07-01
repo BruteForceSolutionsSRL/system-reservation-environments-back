@@ -549,6 +549,14 @@ class ReservationRepository extends Repository
             $priority = 1;
         }
 
+        $dp = []; 
+        $blockNames = []; 
+        foreach ($reservation->classrooms as $classroom) {
+            if (array_key_exists($classroom->block->name, $dp)) continue;
+            array_push($blockNames, $classroom->block->name);
+            $dp[$classroom->block->name] = 1;
+        }
+
         $output =  [
             'reservation_id' => $reservation->id,
             'subject_name' => $subjectName,
@@ -556,13 +564,7 @@ class ReservationRepository extends Repository
             'reservation_date' => $reservation->date,
             'time_slot' => $times,
             'groups' => $groups,
-            'block_name' => array_unique(
-                $classrooms->map(
-                    function ($classroom) {
-                        return $classroom->block->name;
-                    }
-                )->toArray()
-            ),
+            'block_name' => $blockNames,
             'classrooms' => $classrooms->map(
                 function ($classroom) use ($reservation) {
                     $classroomData = $this->classroomLog->retriveLastClassroom(
@@ -890,7 +892,7 @@ class ReservationRepository extends Repository
         if (!empty($data['priorities'])) {
             $query->whereIn('priority', $data['priorities']);
         }
-    
+        
         $reservations = $query->orderBy('date')->get()->map(
             function ($reservation) {
                 return $this->formatOutput($reservation);

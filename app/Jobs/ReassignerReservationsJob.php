@@ -54,17 +54,16 @@ class ReassignerReservationsJob implements ShouldQueue
             $blocks = $blockService->getAllBlocks(); 
             $classrooms = [];
             foreach ($blocks as $block) {
+                $timeSlots = $timeSlotService->getTimeSlotsSorted($reservation['time_slot']);
                 $possibleAssignation = $classroomService->suggestClassrooms(
                     [
                         'block_id' => $block['block_id'],
                         'quantity' => $reservation['quantity'],
                         'date' => $reservation['date'],
-                        'time_slot_id' => $timeSlotService->getTimeSlotsSorted(
-                            $reservation['time_slot']
-                        ),
+                        'time_slot_id' => $timeSlots,
                     ]
                 );
-                if (!is_string($possibleAssignation[0])) {
+                if (!empty($possibleAssignation) && is_array($possibleAssignation[0])) {
                     $classrooms = $possibleAssignation;
                     break; 
                 }
