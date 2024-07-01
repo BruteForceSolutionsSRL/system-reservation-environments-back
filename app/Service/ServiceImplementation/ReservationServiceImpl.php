@@ -804,6 +804,12 @@ class ReservationServiceImpl implements ReservationService
         );
         return $reservation;
     }
+
+    /**
+     * Retrieve a list of all active special reservations based on date and time 
+     * @param none
+     * @return array
+     */
     public function getActiveSpecialReservations(): array 
     {
         return $this->reservationRepository->getActiveSpecialReservations();
