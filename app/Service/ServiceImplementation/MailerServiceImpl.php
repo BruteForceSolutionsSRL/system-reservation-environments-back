@@ -18,11 +18,16 @@ use App\Mail\{
 
 use App\Repositories\{
 	ReservationStatusRepository as ReservationStatus,
-	NotificationTypeRepository
+	NotificationTypeRepository,
+	PersonRepository
 };
 
 class MailerServiceImpl implements MailerService
 {
+	private $personRepository;
+	public function __construct() {
+		$personRepository = new PersonRepository();
+	}
 	/**
 	 * Queues a mail to send to all addresses
 	 * @param Mailable $mail
@@ -41,11 +46,12 @@ class MailerServiceImpl implements MailerService
 	 */
 	public function createReservation(array $reservation, int $sender): array
 	{
+		$this->personRepository = new PersonRepository();
 		$emailData = [
             'title' => 'SOLICITUD DE RESERVA #'.$reservation['reservation_id'].' PENDIENTE',
             'body' => 'Se envio la solicitud #'.$reservation['reservation_id'],
             'type' => NotificationTypeRepository::informative(),
-            'sendBy' => $sender,
+            'sendBy' => $this->personRepository->getPerson($sender)['person_fullname'],
             'to' => [],
 			'sended' => 1,
 		];
@@ -68,6 +74,7 @@ class MailerServiceImpl implements MailerService
 			),
 			$addresses
 		);
+		$emailData['sendBy'] = $sender;
 		return $emailData;
 	}
 
@@ -78,11 +85,12 @@ class MailerServiceImpl implements MailerService
 	 */
 	public function acceptReservation(array $reservation, int $sender): array
 	{
+		$this->personRepository = new PersonRepository();
 		$emailData = [
 			'title' => 'SOLICITUD DE RESERVA #'.$reservation['reservation_id'].' ACEPTADA',
             'body' => 'Se acepto la solicitud #'.$reservation['reservation_id'],
             'type' => NotificationTypeRepository::accepted(),
-            'sendBy' => $sender,
+            'sendBy' => $this->personRepository->getPerson($sender)['person_fullname'],
 			'sended' => 1,
             'to' => []
 		];
@@ -106,6 +114,7 @@ class MailerServiceImpl implements MailerService
 			),
 			$addresses
 		);
+		$emailData['sendBy'] = $sender;
 		return $emailData;
 	}
 
@@ -116,11 +125,12 @@ class MailerServiceImpl implements MailerService
 	 */
 	public function rejectReservation(array $reservation, int $sender, string $message): array
 	{
+		$this->personRepository = new PersonRepository();
 		$emailData = [
 			'title' => 'SOLICITUD DE RESERVA #'.$reservation['reservation_id'].' RECHAZADA',
             'body' => 'Se rechazo la solicitud #'.$reservation['reservation_id'].' '.$message,
             'type' => NotificationTypeRepository::rejected(),
-            'sendBy' => $sender,
+            'sendBy' => $this->personRepository->getPerson($sender)['person_fullname'],
 			'sended' => 1,
             'to' => []
 		];
@@ -144,6 +154,7 @@ class MailerServiceImpl implements MailerService
 			),
 			$addresses
 		);
+		$emailData['sendBy'] = $sender;
 		return $emailData;
 	}
 
@@ -154,11 +165,12 @@ class MailerServiceImpl implements MailerService
 	 */
 	public function cancelReservation(array $reservation, int $sender, string $message): array
 	{
+		$this->personRepository = new PersonRepository();
 		$emailData = [
 			'title' => 'SOLICITUD DE RESERVA #'.$reservation['reservation_id'].' CANCELADA',
             'body' => 'Se cancelo la solicitud #'.$reservation['reservation_id'].' '.$message,
             'type' => NotificationTypeRepository::cancelled(),
-            'sendBy' => $sender,
+            'sendBy' => $this->personRepository->getPerson($sender)['person_fullname'],
 			'sended' => 1,
             'to' => []
 		];
@@ -182,6 +194,7 @@ class MailerServiceImpl implements MailerService
 			),
 			$addresses
 		);
+		$emailData['sendBy'] = $sender;
 		return $emailData;
 	}
 
@@ -192,12 +205,12 @@ class MailerServiceImpl implements MailerService
 	 */
 	public function specialRejectReservation(array $reservation, int $sender, string $message): array
 	{
-
+		$this->personRepository = new PersonRepository();
 		$emailData = [
 			'title' => 'SOLICITUD DE RESERVA ESPECIAL #'.$reservation['reservation_id'].' RECHAZADA',
             'body' => 'Se acepto la solicitud especial #'.$reservation['reservation_id'].' '.$message,
             'type' => NotificationTypeRepository::rejected(),
-            'sendBy' => $sender,
+            'sendBy' => $this->personRepository->getPerson($sender)['person_fullname'],
 			'sended' => 1,
             'to' => []
 		];
@@ -221,6 +234,7 @@ class MailerServiceImpl implements MailerService
 			),
 			$addresses
 		);
+		$emailData['sendBy'] = $sender;
 		return $emailData;
 	}
 
@@ -231,12 +245,12 @@ class MailerServiceImpl implements MailerService
 	 */
 	public function specialAcceptReservation(array $reservation, int $sender): array
 	{
-
+		$this->personRepository = new PersonRepository();
 		$emailData = [
 			'title' => 'SOLICITUD DE RESERVA ESPECIAL #'.$reservation['reservation_id'].' ACEPTADA',
             'body' => 'Se acepto la solicitud especial #'.$reservation['reservation_id'],
             'type' => NotificationTypeRepository::accepted(),
-            'sendBy' => $sender,
+            'sendBy' => $this->personRepository ->getPerson($sender)['person_fullname'],
 			'sended' => 1,
             'to' => []
 		];
@@ -260,6 +274,7 @@ class MailerServiceImpl implements MailerService
 			),
 			$addresses
 		);
+		$emailData['sendBy'] = $sender;
 		return $emailData;
 	}
 
@@ -270,12 +285,12 @@ class MailerServiceImpl implements MailerService
 	 */
 	public function specialCancelReservation(array $reservation, int $sender): array
 	{
-
+		$this->personRepository = new PersonRepository();
 		$emailData = [
 			'title' => 'SOLICITUD DE RESERVA ESPECIAL #'.$reservation['reservation_id'].' CANCELADA',
             'body' => 'Se cancelo la solicitud especial #'.$reservation['reservation_id'],
             'type' => NotificationTypeRepository::cancelled(),
-            'sendBy' => $sender,
+            'sendBy' => $this->personRepository->getPerson($sender)['person_fullname'],
 			'sended' => 1,
             'to' => []
 		];
@@ -299,6 +314,7 @@ class MailerServiceImpl implements MailerService
 			),
 			$addresses
 		);
+		$emailData['sendBy'] = $sender;
 		return $emailData;
 	}
 
@@ -309,11 +325,12 @@ class MailerServiceImpl implements MailerService
 	 */
 	public function reassingReservation(array $reservation, int $sender): array
 	{
+		$this->personRepository = new PersonRepository();
 		$emailData = [
 			'title' => 'CAMBIO DE AMBIENTES PARA LA SOLICITUD DE RESERVA #'.$reservation['reservation_id'],
             'body' => 'Se realizo la reasignacion de ambientes a la solicitud #'.$reservation['reservation_id'].', para mas informacion sobre la razon de cambio contactar con el encargado.',
             'type' => NotificationTypeRepository::warning(),
-            'sendBy' => $sender,
+            'sendBy' => $this->personRepository->getPerson($sender)['person_fullname'],
             'to' => [],
 			'sended' => 1,
 		];
@@ -335,6 +352,7 @@ class MailerServiceImpl implements MailerService
 			),
 			$addresses
 		);
+		$emailData['sendBy'] = $sender;
 		return $emailData;
 	}
 
