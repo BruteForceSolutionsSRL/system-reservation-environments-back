@@ -3,7 +3,7 @@
     VERSION: 
         1.0 (RESERVAS ESPECIALES)
 */
-use your_data_base;
+use notifications;
 /*
     roles
 */
@@ -13,7 +13,7 @@ insert into roles(name, created_at, updated_at) values
 ;			
 /*
     permissions
-	request_reserve => solicitud de reserva o hacer una reserva (DOCENTE)
+	request_reserve => solicitud de reserva o hacer una reserva (DOCENTE - ENCARGADO) 
 	reservation_handling => Atender solicitudes de reserva (ENCARGADO)
 	notify => Notificaciones (ENCARGADO)
 	report => Generar reportes de uso de ambiente (ENCARGADO) 
@@ -58,6 +58,7 @@ insert into role_permission(role_id, permission_id, created_at, updated_at) valu
 (1,9,NOW(), NOW()),
 (1,10,NOW(), NOW()),
 (1,13,NOW(), NOW()),
+(1,1,NOW(), NOW()),
 (2,1,NOW(), NOW()),
 (2,11,NOW(), NOW()),
 (2,12,NOW(), NOW())
@@ -1395,38 +1396,3 @@ values
     (104, 3, NOW(), NOW()),           /*102 RESERVA ESPECIAL - EXAMEN DE INGRESO*/
     (104, 13, NOW(), NOW())           /*102 RESERVA ESPECIAL - EXAMEN DE INGRESO*/
 ;
-/*
-    updates para probar los ambientes y sus respectivos rechazos y cancelaciones.
-*/
-update classrooms set capacity=50 where id=5;                           /*Pasamos de 25 a 50*/
-update classrooms set floor=1 where id=8;                               /*Pasamos del piso 2 al 1 el bloque es el EDIFICIO MEMI*/
-update classrooms set classroom_status_id=2 where id=14;                /*Deshabilitamos el ambiente*/
-    update reservations set reservation_status_id=4 where id=58;        /*Pasamos de aceptado a cancelado*/
-update classrooms set classroom_status_id=1 where id=14;                /*Habilitamos el ambiente*/
-
-update classrooms set classroom_status_id=3 where id=20;                /*Eliminamos el ambiente*/
-    update reservations set reservation_status_id=4 where id=59;        /*Pasamos de aceptado a cancelado*/
-    
-update classrooms set capacity=100 where id=28;                         /*Pasamos de 75 a 100*/
-update classrooms set floor=3 where id=28;                              /*Pasamos del piso 2 al 3*/
-update classrooms set classroom_status_id=2 where id=28;                /*Deshabilitamos el ambiente*/
-    update reservations set reservation_status_id=4 where id=60;        /*Pasamos de aceptado a cancelado*/
-update classrooms set classroom_status_id=1 where id=28;                /*Habilitamos el ambiente*/
-
-update classrooms set capacity=310 where id=33;                         /*Pasamos de 300 a 310*/
-update classrooms set floor=3 where id=33;                              /*Pasamos del piso 2 al 3*/
-update classrooms set classroom_status_id=2 where id=33;                /*Deshabilitamos el ambiente*/
-    update reservations set reservation_status_id=2 where id=61;        /*Pasamos de aceptado a rechazado*/
-    update reservations set reservation_status_id=2 where id=62;        /*Pasamos de aceptado a rechazado*/
-    update reservations set reservation_status_id=2 where id=63;        /*Pasamos de aceptado a rechazado*/
-update classrooms set classroom_status_id=1 where id=33;                /*Habilitamos el ambiente*/
-
-update classrooms set classroom_status_id=3 where id=35;                /*Eliminamos el ambiente*/
-    update reservations set reservation_status_id=4 where id=64;        /*Pasamos de aceptado a cancelado*/
-    
-update classrooms set capacity=40 where id=38;                          /*Pasamos de 50 a 40*/
-update classrooms set floor=1 where id=38;                              /*Pasamos del piso 0 al 1*/
-update classrooms set block_id=4 where id=38;                           /*Pasamos del bloque 5 al 4*/
-update classrooms set classroom_status_id=2 where id=38;                /*Deshabilitamos el ambiente*/
-    update reservations set reservation_status_id=4 where id=65;        /*Pasamos de aceptado a cancelado*/
-update classrooms set classroom_status_id=1 where id=38;                /*Habilitamos el ambiente*/
