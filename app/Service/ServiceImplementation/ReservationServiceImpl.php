@@ -218,9 +218,9 @@ class ReservationServiceImpl implements ReservationService
         }
 
         $reservationStatusId = $specialReservationParent->reservation_status_id;
-        /* if ($reservationStatusId == ReservationStatuses::cancelled()) {
+        if ($reservationStatusId == ReservationStatuses::cancelled()) {
             return 'Esta solicitud ya fue cancelada';
-        } */
+        } 
         if ($reservationStatusId == ReservationStatuses::rejected()) {
             return 'Esta solicitud ya fue rechazada';
         }
@@ -749,6 +749,20 @@ class ReservationServiceImpl implements ReservationService
             );
             $data['parent_id'] = $reservation['parent_id'];
         }
+
+        $reservation = $this->reservationRepository->getSpecialReservation($data['parent_id']);
+
+        $administratorRol = [$this->roleRepository->administrator()];
+
+        array_push($reservation['groups'], $this->personRepository->getUsersByRole($administratorRol));
+
+        $this->notificationService->store(
+            $this->mailService->specialAcceptReservation(
+                $reservation,
+                PersonRepository::system()
+            )
+        );
+
         $reservations = $this->reservationRepository->getReservations(
             [
                 'reservation_statuses' => [

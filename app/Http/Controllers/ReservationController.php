@@ -418,7 +418,7 @@ class ReservationController extends Controller
             if ($pos !== false) 
                 return response()->json(['message' => $message], 400);
             
-
+            $message = 'La solicitud de reserva fue aceptada correctamente, se envio una notificacion, a todos los docentes de dicha reserva';
             return response()->json(['message' => $message], 200);
         } catch (Exception $e) {
             return response()->json([

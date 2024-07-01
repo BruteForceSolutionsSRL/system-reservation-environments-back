@@ -65,7 +65,7 @@ Route::controller(AuthController::class)->group(function() {
 });
 
 Route::controller(ReservationReasonController::class)->group(function() {
-    Route::group(['middleware' => ['jwt.verify','permissions:request_reserve']], function () {
+    Route::group(['middleware' => ['jwt.verify']], function () {
         Route::get('/reservations/reasons', 'list');
     });
 });
