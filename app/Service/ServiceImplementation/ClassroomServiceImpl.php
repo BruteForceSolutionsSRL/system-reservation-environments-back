@@ -285,10 +285,10 @@ class ClassroomServiceImpl implements ClassroomService
                         return $classroom['classroom_id'];
                     },
                     $classrooms
-                )
+		),
+		'priorities' => [1],
             ]
-        );
-
+	);
         if (array_key_exists('endpoint', $data)) {
             foreach ($reservations as $reservation) 
             foreach ($reservation['classrooms'] as $classroom) {
@@ -327,7 +327,7 @@ class ClassroomServiceImpl implements ClassroomService
     public function suggestClassrooms(array $data): array
     {
         $classroomSet = $this->getClassroomsByDisponibility($data); 
-        $classroomSets = []; 
+	$classroomSets = []; 
         $maxFloor = $this->blockRepository
             ->getBlock($data['block_id'])['block_maxfloor'];
         for ($i = 0; $i <= $maxFloor; $i++) 

@@ -898,13 +898,11 @@ class ReservationRepository extends Repository
         if (!empty($data['priorities'])) {
             $query->whereIn('priority', $data['priorities']);
         }
-        
         $reservations = $query->orderBy('date')->get()->map(
             function ($reservation) {
                 return $this->formatOutput($reservation);
             }
-        )->toArray();
-        
+	)->toArray();
         return $reservations;
     }
 

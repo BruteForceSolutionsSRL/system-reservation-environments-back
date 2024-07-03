@@ -162,10 +162,10 @@ class NotificationRepository
 		$title = $notification->title; 
 		$reservationID = '';
 		$i = 0; 
-		while ($i < strlen($title) && $title{$i}!='#') $i += 1;
+		while ($i < strlen($title) && $title[$i]!='#') $i += 1;
 		$i+=1;
-		while ($i < strlen($title) && $title{$i}>='0' && $title{$i}<='9') {
-			$reservationID .= $title{$i}; 
+		while ($i < strlen($title) && $title[$i]>='0' && $title[$i]<='9') {
+			$reservationID .= $title[$i]; 
 			$i+=1;
 		}
 		if ($reservationID != '') {
