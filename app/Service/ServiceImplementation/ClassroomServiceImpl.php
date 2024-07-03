@@ -174,7 +174,7 @@ class ClassroomServiceImpl implements ClassroomService
         );
         $modifiedClassroom = $this->classroomRepository->update($data);
         if (($classroom['classroom_status_id'] != $modifiedClassroom['classroom_status_id'])
-              && ($classroom['classroom_status_id'] == ClassroomStatusRepository::disabled())) {
+              && ($modifiedClassroom['classroom_status_id'] == ClassroomStatusRepository::disabled())) {
             $this->disable($classroom['classroom_id']);
         }
 
@@ -524,7 +524,7 @@ class ClassroomServiceImpl implements ClassroomService
                     $dp[$reservation['parent_id']] = 1; 
                     $capacity = 0; 
                     $reservation = $this->reservationRepository
-                        ->getSpecialReservation($reservation['reservation_id']); 
+                        ->getSpecialReservation($reservation['parent_id']); 
                     foreach ($reservation['classrooms'] as $classroom) {
                         $classroomData = $this->getClassroomByID($classroom['classroom_id']);
                         if ($classroomData['classroom_status_id'] == ClassroomStatusRepository::disabled()) 

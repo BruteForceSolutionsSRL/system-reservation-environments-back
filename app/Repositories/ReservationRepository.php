@@ -594,7 +594,6 @@ class ReservationRepository extends Repository
             'reservation_status' => $reservationStatus->status,
             'repeat' => $reservation->repeat,
             'date' => $reservation->date,
-            'special' => $reservation->priority,
             'observation' => $reservation->observation,
             'parent_id' => $reservation->parent_id,
             'created_at' => $createdAt,

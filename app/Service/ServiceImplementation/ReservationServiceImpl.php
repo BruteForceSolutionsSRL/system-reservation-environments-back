@@ -568,10 +568,15 @@ class ReservationServiceImpl implements ReservationService
 
         if (!empty($acceptedReservations) || !empty($pendingReservations)) {
             foreach ($acceptedReservations as $reservationId) {
-                $this->cancel(
-                    $reservationId,
-                    'Razon de la cancelacion de su reserva es la deshabilitacion/eliminacion de un ambiente correspondiente a esta reserva'
-                );
+                $reservation = $this->reservationRepository->getReservation($reservationId);
+                if ($reservation['special'] == 0) {
+                    $this->cancel(
+                        $reservationId,
+                        'Razon de la cancelacion de su reserva es la deshabilitacion/eliminacion de un ambiente correspondiente a esta reserva'
+                    );    
+                } else {
+                    $this->specialCancel($reservation['parent_id']); 
+                }
             }
 
             foreach ($pendingReservations as $reservationId) {
