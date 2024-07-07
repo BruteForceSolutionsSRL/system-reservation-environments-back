@@ -2,43 +2,38 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-class CreateReservationTeacherSubjectTable extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
-     *
-     * @return void
      */
-    public function up()
+    public function up(): void
     {
-        Schema::create('reservation_teacher_subject', function (Blueprint $table) {
+        Schema::create('person_reservation_teacher_subject', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('reservation_id');
+            $table->unsignedBigInteger('person_reservation_id');
             $table->unsignedBigInteger('teacher_subject_id');
             $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
             $table->timestamp('updated_at')->default(DB::raw('CURRENT_TIMESTAMP'));
 
-            $table->foreign('reservation_id')
+            $table->foreign('person_reservation_id')
                     ->references('id')
-                    ->on('reservations')
+                    ->on('person_reservation')
                     ->cascadeOnDelete();
             $table->foreign('teacher_subject_id')
                     ->references('id')
                     ->on('teacher_subjects')
-                    ->cascadeOnDelete();
+                    ->cascadeOnUpdate();
         });
     }
 
     /**
      * Reverse the migrations.
-     *
-     * @return void
      */
-    public function down()
+    public function down(): void
     {
-        Schema::dropIfExists('reservation_teacher_subjects');
+        Schema::dropIfExists('person_reservation_teacher_subject');
     }
-}
+};

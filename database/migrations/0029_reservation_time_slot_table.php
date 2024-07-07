@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-class CreateUniversitySubjectsTable extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
@@ -14,17 +14,20 @@ class CreateUniversitySubjectsTable extends Migration
      */
     public function up()
     {
-        Schema::create('university_subjects', function (Blueprint $table) {
+        Schema::create('reservation_time_slot', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->char('grade');
-            $table->unsignedBigInteger('career_id');
+            $table->unsignedBigInteger('reservation_id');
+            $table->unsignedBigInteger('time_slot_id');
             $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
             $table->timestamp('updated_at')->default(DB::raw('CURRENT_TIMESTAMP'));
 
-            $table->foreign('career_id')
+            $table->foreign('reservation_id')
                     ->references('id')
-                    ->on('careers')
+                    ->on('reservations')
+                    ->cascadeOnDelete();
+            $table->foreign('time_slot_id')
+                    ->references('id')
+                    ->on('time_slots')
                     ->cascadeOnDelete();
         });
     }
@@ -36,6 +39,6 @@ class CreateUniversitySubjectsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('university_subjects');
+        Schema::dropIfExists('time_slot_reservations');
     }
-}
+};

@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-class CreateReservationsTable extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
@@ -16,14 +16,17 @@ class CreateReservationsTable extends Migration
     {
         Schema::create('reservations', function (Blueprint $table) {
             $table->id();
-            $table->integer('number_of_students');
+            $table->integer('quantity');
             $table->integer('repeat');
-            $table->date('date');
             $table->longText('observation')->nullable();
-            $table->unsignedBigInteger('parent_id')->nullable();
             $table->integer('priority')->default(0);
+            $table->date('date');
+            $table->unsignedBigInteger('parent_id')->nullable();
+            $table->boolean('verified');
+            $table->boolean('configuration_flag');
             $table->unsignedBigInteger('reservation_status_id');
             $table->unsignedBigInteger('reservation_reason_id');
+            $table->unsignedBigInteger('academic_period_id');
             $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
             $table->timestamp('updated_at')->default(DB::raw('CURRENT_TIMESTAMP'));
 
@@ -34,6 +37,10 @@ class CreateReservationsTable extends Migration
             $table->foreign('reservation_reason_id')
                     ->references('id')
                     ->on('reservation_reasons')
+                    ->cascadeOnDelete();
+            $table->foreign('academic_period_id')
+                    ->references('id')
+                    ->on('academic_periods')
                     ->cascadeOnDelete();
         });
     }
@@ -47,4 +54,4 @@ class CreateReservationsTable extends Migration
     {
         Schema::dropIfExists('reservations');
     }
-}
+};

@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-class CreateClassroomReservationTable extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
@@ -14,21 +14,21 @@ class CreateClassroomReservationTable extends Migration
      */
     public function up()
     {
-        Schema::create('classroom_reservation', function (Blueprint $table) {
+        Schema::create('role_permission', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('classroom_id');
-            $table->unsignedBigInteger('reservation_id');
+            $table->unsignedBigInteger('role_id');
+            $table->unsignedBigInteger('permission_id');
             $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
             $table->timestamp('updated_at')->default(DB::raw('CURRENT_TIMESTAMP'));
 
-            $table->foreign('classroom_id')
+            $table->foreign('permission_id')
                     ->references('id')
-                    ->on('classrooms')
+                    ->on('permissions')
                     ->cascadeOnDelete();
-            $table->foreign('reservation_id')
+            $table->foreign('role_id')
                     ->references('id')
-                    ->on('reservations')
-                    ->cascadeOnDelete();
+                    ->on('roles')
+                    ->cascadeOnUpdate();
         });
     }
 
@@ -39,6 +39,6 @@ class CreateClassroomReservationTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('reservation_classrooms');
+        Schema::dropIfExists('permission_role');
     }
-}
+};

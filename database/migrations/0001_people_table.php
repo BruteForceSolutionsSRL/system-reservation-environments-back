@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-class CreateTimeSlotsTable extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
@@ -14,9 +14,13 @@ class CreateTimeSlotsTable extends Migration
      */
     public function up()
     {
-        Schema::create('time_slots', function (Blueprint $table) {
+        Schema::create('people', function (Blueprint $table) {
             $table->id();
-            $table->time('time');
+            $table->string('name');
+            $table->string('last_name');
+            $table->string('user_name')->unique();
+            $table->string('email')->unique();
+            $table->string('password');
             $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
             $table->timestamp('updated_at')->default(DB::raw('CURRENT_TIMESTAMP'));
         });
@@ -29,6 +33,6 @@ class CreateTimeSlotsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('time_slots');
+        Schema::dropIfExists('people');
     }
-}
+};

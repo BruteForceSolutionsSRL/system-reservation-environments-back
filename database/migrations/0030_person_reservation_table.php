@@ -2,24 +2,19 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-class CreateNotificationsTable extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
-     *
-     * @return void
      */
-    public function up()
+    public function up(): void
     {
-        Schema::create('notifications', function (Blueprint $table) {
+        Schema::create('person_reservation', function (Blueprint $table) {
             $table->id();
-            $table->string('title');
-            $table->longText('description');
-            $table->unsignedBigInteger('person_id'); 
-            $table->unsignedBigInteger('notification_type_id');
+            $table->unsignedBigInteger('person_id');
+            $table->unsignedBigInteger('reservation_id');
             $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
             $table->timestamp('updated_at')->default(DB::raw('CURRENT_TIMESTAMP'));
 
@@ -27,20 +22,18 @@ class CreateNotificationsTable extends Migration
                     ->references('id')
                     ->on('people')
                     ->cascadeOnDelete();
-            $table->foreign('notification_type_id')
+            $table->foreign('reservation_id')
                     ->references('id')
-                    ->on('notification_types')
-                    ->cascadeOnDelete();
+                    ->on('reservations')
+                    ->cascadeOnUpdate();
         });
     }
 
     /**
      * Reverse the migrations.
-     *
-     * @return void
      */
-    public function down()
+    public function down(): void
     {
-        Schema::dropIfExists('notifications');
+        Schema::dropIfExists('person_reservation');
     }
-}
+};

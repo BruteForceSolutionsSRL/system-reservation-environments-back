@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-class CreatePersonRoleTable extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
@@ -14,20 +14,20 @@ class CreatePersonRoleTable extends Migration
      */
     public function up()
     {
-        Schema::create('person_role', function (Blueprint $table) {
+        Schema::create('classroom_reservation', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('person_id');
-            $table->unsignedBigInteger('role_id');
+            $table->unsignedBigInteger('classroom_id');
+            $table->unsignedBigInteger('reservation_id');
             $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
             $table->timestamp('updated_at')->default(DB::raw('CURRENT_TIMESTAMP'));
 
-            $table->foreign('person_id')
+            $table->foreign('classroom_id')
                     ->references('id')
-                    ->on('people')
+                    ->on('classrooms')
                     ->cascadeOnDelete();
-            $table->foreign('role_id')
+            $table->foreign('reservation_id')
                     ->references('id')
-                    ->on('roles')
+                    ->on('reservations')
                     ->cascadeOnDelete();
         });
     }
@@ -39,6 +39,6 @@ class CreatePersonRoleTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('person_role');
+        Schema::dropIfExists('reservation_classrooms');
     }
-}
+};

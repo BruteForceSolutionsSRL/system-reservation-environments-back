@@ -2,43 +2,38 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-class CreateRolePermissionTable extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
-     *
-     * @return void
      */
-    public function up()
+    public function up(): void
     {
-        Schema::create('role_permission', function (Blueprint $table) {
+        Schema::create('session_action', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('role_id');
-            $table->unsignedBigInteger('permission_id');
+            $table->unsignedBigInteger('action_id');
+            $table->unsignedBigInteger('session_id');
             $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
             $table->timestamp('updated_at')->default(DB::raw('CURRENT_TIMESTAMP'));
-
-            $table->foreign('permission_id')
+    
+            $table->foreign('action_id')
                     ->references('id')
-                    ->on('permissions')
+                    ->on('actions')
                     ->cascadeOnDelete();
-            $table->foreign('role_id')
+            $table->foreign('session_id')
                     ->references('id')
-                    ->on('roles')
+                    ->on('sesions')
                     ->cascadeOnUpdate();
         });
     }
 
     /**
      * Reverse the migrations.
-     *
-     * @return void
      */
-    public function down()
+    public function down(): void
     {
-        Schema::dropIfExists('permission_role');
+        Schema::dropIfExists('session_action');
     }
-}
+};

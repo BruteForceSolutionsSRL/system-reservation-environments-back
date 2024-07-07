@@ -14,22 +14,11 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('logs', function (Blueprint $table) {
+        Schema::create('notification_types', function (Blueprint $table) {
             $table->id();
             $table->string('description');
-            $table->unsignedBigInteger('person_id');
-            $table->unsignedBigInteger('reservation_id');
             $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
             $table->timestamp('updated_at')->default(DB::raw('CURRENT_TIMESTAMP'));
-
-            $table->foreign('person_id')
-                    ->references('id')
-                    ->on('people')
-                    ->cascadeOnDelete();
-            $table->foreign('reservation_id')
-                    ->references('id')
-                    ->on('reservations')
-                    ->cascadeOnDelete();
         });
     }
 
@@ -40,6 +29,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('logs');
+        Schema::dropIfExists('notification_types');
     }
 };

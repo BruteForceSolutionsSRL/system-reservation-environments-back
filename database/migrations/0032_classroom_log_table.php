@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\{
     DB,
 };
 
-class CreateClassroomLogsTable extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
@@ -39,4 +39,4 @@ class CreateClassroomLogsTable extends Migration
     {
         Schema::dropIfExists('classroom_logs');
     }
-}
+};

@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-class CreateReservationReasonsTable extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
@@ -14,9 +14,9 @@ class CreateReservationReasonsTable extends Migration
      */
     public function up()
     {
-        Schema::create('reservation_reasons', function (Blueprint $table) {
+        Schema::create('time_slots', function (Blueprint $table) {
             $table->id();
-            $table->string('reason');
+            $table->time('time');
             $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
             $table->timestamp('updated_at')->default(DB::raw('CURRENT_TIMESTAMP'));
         });
@@ -29,6 +29,6 @@ class CreateReservationReasonsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('reservation_reasons');
+        Schema::dropIfExists('time_slots');
     }
-}
+};
