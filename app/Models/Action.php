@@ -5,13 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ClassroomType extends Model
+class Action extends Model
 {
     use HasFactory;
-    protected $table = 'classroom_types';
+    protected $table = 'actions';
 
-    public function classrooms()
+    public function session()
     {
-        return $this->hasMany(Classroom::class);
+        return $this->belongsTo(Sesion::class);
     }
 }

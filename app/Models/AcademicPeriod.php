@@ -5,10 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ReservationStatus extends Model
+class AcademicPeriod extends Model
 {
     use HasFactory;
-    protected $table = 'reservation_statuses';
+    protected $table = 'academic_periods';
+
+    public function teacherSubjects()
+    {
+        return $this->belongsToMany(TeacherSubject::class);
+    }
 
     public function reservations()
     {

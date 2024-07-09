@@ -8,9 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class Career extends Model
 {
     use HasFactory;
+    protected $table = 'careers';
 
     public function universitySubjects()
     {
-        return $this->hasMany(UniversitySubject::class);
+        return $this->belongsToMany(UniversitySubject::class);
     }
 }

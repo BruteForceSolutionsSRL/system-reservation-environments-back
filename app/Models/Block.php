@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Block extends Model
 {
     use HasFactory;
+    protected $table = 'blocks';
 
     public function classrooms()
     {
