@@ -12,7 +12,7 @@ class AcademicPeriod extends Model
 
     public function teacherSubjects()
     {
-        return $this->belongsToMany(TeacherSubject::class);
+        return $this->hasMany(TeacherSubject::class);
     }
 
     public function reservations()

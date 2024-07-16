@@ -134,10 +134,10 @@ class NotificationRepository
 		$minutes = $carbon->format('i');
 
 		$result = [
-			'id' => $notification->id,
+			'notification_id' => $notification->id,
 			'title' => $notification->title, 
-			'type' => $notificationType['notification_type_name'], 
-			'sendBy' => $transmissor['person_fullname'], 
+			'type' => $notificationType['name'], 
+			'sendBy' => $transmissor['fullname'], 
 			'to' => $receptors->map(
 				function ($user) use ($notification)
 				{

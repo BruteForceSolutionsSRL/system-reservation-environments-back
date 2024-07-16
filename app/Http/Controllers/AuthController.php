@@ -133,11 +133,8 @@ class AuthController extends Controller
         $validator = $this->validateLoginData($request);
 
         if ($validator->fails()) {
-            $message = '';
-            foreach ($validator->errors()->all() as $value)
-                $message = $message . $value . '.';
             return response()->json(
-                ['message' => $message],
+                ['message' => implode(',', $validator->errors()->all())],
                 400
             );
         }

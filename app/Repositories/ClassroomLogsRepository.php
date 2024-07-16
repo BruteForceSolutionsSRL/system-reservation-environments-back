@@ -45,8 +45,8 @@ class ClassroomLogsRepository
             'capacity' => $classroomLogs->capacity,
             'floor' => $classroomLogs->floor,
             'block_name' => $classroomLogs->block_name,
-            'type_name' => $classroomLogs->classroom_type_name,
-            'status_name' => $classroomLogs->classroom_status_name,
+            'classroom_type_name' => $classroomLogs->classroom_type_name,
+            'classroom_status_name' => $classroomLogs->classroom_status_name,
             'created_at' => $classroomLogs->created_at,
         ];
     }

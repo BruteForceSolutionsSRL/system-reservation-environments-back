@@ -179,11 +179,11 @@ class ClassroomRepository extends Repository
     public function save(array $data): array
     {
         $classroom = new Classroom();
-        $classroom->name = $data['classroom_name'];
+        $classroom->name = $data['name'];
         $classroom->capacity = $data['capacity'];
         $classroom->floor = $data['floor_number'];
         $classroom->block_id = $data['block_id'];
-        $classroom->classroom_type_id = $data['type_id'];
+        $classroom->classroom_type_id = $data['classroom_type_id'];
         $classroom->classroom_status_id = 1;
         $classroom->save();
         return $this->formatOutput($classroom);
@@ -200,8 +200,8 @@ class ClassroomRepository extends Repository
         $classroom->capacity = $data['capacity'];
         $classroom->floor = $data['floor_number'];
         $classroom->block_id = $data['block_id'];
-        $classroom->classroom_type_id = $data['type_id'];
-        $classroom->classroom_status_id = $data['status_id'];
+        $classroom->classroom_type_id = $data['classroom_type_id'];
+        $classroom->classroom_status_id = $data['classroom_status_id'];
         $classroom->save();
         return $this->formatOutput($classroom);
     }
@@ -253,9 +253,9 @@ class ClassroomRepository extends Repository
             'classroom_id' => $classroom->id,
             'classroom_name' => $classroom->name,
             'classroom_type_id' => $classroom->classroom_type_id,
-            'classroom_type_name' => $classroomType['type_name'],
+            'classroom_type_name' => $classroomType['name'],
             'classroom_status_id' => $classroom->classroom_status_id,
-            'classroom_status_name' => $classroomStatus['classroom_status_name'],
+            'classroom_status_name' => $classroomStatus['name'],
             'capacity' => $classroom->capacity,
             'floor' => $classroom->floor,
             'block_id' => $classroom->block_id,
@@ -362,18 +362,18 @@ class ClassroomRepository extends Repository
         $table = [];
         
         foreach ($reasons as $reason) {
-            $reasonName = $reason['reason_name'];
+            $reasonName = $reason['name'];
             if (isset($statsArray[$reasonName])) {
                 $table[] = [
-                    'reservation_reason_id' => $reason['reason_id'],
-                    'reservation_reason_name' => $reason['reason_name'],
+                    'reservation_reason_id' => $reason['reservation_reason_id'],
+                    'reservation_reason_name' => $reason['name'],
                     'total_reservations' => $statsArray[$reasonName]->total_reservations,
                     'average_students' => $statsArray[$reasonName]->average_students
                 ];
             } else {
                 $table[] = [
-                    'reservation_reason_id' => $reason['reason_id'],
-                    'reservation_reason_name' => $reason['reason_name'],
+                    'reservation_reason_id' => $reason['reservation_reason_id'],
+                    'reservation_reason_name' => $reason['name'],
                     'total_reservations' => 0,
                     'average_students' => 0
                 ];

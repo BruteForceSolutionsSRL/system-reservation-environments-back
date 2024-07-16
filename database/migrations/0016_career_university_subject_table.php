@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('career_university_subject', function (Blueprint $table) {
             $table->id();
+            $table->string('grade');
             $table->unsignedBigInteger('career_id');
             $table->unsignedBigInteger('university_subject_id');
             $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
@@ -25,7 +26,7 @@ return new class extends Migration
             $table->foreign('university_subject_id')
                     ->references('id')
                     ->on('university_subjects')
-                    ->cascadeOnUpdate();
+                    ->cascadeOnDelete();
         });
     }
 

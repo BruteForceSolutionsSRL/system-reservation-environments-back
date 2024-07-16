@@ -368,22 +368,19 @@ class ReservationRepository extends Repository
      */
     public function save(array $data): array
     {
-        $data['time_slot_id'][1]--;
+        $data['time_slot_ids'][1]--;
         $reservation = new Reservation();
         $reservation->number_of_students = $data['quantity'];
         $reservation->repeat = $data['repeat'];
         $reservation->date = $data['date'];
-        $reservation->reservation_reason_id = $data['reason_id'];
+        $reservation->reservation_reason_id = $data['reservation_reason_id'];
         $reservation->reservation_status_id = ReservationStatuses::pending();
         $reservation->priority = $data['priority'];
-        if (array_key_exists('observation', $data)) {
-            $reservation->observation = $data['observation'];
-        }
-        else {
-            $reservation->observation = 'Ninguna';
-        }
-        if (array_key_exists('parent_id', $data))
+        $reservation->observation = (array_key_exists('observation', $data))? $data['observation']: 'Ninguna';
+
+        if (array_key_exists('parent_id', $data)) {
             $reservation->parent_id = $data['parent_id'];
+        }
         
         $reservation->save();
         
@@ -391,12 +388,42 @@ class ReservationRepository extends Repository
             $reservation->parent_id = $reservation->id;
             $reservation->save();
         }
-        if (!empty($data['group_id']))
-            $reservation->teacherSubjects()->attach($data['group_id']);
         
-        if (!empty($data['classroom_id']))
-            $reservation->classrooms()->attach($data['classroom_id']);
-        $reservation->timeSlots()->attach($data['time_slot_id']);
+        if (!empty($data['persons'])) {
+            $reservation->persons()->attach(
+                array_map(
+                    function($person) {
+                        return $person['person_id'];
+                    }, $data['persons']
+                )
+            );
+            if (array_key_exists('teacher_subject_ids', $data['persons'][0])) {
+                $dp = []; 
+                foreach ($data['persons'] as $person) {
+                    $dp[$person['person_id']] = $person['teacher_subject_ids'];
+                }
+                foreach ($reservation->personReservation as $personReservation) {
+                    $personReservation->teacherSubjects()->attach($dp[$personReservation->person_id]);
+                }
+            }
+            //$reservation->teacherSubjects()->attach($data['teacher_subject_ids']);
+        }
+        
+        if (!empty($data['classroom_ids'])) {
+            $reservation->classrooms()->attach($data['classroom_ids']);
+        }
+
+        for (
+            $timeSlot = $data['time_slot_ids'][0]+1; 
+            $timeSlot<$data['time_slot_ids'][1]; 
+            $timeSlot++
+        ) {
+            array_push($data['time_slot_ids'], $timeSlot);
+        } 
+
+        $data['time_slot_ids'] = sort($data['time_slot_ids']);
+        
+        $reservation->timeSlots()->attach($data['time_slot_ids']);
 
         return $this->formatOutput($reservation);
     }
@@ -519,7 +546,7 @@ class ReservationRepository extends Repository
         $reservationReason = $reservation->reservationReason;
         $reservationStatus = $reservation->reservationStatus;
         $classrooms = $reservation->classrooms;
-        $teacherSubjects = $reservation->teacherSubjects;
+        $teacherSubjects = $reservation->persons;
         $timeSlots = $reservation->timeSlots;
         $priority = 0;
         $createdAt = $reservation->created_at;
@@ -580,12 +607,7 @@ class ReservationRepository extends Repository
                             'date' => $reservation->created_at
                         ]
                     );
-                    return [
-                        'classroom_id' => $classroomData['classroom_id'],
-                        'classroom_name' => $classroomData['classroom_name'],
-                        'capacity' => $classroomData['capacity'],
-                        'floor' => $classroomData['floor'],
-                    ];
+                    return $classroomData;
                 }
             )->toArray(),
             'reason_name' => $reservationReason->reason,

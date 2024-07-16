@@ -278,7 +278,7 @@ class ReservationController extends Controller
 
             $message = $this->reservationService->cancel(
                 $reservationId,
-                'Razon de la cancelacion es: El usuario: '.$person['person_fullname'].' cancelo la reserva'
+                'Razon de la cancelacion es: El usuario: '.$person['fullname'].' cancelo la reserva'
             ); 
             
             $pos = strpos($message, 'No existe');
@@ -363,10 +363,11 @@ class ReservationController extends Controller
         return Validator::make($request->all(), [
             'quantity' => 'required|integer|min:25|max:500',
             'date' => 'required|date',
-            'reason_id' => 'required|int|exists:reservation_reasons,id',
-            'group_id.*' => 'required|exists:teacher_subjects,id',
-            'classroom_id.*' => 'required|exists:classrooms,id',
-            'time_slot_id.*' => 'required|exists:time_slots,id',
+            'reservation_reason_id' => 'required|int|exists:reservation_reasons,id',
+            'teacher_subject_ids' => 'array',
+            'teacher_subject_ids.*' => 'exists:teacher_subjects,id',
+            'classroom_ids.*' => 'required|exists:classrooms,id',
+            'time_slot_ids.*' => 'required|exists:time_slots,id',
             'time_slot_id' => [
                 'required',
                 'array',
@@ -384,19 +385,28 @@ class ReservationController extends Controller
             'quantity.integer' => 'El número de estudiantes debe ser un valor entero.',
             'quantity:min' => 'La cantidad debe ser un numero positivo mayor o igual a 25',
             'quantity:max' => 'La cantidad debe ser un numero positivo menor o igual a 500',
+            
             'date.required' => 'La fecha es obligatoria.',
             'date.date' => 'La fecha debe ser un formato válido.',
-            'reason_id.required' => 'El motivo de la reserva es obligatorio.',
-            'reason_id.string' => 'El motivo de la reserva debe ser un texto.',
-            'group_id.required' => 'Se requiere al menos la seleccion de un grupo de la asignatura',
-            'group_id.*.required' => 'Se requiere al menos una asignatura de profesor.',
-            'group_id.*.exists' => 'Una de las asignaturas de profesor seleccionadas no es válida.',
-            'classroom_id.*.required' => 'Se requiere al menos una aula.',
-            'classroom_id.*.exists' => 'Una de las aulas seleccionadas no es válida.',
-            'time_slot_id.*.required' => 'Se requieren los periodos de tiempo.',
-            'time_slot_id.*.exists' => 'Uno de los periodos de tiempo seleccionados no es válido.',
-            'time_slot_id.required' => 'Se requieren dos periodos de tiempo.',
-            'time_slot_id.array' => 'Los periodos de tiempo deben ser un arreglo.',
+            
+            'reservation_reason_id.required' => 'El motivo de la reserva es obligatorio.',
+            'reservation_reason_id.string' => 'El motivo de la reserva debe ser un texto.',
+            
+            'teacher_subject_ids.required' => 'Se requiere al menos la seleccion de un grupo de la asignatura',
+            'teacher_subject_ids.*.required' => 'Se requiere al menos una asignatura de profesor.',
+            'teacher_subject_ids.*.exists' => 'Una de las asignaturas de profesor seleccionadas no es válida.',
+            
+            'classroom_ids.*.required' => 'Se requiere al menos una aula.',
+            'classroom_ids.*.exists' => 'Una de las aulas seleccionadas no es válida.',
+            
+            'time_slot_ids.*.required' => 'Se requieren los periodos de tiempo.',
+            'time_slot_ids.*.exists' => 'Uno de los periodos de tiempo seleccionados no es válido.',
+            'time_slot_ids.required' => 'Se requieren dos periodos de tiempo.',
+            'time_slot_ids.array' => 'Los periodos de tiempo deben ser un arreglo.',
+            
+            'block_id.required' => 'Debe seleccionar un bloque.',
+            'block_id.int' => 'El id del bloque debe ser un entero',
+            'block_id.exists' => 'El id del bloque seleccionado, no existe'
         ]);
     }
 
@@ -648,10 +658,10 @@ class ReservationController extends Controller
             'date_end' => 'required|date',
             'reason_id' => 'required|int|exists:reservation_reasons,id',
             'observation' => 'required|string',
-            'classroom_id' => 'array',
-            'classroom_id.*' => 'exists:classrooms,id',
-            'time_slot_id.*' => 'required|exists:time_slots,id',
-            'time_slot_id' => [
+            'classroom_ids' => 'array',
+            'classroom_ids.*' => 'exists:classrooms,id',
+            'time_slot_ids.*' => 'required|exists:time_slots,id',
+            'time_slot_ids' => [
                 'required',
                 'array',
                 function ($attribute, $value, $fail) {
@@ -673,17 +683,20 @@ class ReservationController extends Controller
             'date_start.date' => 'La fecha debe ser un formato válido.',
             'date_end.required' => 'La fecha es obligatoria.',
             'date_end.date' => 'La fecha debe ser un formato válido.',
+            
             'reason_id.required' => 'El motivo de la reserva es obligatorio.',
             'reason_id.int' => 'El motivo de la reserva debe hacer referencia al motivo.',
+            
             'observation.required' => 'El titulo u observacion no debe ser nula.',
             'observation.string' => 'El titulo y observacion debe ser una cadena de texto.',
 
-            'classroom_id.*.required' => 'Se requiere al menos una aula.',
-            'classroom_id.*.exists' => 'Una de las aulas seleccionadas no es válida.',
-            'time_slot_id.*.required' => 'Se requieren los periodos de tiempo.',
-            'time_slot_id.*.exists' => 'Uno de los periodos de tiempo seleccionados no es válido.',
-            'time_slot_id.required' => 'Se requieren dos periodos de tiempo.',
-            'time_slot_id.array' => 'Los periodos de tiempo deben ser un arreglo.',
+            'classroom_ids.*.required' => 'Se requiere al menos una aula.',
+            'classroom_ids.*.exists' => 'Una de las aulas seleccionadas no es válida.',
+            
+            'time_slot_ids.*.required' => 'Se requieren los periodos de tiempo.',
+            'time_slot_ids.*.exists' => 'Uno de los periodos de tiempo seleccionados no es válido.',
+            'time_slot_ids.required' => 'Se requieren dos periodos de tiempo.',
+            'time_slot_ids.array' => 'Los periodos de tiempo deben ser un arreglo.',
         ]);
 
     }

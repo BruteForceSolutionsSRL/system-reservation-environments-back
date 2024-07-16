@@ -126,7 +126,7 @@
         <ul>
             @for ($i = 0; $i<count($details['classrooms']); $i++)
                 <li>
-                    <b>{{ $details['classrooms'][$i]['classroom_name'] }}:</b> {{ $details['classrooms'][$i]['capacity'] }}
+                    <b>{{ $details['classrooms'][$i]['name'] }}:</b> {{ $details['classrooms'][$i]['capacity'] }}
                 </li>
             @endfor
         </ul>

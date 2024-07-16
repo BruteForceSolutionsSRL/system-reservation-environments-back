@@ -66,9 +66,9 @@ class BlockRepository
     public function save(array $data): array 
     {
         $block = new Block(); 
-        $block->name = $data['block_name'];
-        $block->max_floor = $data['block_maxfloor']; 
-        $block->max_classrooms = $data['block_maxclassrooms']; 
+        $block->name = $data['name'];
+        $block->max_floor = $data['maxfloor']; 
+        $block->max_classrooms = $data['maxclassrooms']; 
         $block->block_status_id = $data['block_status_id']; 
 
         $block->save();
@@ -79,8 +79,8 @@ class BlockRepository
     {
         $block = $this->model::find($id); 
         if (!$block) return [];
-        $block->max_floor = $data['block_maxfloor']; 
-        $block->max_classrooms = $data['block_maxclassrooms']; 
+        $block->max_floor = $data['maxfloor']; 
+        $block->max_classrooms = $data['maxclassrooms']; 
         $block->block_status_id = $data['block_status_id']; 
 
         $block->save();
@@ -107,12 +107,12 @@ class BlockRepository
         if ($block == null) return [];
         return [
             'block_id' => $block->id, 
-            'block_name' => $block->name, 
-            'block_maxfloor' => $block->max_floor, 
-            'block_maxclassrooms' => $block->max_classrooms,
+            'name' => $block->name, 
+            'maxfloor' => $block->max_floor, 
+            'maxclassrooms' => $block->max_classrooms,
             'block_status_id' => $block->block_status_id, 
             'block_status_name' => $block->blockStatus->name,
-            'block_classrooms' => $this->classroomRepository->getClassroomsByBlock($block->id)
+            'classrooms' => $this->classroomRepository->getClassroomsByBlock($block->id)
         ];
     }
 }

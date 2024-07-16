@@ -84,8 +84,8 @@ class TeacherSubjectRepository
     {
         return [
             'person_id' => $teacher['person_id'],
-            'teacher_name' => $teacher['person_name'],
-            'teacher_last_name' => $teacher['person_lastname'],
+            'teacher_name' => $teacher['name'],
+            'teacher_last_name' => $teacher['lastname'],
         ];
     }
 }

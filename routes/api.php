@@ -181,6 +181,9 @@ Route::controller(PersonController::class)->group(function() {
     Route::get('/users/teachers', 'listTeachers');
     Route::get('/users', 'list');
     Route::get('/users/{personId}', 'show');
+
+    Route::middleware('sanitize:api')->middleware('jwt.verify')->post('/users/update', 'update'); 
+    Route::middleware('sanitize:api')->middleware('jwt.verify')->post('/users/{personId}/assign-roles', 'updateRoles'); // necesita permisos de administrador
 });
 
 Route::controller(UniversitySubjectController::class)->group(function() {

@@ -10,9 +10,9 @@ class PersonReservation extends Model
     use HasFactory;
     protected $table = 'person_reservation';
     
-    public function teacherSubjects()
+    public function teacherSubjects() 
     {
-        return $this->hasMany(TeacherSubject::class);
+        return $this->belongsToMany(TeacherSubject::class);
     }
 
     public function person()

@@ -93,22 +93,6 @@ class PersonRepository extends Repository
     }
 
     /**
-     * Transform Person to array
-     * @param Person $person
-     * @return array
-     */
-    public function formatOutput($person): array
-    {
-        return [
-            'person_id' => $person->id, 
-            'person_name' => $person->name, 
-            'person_lastname' => $person->last_name, 
-            'person_email' => $person->email, 
-            'person_fullname' => $person->name.' '.$person->last_name
-        ]; 
-    }
-
-    /**
 	 * Retrieve all permissions of a person
 	 * @param array $data
 	 * @return bool
@@ -140,4 +124,79 @@ class PersonRepository extends Repository
         if ($person === null) return [];
         return $person->roles()->pluck('name')->toArray();
 	}
+
+    /**
+     * Retrieve the person correspond for a single group
+     * @param int $teacherSubject
+     * @return array
+     */
+    public function getTeachersBySubjectGroups(array $teacherSubjectIds): array 
+    {
+        return $this->model::whereHas('teacherSubjects', 
+                function ($query) use ($teacherSubjectIds)
+                {
+                    $query->whereIn('id', $teacherSubjectIds);
+                }
+            )->get()->map(
+                function ($person) use ($teacherSubjectIds)
+                {
+                    $personFormatted = $this->formatOutput($person);
+                    $personFormatted['teacher_subject_ids'] = []; 
+                    foreach ($person->teacherSubjects as $teacherSubject) {
+                        if (in_array($teacherSubject->id, $teacherSubject)) {
+                            array_push($teacherSubject->id, $personFormatted['teacher_subject_ids']);
+                        }
+                    }
+                    return $personFormatted;
+                }
+            );
+    }
+
+    /**
+     * Update a single information 
+     * @param array $data
+     * @return array
+     */
+    public function update(array $data, int $personId): array 
+    {
+        $person = $this->model::find($personId); 
+        if (array_key_exists('user_name', $data)) {
+            $person->user_name = $data['user_name'];
+        }
+        if (array_key_exists('email', $data)) {
+            $person->email = $data['email'];
+        }
+        if (array_key_exists('name', $data)) {
+            $person->name = $data['name'];
+        }
+        if (array_key_exists('last_name', $data)) {
+            $person->last_name = $data['last_name'];
+        }
+        $person->save();
+
+        if (array_key_exists('role_ids', $data)) {
+            $person->roles()->sync([]);
+            $person->roles()->attach($data['role_ids']);
+            $person->save();
+        }
+
+        return $this->formatOutput($person);
+    }
+
+    /**
+     * Transform Person to array
+     * @param Person $person
+     * @return array
+     */
+    public function formatOutput($person): array
+    {
+        return [
+            'person_id' => $person->id,
+            'user_name' => $person->user_name, 
+            'name' => $person->name, 
+            'lastname' => $person->last_name, 
+            'email' => $person->email, 
+            'fullname' => $person->name.' '.$person->last_name
+        ]; 
+    }
 }

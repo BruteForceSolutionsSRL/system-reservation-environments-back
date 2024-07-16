@@ -147,19 +147,19 @@ class ClassroomServiceImpl implements ClassroomService
     {
         $classroom = $this->classroomRepository->save($data);
 
-        $data['title'] = 'CREACION DE AMBIENTE '.$classroom['classroom_name'].'#'.$classroom['classroom_id'];
+        $data['title'] = 'CREACION DE AMBIENTE '.$classroom['name'].'#'.$classroom['classroom_id'];
         $data['sended'] = 1;
         $data['sendBy'] = PersonRepository::system();
         $data['to'] = ['TODOS']; 
         $data['type'] = NotificationTypeRepository::informative();
-        $data['body'] = 'Se creo un nuevo ambiente denominado '.$classroom['classroom_name'];
+        $data['body'] = 'Se creo un nuevo ambiente denominado '.$classroom['name'];
 
         $emailData = $this->notificationService->store($data);
         $emailData = array_merge($emailData, $classroom);
 
         $this->mailService->sendCreationClassroomEmail($emailData);
 
-        return 'El ambiente '.$classroom['classroom_name'].' fue creado exitosamente.';
+        return 'El ambiente '.$classroom['name'].' fue creado exitosamente.';
     }
 
     /**
@@ -178,19 +178,19 @@ class ClassroomServiceImpl implements ClassroomService
             $this->disable($classroom['classroom_id']);
         }
 
-        $data['title'] = 'ACTUALIZACION DE DATOS DEL AMBIENTE '.$classroom['classroom_name'].'#'.$classroom['classroom_id'];
+        $data['title'] = 'ACTUALIZACION DE DATOS DEL AMBIENTE '.$classroom['name'].'#'.$classroom['classroom_id'];
         $data['sended'] = 1;
         $data['sendBy'] = PersonRepository::system();
         $data['to'] = ['TODOS']; 
         $data['type'] = NotificationTypeRepository::informative();
-        $data['body'] = 'Se actualizaron los datos del ambiente denominado '.$classroom['classroom_name'];
+        $data['body'] = 'Se actualizaron los datos del ambiente denominado '.$classroom['name'];
 
         $emailData = $this->notificationService->store($data);
         $emailData = array_merge($emailData, $classroom);
 
         $this->mailService->sendUpdateClassroomEmail($emailData);
 
-        return 'El ambiente '.$classroom['classroom_name'].' fue actualizado correctamente';
+        return 'El ambiente '.$classroom['name'].' fue actualizado correctamente';
     }
 
     /**
@@ -235,7 +235,7 @@ class ClassroomServiceImpl implements ClassroomService
         }
         foreach ($data['classroom_id'] as $classroomId) {
             $classroom = $this->classroomRepository->getClassroomById($classroomId); 
-            $element = ['classroom_name' => $classroom['classroom_name']]; 
+            $element = ['name' => $classroom['name']]; 
 
             for ($id = $data['time_slot_id'][0]; $id <= $data['time_slot_id'][1]; $id++) {
                 $index = $this->timeSlotRepository->getTimeSlotById($id)['time']; 
@@ -278,7 +278,7 @@ class ClassroomServiceImpl implements ClassroomService
                     ReservationStatuses::accepted(),
                     ReservationStatuses::pending()
                 ],
-                'time_slots' => $data['time_slot_id'],
+                'time_slots' => $data['time_slot_ids'],
                 'classrooms' => array_map(
                     function ($classroom) 
                     {
@@ -460,19 +460,19 @@ class ClassroomServiceImpl implements ClassroomService
         $classroom = $this->classroomRepository->deleteByClassroomId($classroomId); 
 
         $data = [];
-        $data['title'] = 'ELIMINACION DE AMBIENTE '.$classroom['classroom_name'].'#'.$classroom['classroom_id'];
+        $data['title'] = 'ELIMINACION DE AMBIENTE '.$classroom['name'].'#'.$classroom['classroom_id'];
         $data['sended'] = 1;
         $data['sendBy'] = PersonRepository::system();
         $data['to'] = ['TODOS']; 
         $data['type'] = NotificationTypeRepository::informative();
-        $data['body'] = 'Se elimino el ambiente denominado '.$classroom['classroom_name'];
+        $data['body'] = 'Se elimino el ambiente denominado '.$classroom['name'];
 
         $emailData = $this->notificationService->store($data);
         $emailData = array_merge($emailData, $classroom);
 
         $this->mailService->sendDeleteClassroomEmail($emailData);
 
-        return ['message' => 'Ambiente '.$classroom['classroom_name'].' eliminado exitosamente.'];
+        return ['message' => 'Ambiente '.$classroom['name'].' eliminado exitosamente.'];
     }
 
     /**
@@ -515,7 +515,7 @@ class ClassroomServiceImpl implements ClassroomService
                 if ($reservation['special'] == 0) {
                     $this->reservationService->reject(
                         $reservation['reservation_id'],
-                        'Su reserva ha sido rechazada debido a que el ambiente '.$classroom['classroom_name'].' fue deshabilitado',
+                        'Su reserva ha sido rechazada debido a que el ambiente '.$classroom['name'].' fue deshabilitado',
                         PersonRepository::system()
                     );    
                 } else {
@@ -537,7 +537,7 @@ class ClassroomServiceImpl implements ClassroomService
                 }
         }
 
-        return 'Ambiente '.$classroom['classroom_name'].' deshabilitado correctamente';
+        return 'Ambiente '.$classroom['name'].' deshabilitado correctamente';
     }
 
     /**

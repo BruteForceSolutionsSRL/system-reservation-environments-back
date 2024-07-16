@@ -1,9 +1,9 @@
 /*
-    LAST MODIFICATION: 29/06/2024 15:54
+    LAST MODIFICATION: 11/07/2024 15:54
     VERSION: 
-        1.0 (RESERVAS ESPECIALES)
+        2.0 (RESERVAS ESPECIALES + GESTION ACADEMICA)
 */
-use notifications;
+use test3;
 /*
     roles
 */
@@ -92,39 +92,51 @@ insert into person_role(person_id, role_id) values
     (23, 2),
     (24, 2),
     (25, 2),
-    (26, 1),
-    (27, 1),
-    (28, 1),
-    (29, 1),
-    (30, 1),
-    (31, 1)
+    (26, 2),
+    (27, 2),
+    (28, 2),
+    (29, 2),
+    (30, 2),
+    (31, 2),
+    (32, 2),
+    (33, 2),
+    (34, 2),
+    (35, 2),
+    (36, 2),
+    (37, 2),
+    (38, 2),
+    (39, 2),
+    (40, 2),
+    (41, 2),
+    (42, 2),
+    (43, 2),
+    (44, 2),
+    (45, 2),
+    (46, 2),
+    (47, 2),
+    (48, 2),
+    (49, 2),
+    (50, 2),
+    (51, 2),
+    (52, 2),
+    (53, 1),
+    (54, 1),
+    (55, 1),
+    (56, 1),
+    (57, 1),
+    (58, 1),
+    (59, 1)
 ;
 /*
     notification_types
 */
-insert into notification_types(description, color) values 
-('INFORMATIVO', 'BLANCO'),
-('ACEPTADA', 'VERDE'),
-('RECHAZADA', 'ROJO'), 
-('CANCELADA', 'NARANJA'),
-('ADVERTENCIA', 'AMARILLO');
-
-/*
-    notification
-
-insert into notifications(title, description, person_id, notification_type_id) values
-    ('EJEMPLO', 'HOLA ESTE ES UN EJEMPLO', 1, 1);
-
-
-
-    notification_persons
-
-insert into notification_person(person_id, notification_id) values
-(1, 1), 
-(3, 1), 
-(4, 1);
-*/
-
+insert into notification_types(description) values 
+('INFORMATIVO'),
+('ACEPTADA'),
+('RECHAZADA'), 
+('CANCELADA'),
+('ADVERTENCIA')
+;
 /*
     careers
 */
@@ -137,79 +149,282 @@ values
 /*
     university_subjects
 */
-insert into university_subjects (name, grade, career_id, created_at, updated_at)
+insert into university_subjects (id, name, created_at)
 values 
-    ('INTRODUCCION A LA PROGRAMACION',              'A', 1, NOW(), NOW()), /*ID 1 */  
-    ('ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS',    'B', 1, NOW(), NOW()), /*ID 2 */ 
-    ('CALCULO I',                                   'A', 2, NOW(), NOW()), /*ID 3 */ 
-    ('CALCULO III',                                 'C', 3, NOW(), NOW()), /*ID 4 */ 
-    ('ARQUITECTURA DE COMPUTADORAS I',              'B', 1, NOW(), NOW()), /*ID 5 */
-    ('ALGORITMOS AVANZADOS',                        'D', 1, NOW(), NOW()), /*ID 6 */
-    ('TALLER DE INGENIERIA DE SOFTWARE',            'G', 1, NOW(), NOW()), /*ID 7 */
-    ('FISICA GENERAL',                              'A', 1, NOW(), NOW()), /*ID 8 */
-    ('INGLES I',                                    'A', 1, NOW(), NOW()), /*ID 9 */
-    ('INGLES II',                                   'B', 1, NOW(), NOW()), /*ID 10 */
-    /*-----------------------------------------------------------------------------*/
-    ('CALCULO NUMERICO',                            'C', 1, NOW(), NOW()), /*ID 11 */
-    ('TEORIA DE GRAFOS',                            'C', 1, NOW(), NOW()), /*ID 12 */
-    ('PROGRAMACION FUNCIONAL',                      'D', 1, NOW(), NOW()), /*ID 13 */
-    ('BASE DE DATOS I',                             'D', 2, NOW(), NOW()), /*ID 14 */
-    ('BASE DE DATOS II',                            'E', 2, NOW(), NOW()), /*ID 15 */
-    ('INTELIGENCIA ARTIFICIAL I',                   'E', 1, NOW(), NOW())  /*ID 16 */
+    (1803001, 'INGLES I',                                            NOW()), /*ID 1 */  
+    (2006063, 'FISICA GENERAL',                                      NOW()), /*ID 2 */ 
+    (2008019, 'ALGEBRA I',                                           NOW()), /*ID 3 */ 
+    (2008054, 'CALCULO I',                                           NOW()), /*ID 4 */ 
+    (2010010, 'INTRODUCCION A LA PROGRAMACION',                      NOW()), /*ID 5 */
+    (1803002, 'INGLES II',                                           NOW()), /*ID 6 */
+    (2008022, 'ALGEBRA II',                                          NOW()), /*ID 7 */
+    (2008056, 'CALCULO II',                                          NOW()), /*ID 8 */
+    (2010003, 'ELEMENTOS DE PROGRAMACION Y ESTRUCTURAS DE DATOS',    NOW()), /*ID 9 */
+    (2010013, 'ARQUITECTURA DE COMPUTADORAS I',                      NOW()), /*ID 10 */
+    (2010200, 'PROGRAMACION',                                        NOW()), /*ID 11 */
+    (2008060, 'CALCULO NUMERICO',                                    NOW()), /*ID 12 */
+    (2008140, 'LOGICA',                                              NOW()), /*ID 13 */
+    (2010014, 'ARQUITECTURA DE COMPUTADORAS II',                     NOW()), /*ID 14 */
+    (2010037, 'TEORIA DE GRAFOS',                                    NOW()), /*ID 15 */
+    (2010041, 'ORGANIZACION Y METODOS',                              NOW()),  /*ID 16 */
+    (2010206, 'METODOS Y TECNICAS DE PROGRAMACION',                  NOW()),  /*ID 17 */
+    (2008029, 'PROBABILIDAD Y ESTADISTICA',                          NOW()),  /*ID 18 */
+    (2010005, 'TALLER DE PROGRAMACION EN BAJO NIVEL',                NOW()),  /*ID 19 */
+    (2010015, 'BASE DE DATOS I',                                     NOW()),  /*ID 20 */
+    (2010018, 'SISTEMAS DE INFORMACION I',                           NOW()),  /*ID 21 */
+    (2010038, 'PROGRAMACION FUNCIONAL',                              NOW()),  /*ID 22 */
+    (2010197, 'ALGORITMOS AVANZADOS',                                NOW()),  /*ID 23 */
+    (2010016, 'BASE DE DATOS II',                                    NOW()),  /*ID 24 */
+    (2010017, 'TALLER DE SISTEMAS OPERATIVOS',                       NOW()),  /*ID 25 */
+    (2010022, 'SISTEMAS DE INFORMACION II',                          NOW()),  /*ID 26 */
+    (2010040, 'TEORIA DE AUTOMATAS Y LENGUAJES DE FORMALES',         NOW()),  /*ID 27 */
+    (2010042, 'GRAFICACION POR COMPUTADORA',                         NOW()),  /*ID 28 */
+    (2010201, 'INTELIGENCIA ARTIFICIAL I',                           NOW()),  /*ID 29 */
+    (2010020, 'INGENIERIA DE SOFTWARE',                              NOW()),  /*ID 30 */
+    (2010047, 'REDES DE COMPUTADORAS',                               NOW()),  /*ID 31 */
+    (2010049, 'ESTRUCTURA Y SEMANTICA DE LENGUAJES DE PROGRAMACION', NOW()),  /*ID 32 */
+    (2010053, 'TALLER DE BASE DE DATOS',                             NOW()),  /*ID 33 */
+    (2010202, 'INTELIGENCIA ARTIFICIAL II',                          NOW()),  /*ID 34 */
+    (2010203, 'PROGRAMACION WEB',                                    NOW()),  /*ID 35 */
+    (2010019, 'SIMULACION DE SISTEMAS',                              NOW()),  /*ID 36 */
+    (2010024, 'TALLER DE INGENIERIA DE SOFTWARE',                    NOW()),  /*ID 37 */
+    (2010100, 'ARQUITECTURA DE SOFTWARE',                            NOW()),  /*ID 38 */
+    (2010204, 'INTERACCION HUMANO COMPUTADOR',                       NOW()),  /*ID 39 */
+    (2010205, 'TECNOLOGIA DE REDES AVANZADAS',                       NOW()),  /*ID 40 */
+    (2010035, 'APLICACION DE SISTEMAS OPERATIVOS',                   NOW()),  /*ID 41 */
+    (2010102, 'EVALUACION Y AUDITORIA DE SISTEMAS',                  NOW()),  /*ID 42 */
+    (2010214, 'TALLER DE GRADO I',                                   NOW()),  /*ID 43 */
+    (2010066, 'PROCESOS AGILES',                                     NOW()),  /*ID 44 */
+    (2010178, 'ENTORNOS VIRTUALES DE APRENDIZAJE',                   NOW()),  /*ID 45 */
+    (2010188, 'SERVICIOS TELEMATICOS',                               NOW()),  /*ID 46 */
+    (2010189, 'RECONOCIMIENTO DE VOZ',                               NOW()),  /*ID 47 */
+    (2010209, 'SEGURIDAD DE SISTEMAS',                               NOW()),  /*ID 48 */
+    (2010215, 'TALLER DE GRADO II',                                  NOW()),  /*ID 49 */
+    (2010216, 'CLOUD COMPUTING',                                     NOW()),  /*ID 50 */
+    (2010217, 'BUSSINESS INTELLIGENCE Y BIG DATA',                   NOW()),  /*ID 51 */
+    (2010218, 'CIENCIA DE DATOS Y MACHINE LEARNING',                 NOW())  /*ID 52 */
+;
+
+/**
+    carrer_university_subject
+*/
+insert into career_university_subject (career_id, university_subject_id, grade)
+values
+    (1, 1803001,  'A'), /* INFORMATICA - INGLES I */
+    (1, 2006063,  'A'), /* INFORMATICA - FISICA GENERAL */
+    (1, 2008019,  'A'), /* INFORMATICA - ALGEBRA I */
+    (1, 2008054,  'A'), /* INFORMATICA - CALCULO I */
+    (1, 2010010,  'A'), /* INFORMATICA - INTRODUCCION A LA PROGRAMACION */
+    (1, 1803002,  'B'), /* INFORMATICA - INGLES II */
+    (1, 2008022,  'B'), /* INFORMATICA - ALGEBRA II */
+    (1, 2008056,  'B'), /* INFORMATICA - CALCULO II */
+    (1, 2010003,  'B'), /* INFORMATICA - ELEMENTOS DE PROGRAMACION Y EST. DE DATOS */
+    (1, 2010013, 'B'), /* INFORMATICA - ARQUITECTURA DE COMPUTADORAS I */
+    (1, 2010200, 'B'), /* INFORMATICA - PROGRAMACION */
+    (1, 2008060, 'C'), /* INFORMATICA - CALCULO NUMERICO */
+    (1, 2008140, 'C'), /* INFORMATICA - LOGICA */
+    (1, 2010014, 'C'), /* INFORMATICA - ARQUITECTURA DE COMPUTADORAS II */
+    (1, 2010037, 'C'), /* INFORMATICA - TEORIA DE GRAFOS */
+    (1, 2010041, 'C'), /* INFORMATICA - ORGANIZACION Y METODOS */
+    (1, 2010206, 'C'), /* INFORMATICA - METODOS Y TECNICAS */
+    (1, 2008029, 'D'), /* INFORMATICA - PROBABILIDAD Y ESTADISTICA */
+    (1, 2010005, 'D'), /* INFORMATICA - TALLER DE PROG. BAJO NIVEL */
+    (1, 2010015, 'D'), /* INFORMATICA - BASE DE DATOS I */
+    (1, 2010018, 'D'), /* INFORMATICA - SISTEMAS DE INFORMACION I */
+    (1, 2010038, 'D'), /* INFORMATICA - PROGRAMACION FUNCIONAL */
+    (1, 2010197, 'D'), /* INFORMATICA - ALGORITMOS AVANZADOS */
+    (1, 2010016, 'E'), /* INFORMATICA - BASE DE DATOS II */
+    (1, 2010017, 'E'), /* INFORMATICA - TALLER DE SISTEMAS OPERATIVOS */
+    (1, 2010022, 'E'), /* INFORMATICA - SISTEMAS DE INFORMACION II */
+    (1, 2010040, 'E'), /* INFORMATICA - TEORIA DE AUTOMATAS */
+    (1, 2010042, 'E'), /* INFORMATICA - GRAFICACION POR COMPUTADORAS */
+    (1, 2010201, 'E'), /* INFORMATICA - INTELIGENCIA ARTIFICIAL I */
+    (1, 2010020, 'F'), /* INFORMATICA - INGENIERIA DE SOFTWARE */
+    (1, 2010047, 'F'), /* INFORMATICA - REDES DE COMPUTADORAS */
+    (1, 2010049, 'F'), /* INFORMATICA - ESTRUCTURA Y SEMANTICA */
+    (1, 2010053, 'F'), /* INFORMATICA - TALLER DE BASE DE DATOS */
+    (1, 2010202, 'F'), /* INFORMATICA - INTELIGENCIA ARTIFICIAL II */
+    (1, 2010203, 'F'), /* INFORMATICA - PROGRAMACION WEB */
+    (1, 2010019, 'G'), /* INFORMATICA - SIMULACION DE SISTEMAS */
+    (1, 2010024, 'G'), /* INFORMATICA - TALLER DE INGENIERIA DE SOFTWARE */
+    (1, 2010100, 'G'), /* INFORMATICA - ARQUITECTURA DE SOFTWARE */
+    (1, 2010204, 'G'), /* INFORMATICA - INTERACCION HUMANO COMPUTADOR */
+    (1, 2010205, 'G'), /* INFORMATICA - REDES AVANZADAS */
+    (1, 2010035, 'G'), /* INFORMATICA - APLICACION DE SISTEMAS OPERATIVOS */
+    (1, 2010102, 'H'), /* INFORMATICA - EVALUACION Y AUDITORIA DE SISTEMAS */
+    (1, 2010214, 'H'), /* INFORMATICA - TALLER DE GRADO I */
+    (1, 2010066, 'H'), /* INFORMATICA - PROCESOS AGILES */
+    (1, 2010178, 'H'), /* INFORMATICA - ENTORNOS VIRTUALES DE APRENDIZAJE */
+    (1, 2010188, 'H'), /* INFORMATICA - SERVICIOS TELEMATICOS */
+    (1, 2010189, 'H'), /* INFORMATICA - RECONOCIMIENTO DE VOZ */
+    (1, 2010209, 'H'), /* INFORMATICA - SEGURIDAD DE SISTEMAS */
+    (1, 2010215, 'I'), /* INFORMATICA - TALLER DE GRADO II */
+    (1, 2010216, 'I'), /* INFORMATICA - CLOUD COMPUTING */
+    (1, 2010217, 'I'), /* INFORMATICA - BUSSINESS INTELLIGENCE */
+    (1, 2010218, 'I') /* INFORMATICA - CIENCIA DE DATOS Y MACHINE LEARNING */
+;
+/**
+    academic_periods
+*/
+insert into academic_periods(name, initial_date, end_date, activated) values
+    ('I-2024', '2024-04-01', '2024-09-01', 1) /*ID 1 - I-2024*/
 ;
 /*
     teacher_subjects
 */
-insert into teacher_subjects (group_number, person_id, university_subject_id, created_at, updated_at)
+insert into teacher_subjects (group_number, person_id, university_subject_id, academic_period_id)
 values 
-    (1, 1, 9, NOW(), NOW()),      /* ID 1  |INGLES I - MARIA BENITA*/
-    (2, 1, 9, NOW(), NOW()),      /* ID 2  |INGLES I - MARIA BENITA*/
-    (3, 2, 9, NOW(), NOW()),      /* ID 3  |INGLES I - PEETERS*/
+    ('1', 1, 1803001, 1),      /* ID 1  |INGLES I G1 - MARIA BENITA*/
+    ('2', 1, 1803001, 1),      /* ID 2  |INGLES I G2 - MARIA BENITA*/
+    ('3', 2, 1803001, 1),      /* ID 3  |INGLES I G3 - PEETERS*/
 
-    (1, 2, 10, NOW(), NOW()),     /* ID 4  |INGLES II - PEETERS*/
-    (2, 2, 10, NOW(), NOW()),     /* ID 5  |INGLES II - PEETERS*/
+    ('B',  3, 2006063, 1),      /* ID 4  |FISICA GENERAL - ROBERTO VALENZUELA*/
+    ('B1', 4, 2006063, 1),      /* ID 5  |FISICA GENERAL - RENE MOREIRA*/
+    ('B2', 5, 2006063, 1),      /* ID 6  |FISICA GENERAL - ROCIO GUZMAN*/
+    ('B3', 7, 2006063, 1),      /* ID 7  |FISICA GENERAL - MIGUEL ANGEL ORDONEZ*/
+    ('B4', 6, 2006063, 1),      /* ID 8  |FISICA GENERAL - ROCIO GUZMAN*/
+    ('B5', 8, 2006063, 1),      /* ID 9  |FISICA GENERAL - JUAN CARLOS TERRAZAS*/
+    ('B6', 8, 2006063, 1),      /* ID 10 |FISICA GENERAL - JUAN CARLOS TERRAZAS*/
 
-    (1, 14, 1, NOW(), NOW()),     /* ID 6  |INTRODUCCION A LA PROGRAMACION - CARLA*/
-    (2, 10, 1, NOW(), NOW()),     /* ID 7  |INTRODUCCION A LA PROGRAMACION - LETI*/
-    (3, 11, 1, NOW(), NOW()),     /* ID 8  |INTRODUCCION A LA PROGRAMACION - HERNAN*/
-    (4, 12, 1, NOW(), NOW()),     /* ID 9  |INTRODUCCION A LA PROGRAMACION - HENRY*/
-    (5, 19, 1, NOW(), NOW()),     /* ID 10 |INTRODUCCION A LA PROGRAMACION - VICTOR HUGO*/
-    (6, 14, 1, NOW(), NOW()),     /* ID 11 |INTRODUCCION A LA PROGRAMACION - CARLA*/
-    (7, 13, 1, NOW(), NOW()),     /* ID 12 |INTRODUCCION A LA PROGRAMACION - VLADO*/
-    (10, 13, 1, NOW(), NOW()),    /* ID 13 |INTRODUCCION A LA PROGRAMACION - VLADO*/
+    ('10', 9, 2008019, 1),      /* ID 11  |ALGEBRA I - JUAN ANTONIO RODRIGUEZ*/
+    ('15', 10, 2008019,1),      /* ID 12  |ALGEBRA I - ALVARO HERNANDO CALVO*/
+    ('8',  11, 2008019,1),      /* ID 13  |ALGEBRA I - GUALBERTO LEON*/
 
-    (1, 15, 2, NOW(), NOW()),     /* ID 14 |ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - ROSEMARY*/
-    (2, 10, 2, NOW(), NOW()),     /* ID 15 |ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - LETI*/
-    (3, 10, 2, NOW(), NOW()),     /* ID 16 |ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - LETI*/
-    (5, 16, 2, NOW(), NOW()),     /* ID 17 |ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - HELDER*/
+    ('10', 12, 2008054,1),      /* ID 14  |CALCULO I - POR DESIGNAR*/
+    ('11', 13, 2008054,1),      /* ID 15  |CALCULO I - RAMIRO ZURITA*/
 
-    (1, 17, 5, NOW(), NOW()),     /* ID 18 |ARQUITECTURA DE COMPUTADORAS I - SAMUEL*/
-    (2, 10, 5, NOW(), NOW()),     /* ID 19 |ARQUITECTURA DE COMPUTADORAS I - LETI*/
+    ('1',  14, 2010010, 1),      /* ID 16  |INTRO A LA PROGRA - CARLA SALAZAR*/
+    ('10', 15, 2010010, 1),      /* ID 17  |INTRO A LA PROGRA - VLADIMIR COSTAS*/
+    ('2',  16, 2010010, 1),      /* ID 18  |INTRO A LA PROGRA - LETICIA BLANCO*/
+    ('3',  17, 2010010, 1),      /* ID 19  |INTRO A LA PROGRA - HERNAN USTARIZ*/
+    ('4',  18, 2010010, 1),      /* ID 20  |INTRO A LA PROGRA - HENRY FRANK*/
+    ('5',  19, 2010010, 1),      /* ID 21  |INTRO A LA PROGRA - VICTOR HUGO*/
+    ('6',  14, 2010010, 1),      /* ID 22 |INTRO A LA PROGRA - CARLA SALAZAR*/
+    ('7',  15, 2010010, 1),      /* ID 23  |INTRO A LA PROGRA - VLADIMIR COSTAS*/
 
-    (1, 10, 6, NOW(), NOW()),     /* ID 20 |ALGORITMOS AVANZADOS - LETI*/
+    ('1', 2, 1803002, 1),      /* ID 24  |INGLES II - MAGDA LENA*/
+    ('2', 2, 1803002, 1),      /* ID 25  |INGLES II - MAGDA LENA*/
 
-    (1, 18, 7, NOW(), NOW()),     /* ID 21 |TALLER DE INGENIERIA DE SOFTWARE - CORINA*/
-    (2, 10, 7, NOW(), NOW()),     /* ID 22 |TALLER DE INGENIERIA DE SOFTWARE - LETI*/
-    
-    (1, 4, 3, NOW(), NOW()),      /* ID 23 |CALCULO I - AGUSTIN*/
-    
-    (1, 12, 8, NOW(), NOW()),     /* ID 24 |FISICA GENERAL - HENRY FRANK*/
-    (2, 12, 8, NOW(), NOW()),     /* ID 25 |FISICA GENERAL - HENRY FRANK*/
+    ('5A', 20, 2008022, 1),      /* ID 26  |ALGEBRA II - WALTER GONZALO*/
+    ('6',  21, 2008022, 1),      /* ID 27  |ALGEBRA II - HERNAN SILVA*/
+    ('8',  22, 2008022, 1),      /* ID 28  |ALGEBRA II - JOSE OMONTE*/
 
-    /*----------------------------------------------------------------------------------*/
+    ('12', 23, 2008056, 1),      /* ID 29  |CALCULO II - AMILCAR*/
+    ('6',  24, 2008056, 1),      /* ID 30  |CALCULO II - LOBO*/
 
-    (1, 20, 11, NOW(), NOW()),    /* ID 26 |CALCULO NUMERICO - DEMETRIO JUCHANI BAZUALDO*/
+    ('1', 25, 2010003, 1),      /* ID 31  |ELEMENTOS DE PROGRAMACION - ROSEMARY*/
+    ('2', 16, 2010003, 1),      /* ID 32  |ELEMENTOS DE PROGRAMACION - LETICIA*/
+    ('3', 16, 2010003, 1),      /* ID 33  |ELEMENTOS DE PROGRAMACION - LETICIA*/
+    ('5', 26, 2010003, 1),      /* ID 34  |ELEMENTOS DE PROGRAMACION - HELDER OCTAVIO*/
 
-    (1, 21, 12, NOW(), NOW()),    /* ID 27 |TEORIA DE GRAFOS - YONY RICHARD MONTOYA BURGOS*/
+    ('1', 27, 2010013, 1),      /* ID 35  |ARQUITECTURA I - SAMUEL ACHA*/
+    ('2', 16, 2010013, 1),      /* ID 36  |ARQUITECTURA I - LETI*/
 
-    (1, 22, 13, NOW(), NOW()),    /* ID 28 |PROGRAMACION FUNCIONAL - TATIANA APARICIO YUJA*/
+    ('1', 25, 2010200, 1),      /* ID 37  |PROGRAMACION - ROSEMARY*/
 
-    (2, 23, 14, NOW(), NOW()),    /* ID 29 |BASE DE DATOS I - BORIS CALANCHA NAVIA*/
-    (1, 24, 14, NOW(), NOW()),    /* ID 30 |BASE DE DATOS I - VITTER JESUS MEDRANO PEREZ*/
+    ('2', 28, 2008060, 1),      /* ID 38  |CALCULO NUMERICO - JUCHANI*/
+    ('3', 29, 2008060, 1),      /* ID 39  |CALCULO NUMERICO - OSCAR ZABALAGA*/
 
-    (1, 22, 15, NOW(), NOW()),    /* ID 31 |BASE DE DATOS II - TATIANA APARICIO YUJA*/
-    
-    (1, 25, 16, NOW(), NOW())     /* ID 32 |INTELIGENCIA ARTIFICIAL I - TATIANA APARICIO YUJA*/
+    ('1', 30, 2008140, 1),      /* ID 40  |LOGICA - HOEPFNER*/
+
+    ('1', 31, 2010014, 1),      /* ID 41  |ARQUITECTURA II - ROBERTO AGREDA*/
+
+    ('1', 32, 2010037, 1),      /* ID 42  |TEORIA DE GRAFOS - YONY MONTOYA*/
+
+    ('1', 33, 2010041, 1),      /* ID 43  |ORGANIZACION Y METODOS - INDIRA*/
+
+    ('1', 34, 2010206, 1),      /* ID 44  |METODOS Y TECNICAS DE PROG. - CORINA*/
+    ('2', 35, 2010206, 1),      /* ID 45  |METODOS Y TECNICAS DE PROG. - CARLOS MANZUR*/
+    ('5', 32, 2010206, 1),      /* ID 46  |METODOS Y TECNICAS DE PROG. -  YONY MONTOYA*/
+
+    ('3', 36, 2008029, 1),      /* ID 47  |PROB. Y ESTADISTICA - DELGADILLO COSSIO*/
+    ('4', 22, 2008029, 1),      /* ID 48  |PROB. Y ESTADISTICA - OMONTE*/
+
+    ('1', 37, 2010005, 1),      /* ID 49  |TALLER DE BAJO NIVEL - MONTECINOS*/
+
+    ('1', 38, 2010015, 1),      /* ID 50  |BASE DE DATOS I - VITTER JESUS MEDRANO*/
+    ('2', 39, 2010015, 1),      /* ID 51  |BASE DE DATOS I - BORIS CALANCHA*/
+
+    ('1', 14, 2010018, 1),      /* ID 52  |SISTEMAS DE INFORMACION I - CARLA SALAZAR*/
+    ('2', 14, 2010018, 1),      /* ID 53  |SISTEMAS DE INFORMACION I - CARLA SALAZAR*/
+
+    ('1', 40, 2010038, 1),      /* ID 54  |FUNCIONAL - TATIANA*/
+
+    ('1', 16, 2010197, 1),      /* ID 55  |ALGORITMOS AVANZADOS - LETICIA*/
+
+    ('1', 40, 2010016, 1),      /* ID 56  |BASE DE DATOS II - TATIANA*/
+    ('2', 40, 2010016, 1),      /* ID 57  |BASE DE DATOS II - TATIANA*/
+
+    ('1', 41, 2010017, 1),      /* ID 58  |TSO - JORGE ORELLANA*/
+    ('2', 41, 2010017, 1),      /* ID 59  |TSO - JORGE ORELLANA*/
+    ('5', 42, 2010017, 1),      /* ID 60  |TSO - GROVER CUSSI*/
+
+    ('1', 43, 2010022, 1),      /* ID 61  |SISTEMAS DE INFO II - MARCELO FLORES*/
+    ('2', 44, 2010022, 1),      /* ID 62  |SISTEMAS DE INFO II - K. JALDIN*/
+
+    ('1', 19, 2010040, 1),      /* ID 63  |AUTOMATAS. - VICTOR HUGO MONTANO*/
+
+    ('1', 39, 2010042, 1),      /* ID 64  |GRAFICACION POR COMPUTADORA - BORIS CALANCHA*/
+
+    ('1', 45, 2010201, 1),      /* ID 65  |INTELIGENCIA ARTIFICIAL I - CARMEN ROSA*/
+    ('2', 46, 2010201, 1),      /* ID 66  |INTELIGENCIA ARTIFICIAL I - ERIKA PATRICIA*/
+
+    ('1', 33, 2010020, 1),      /* ID 67  |INGENIERIA DE SOFTWARE - INDIRA*/
+    ('2', 25, 2010020, 1),      /* ID 68  |INGENIERIA DE SOFTWARE - ROSEMARY*/
+
+    ('1', 41, 2010047, 1),      /* ID 69  |REDES DE COMPUTADORAS - JORGE ORELLANA*/
+    ('2', 41, 2010047, 1),      /* ID 70  |REDES DE COMPUTADORAS - JORGE ORELLANA*/
+
+    ('1', 47, 2010049, 1),      /* ID 71  |ESTRUCTURA Y SEMANTICA - PATRICIA ROMERO*/
+
+    ('1', 39, 2010053, 1),      /* ID 72  |TALLER DE BASE DE DATOS - BORIS CALANCHA*/
+    ('2', 39, 2010053, 1),      /* ID 73  |TALLER DE BASE DE DATOS - BORIS CALANCHA*/
+    ('3', 43, 2010053, 1),      /* ID 74  |TALLER DE BASE DE DATOS - MARCELO FLORES*/
+    ('4', 39, 2010053, 1),      /* ID 75  |TALLER DE BASE DE DATOS - BORIS CALANCHA*/
+
+    ('2', 45, 2010202, 1),      /* ID 76  |INTELIGENCIA ARTIFICIAL II - CARMEN ROSA*/
+
+    ('1', 15, 2010203, 1),      /* ID 77  |PROGRAMACION WEB - VLADIMIR COSTAS*/
+
+    ('1', 18, 2010019, 1),      /* ID 78  |SIMULACION DE SISTEMAS - HENRY FRANK VILLARROEL*/
+
+    ('1', 34, 2010024, 1),      /* ID 79  |TALLER DE INGENIERIA DE SOFTWARE - CORINA*/
+    ('2', 16, 2010024, 1),      /* ID 80  |TALLER DE INGENIERIA DE SOFTWARE - LETICIA*/
+
+    ('1', 48, 2010100, 1),      /* ID 81  |ARQUITECTURA DE SOFTWARE - CLAUDIA URENA*/
+
+    ('1', 34, 2010204, 1),      /* ID 82  |IHC - CORINA*/
+
+    ('1', 37, 2010205, 1),      /* ID 83  |REDES AVANZADAS - MONTECINOS*/
+
+    ('1', 42, 2010035, 1),      /* ID 84  |APLICACION DE SISTEMAS OPERATIVOS - GROVER CUSSI*/
+    ('2', 42, 2010035, 1),      /* ID 85  |APLICACION DE SISTEMAS OPERATIVOS - GROVER CUSSI*/
+
+    ('1', 47, 2010102, 1),      /* ID 86  |EVALUACION Y AUDITORIA DE SISTEMAS - PATRICIA ROMERO*/
+    ('2', 49, 2010102, 1),      /* ID 87  |EVALUACION Y AUDITORIA DE SISTEMAS - JIMMY NOVILLO*/
+
+    ('6', 34, 2010214, 1),      /* ID 88  |TALLER DE GRADO I - CORINA*/
+    ('7', 47, 2010214, 1),      /* ID 89  |TALLER DE GRADO I - PATRICIA ROMERO*/
+
+    ('1', 50, 2010066, 1),      /* ID 90  |PROCESOS AGILES - NIBETH MENA*/
+
+    ('1', 15, 2010178, 1),      /* ID 91  |ENTORNOS VIRTUALES DE APRENDIZAJE - VLADIMIR COSTAS*/
+
+    ('1', 51, 2010188, 1),      /* ID 92  |TELEMATICOS - AMERICO FIORILO*/
+
+    ('1', 45, 2010189, 1),      /* ID 93  |RECONOCIMIENTO DE VOZ - CARMEN ROSA*/
+
+    ('1', 52, 2010209, 1),      /* ID 94  |SEGURIDAD DE SISTEMAS - MARCELO ANTEZANA*/
+
+    ('2', 19, 2010215, 1),      /* ID 95  |TALLER DE GRADO II - VICTOR HUGO MONTANO*/
+    ('3', 45, 2010215, 1),      /* ID 96  |TALLER DE GRADO II - CARMEN ROSA*/
+    ('4', 47, 2010215, 1),      /* ID 97  |TALLER DE GRADO II - PATRICIA ROMERO*/
+
+    ('1', 32, 2010216, 1),      /* ID 98  |CLOUD COMPUTING - YONY MONTOYA*/
+
+    ('1', 53, 2010217, 1),      /* ID 99  |BUSSINESS INTELIGENCE Y BIG DATA - VICTOR ADOLFO*/
+
+    ('1', 46, 2010218, 1)      /* ID 99  |MACHINE LEARNING - ERIKA PATRICIA*/
 ; 
 
 /*
@@ -220,7 +435,6 @@ insert into block_statuses(name) values
     ('DESHABILITADO'),
     ('ELIMINADO')
 ;
-
 /*
     blocks
 */

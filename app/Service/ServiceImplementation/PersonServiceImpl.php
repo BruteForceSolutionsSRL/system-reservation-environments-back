@@ -83,4 +83,24 @@ class PersonServiceImpl implements PersonService
 	{
 		return $this->personRepository->getRoles($personId);
 	}
+
+	/**
+	 * Retrieve a list of all persons based on an array of group ids 
+	 * @param array $teacherSubjectIds
+	 * @return array
+	 */
+	public function getPersonsByTeacherSubjectIds(array $teacherSubjecIds): array 
+	{
+		return $this->personRepository->getTeachersBySubjectGroups($teacherSubjecIds);
+	}
+
+	/**
+	 * Update a person information
+	 * @param array $data
+	 * @return array
+	 */
+	public function update(array $data, int $personId): array 
+	{
+		return $this->personRepository->update($data, $personId);
+	}
 }

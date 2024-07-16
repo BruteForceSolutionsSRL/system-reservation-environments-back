@@ -11,7 +11,8 @@ use App\Repositories\{
     PersonRepository,
     ReservationStatusRepository as ReservationStatuses,
     ReservationRepository,
-    RoleRepository
+    RoleRepository,
+    ConstantRepository
 };
 use Carbon\Carbon;
 
@@ -322,7 +323,7 @@ class ReservationServiceImpl implements ReservationService
 
         return 'La reserva fue aceptada correctamente, se le fue asignadas las siguientes aulas: '.implode(',', array_map(
                 function ($classroom) {
-                    return $classroom['classroom_name'];
+                    return $classroom['name'];
                 }, 
                 $reservation['classrooms']
             )
@@ -336,25 +337,21 @@ class ReservationServiceImpl implements ReservationService
      */
     public function store(array $data): string
     {
-        if (!array_key_exists('classroom_id', $data) || count($data['classroom_id']) == 0) {
-            $data['classroom_id'] = $this->classroomService->suggestClassrooms(
-                [
-                    'date' => $data['date'],
-                    'time_slot_id' => $data['time_slot_id'],
-                    'block_id' => $data['block_id'],
-                    'quantity' => $data['quantity']
-                ]
-            );
-            if (empty($data['classroom_id']) || ($data['classroom_id'] == ['No existe una sugerencia apropiada']))
-                return 'No existen ambientes disponibles que cumplan con los requerimientos de la solicitud, por favor elija otros periodos/fecha.';
-            $data['classroom_id'] = array_map(
+        if (!array_key_exists('classroom_ids', $data) || count($data['classroom_ids']) == 0) {
+            $data['classroom_ids'] = $this->classroomService
+                ->suggestClassrooms($data);
+            if (empty($data['classroom_id']) || 
+                ($data['classroom_id'] == ['No existe una sugerencia apropiada'])) {
+                    return 'No existen ambientes disponibles que cumplan con los requerimientos de la solicitud, por favor elija otros periodos/fecha.';
+                }
+            $data['classroom_ids'] = array_map(
                 function ($classroom) {
                     return $classroom['classroom_id'];
-                }, $data['classroom_id']
+                }, $data['classroom_ids']
             );
         }
 
-        if (!$this->classroomService->sameBlock($data['classroom_id'])) 
+        if (!$this->classroomService->sameBlock($data['classroom_ids'])) 
             return 'Los ambientes no pertenecen al bloque, vuelva a seleccionar los ambientes disponibles del bloque seleccionado.';
 
         if (!array_key_exists('repeat', $data)) {
@@ -364,6 +361,11 @@ class ReservationServiceImpl implements ReservationService
             $data['priority'] = 0;
         }
 
+        // teacher_subject_ids => cada uno pertenece a una materia especifica: 
+        $data['persons'] = $this->personRepository->getTeachersBySubjectGroups(
+            $data['teacher_subject_ids']
+        );
+
         $reservation = $this->reservationRepository->save($data);
 
         $this->notificationService->store(
@@ -372,6 +374,10 @@ class ReservationServiceImpl implements ReservationService
                 PersonRepository::system()
             )
         );
+
+        if (ConstantRepository::getAutomaticReservation() == '0') {
+            return 'La solicitud de reserva se encuentra en estado pendiente, le llegara un correo de aceptacion/rechazo por parte del encargado.';
+        }
 
         return $this->accept($reservation['reservation_id'], false);
     }
@@ -459,7 +465,7 @@ class ReservationServiceImpl implements ReservationService
 
         $classrooms = [];
         foreach ($reservation['classrooms'] as $classroom)
-            $classrooms[$classroom['classroom_name']] = 0;
+            $classrooms[$classroom['name']] = 0;
 
         $reservationSet = $this->reservationRepository->getReservations(
             [
@@ -486,17 +492,17 @@ class ReservationServiceImpl implements ReservationService
             if ($reservation['reservation_id'] == $reservationIterable['reservation_id'])
                 continue;
             foreach ($reservationIterable['classrooms'] as $classroom) {
-                if (!array_key_exists($classroom['classroom_name'], $classrooms))
-                    $classrooms[$classroom['classroom_name']] = 0;
-                if ($classrooms[$classroom['classroom_name']] == 0) {
-                    $classrooms[$classroom['classroom_name']] = 1;
+                if (!array_key_exists($classroom['name'], $classrooms))
+                    $classrooms[$classroom['name']] = 0;
+                if ($classrooms[$classroom['name']] == 0) {
+                    $classrooms[$classroom['name']] = 1;
                 }
             }
         }
 
         foreach ($reservation['classrooms'] as $classroom)
-            if ( ($classrooms[$classroom['classroom_name']] == 1)) {
-                array_push($result['classroom']['list'], $classroom['classroom_name']);
+            if ( ($classrooms[$classroom['name']] == 1)) {
+                array_push($result['classroom']['list'], $classroom['name']);
             }
 
         if (count($result['classroom']['list']) != 0) {
@@ -694,7 +700,7 @@ class ReservationServiceImpl implements ReservationService
      */
     public function saveSpecialReservation(array $data): string 
     {
-        $data['time_slot_id'][1]--;
+        $data['time_slot_ids'][1]--;
         if (empty($data['block_id'])) {
             $data['block_id'] = array_map(
                 function ($block) {
@@ -702,7 +708,7 @@ class ReservationServiceImpl implements ReservationService
                 }, $this->blockService->suggestBlocks($data)
             );
         }
-        $classrooms = $data['classroom_id'];
+        $classrooms = $data['classroom_ids'];
         if (empty($classrooms)) {
             foreach ($data['block_id'] as $blockId) {
                 $classrooms = array_merge(
@@ -715,7 +721,7 @@ class ReservationServiceImpl implements ReservationService
                     )
                 );
             }    
-            $data['classroom_id'] = $classrooms;
+            $data['classroom_ids'] = $classrooms;
         }
         $specialReservationSet = $this->reservationRepository->getReservations(
             [
@@ -723,8 +729,8 @@ class ReservationServiceImpl implements ReservationService
                     'date_start' => $data['date_start'],
                     'date_end' => $data['date_end']
                 ],
-                'time_slots' => $data['time_slot_id'],
-                'classrooms' => $data['classroom_id'],
+                'time_slots' => $data['time_slot_ids'],
+                'classrooms' => $data['classroom_ids'],
                 'priorities' => [1],
                 'reservation_statuses' => [
                     ReservationStatuses::accepted()
@@ -743,7 +749,7 @@ class ReservationServiceImpl implements ReservationService
 
         $date = Carbon::parse($data['date_start']);
         $dateEnd = Carbon::parse($data['date_end']);
-        $data['time_slot_id'][1]++;
+        $data['time_slot_ids'][1]++;
         for (; $date <= $dateEnd; $date = $date->addDay()) {
             $reservation = $this->reservationRepository
                 ->save(array_merge($data, ['date' => $date->format('Y-m-d')]));
@@ -778,10 +784,10 @@ class ReservationServiceImpl implements ReservationService
                     'date_start' => $data['date_start'],
                     'date_end' => $data['date_end']
                 ],
-                'classrooms' => $data['classroom_id'],
+                'classrooms' => $data['classroom_ids'],
                 'priorities' => [0],
                 'no_repeat' => 1,
-                'time_slots' => $data['time_slot_id'],
+                'time_slots' => $data['time_slot_ids'],
             ]
         );
 

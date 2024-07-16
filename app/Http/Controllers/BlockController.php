@@ -32,8 +32,6 @@ class BlockController extends Controller
     public function list(Request $request): Response
     {
         try {
-            //$blockStatus = $request->query('status', 'ENABLE');
-
             return response()->json(
                 $this->blockService->getAllBlocks(),
                 200
@@ -180,9 +178,9 @@ class BlockController extends Controller
 
             $data = $validator->validated();
 
-            if (!empty($this->blockService->findByName($data['block_name'])))
+            if (!empty($this->blockService->findByName($data['name'])))
                 return response()->json(
-                    ['message' => 'El nombre del bloque '.$data['block_name'].' ya existe, por favor escriba otro nombre.'],
+                    ['message' => 'El nombre del bloque '.$data['name'].' ya existe, por favor escriba otro nombre.'],
                     400
                 );
 
@@ -227,17 +225,17 @@ class BlockController extends Controller
                     400
                 );
 
-            if (count($block['block_classrooms']) > $data['block_maxclassrooms'])
+            if (count($block['classrooms']) > $data['maxclassrooms'])
                 return response()->json(
                     ['message' => 'La capacidad de ambientes no debe ser menor a la cantidad actual de ambientes pertenecientes al bloque en especifico.'],
                     400
                 );
 
             $max_floor = 0;
-            foreach ($block['block_classrooms'] as $classroom)
+            foreach ($block['classrooms'] as $classroom)
                 $max_floor = max($max_floor, $classroom['floor']);
 
-            if ($max_floor > $data['block_maxfloor'])
+            if ($max_floor > $data['maxfloor'])
                 return response()->json(
                     ['message' => 'La piso maximo seleccionado debe ser mayor o igual al piso de los ambientes existentes pertenecientes al bloque.'],
                     400
@@ -283,7 +281,7 @@ class BlockController extends Controller
                     ['message' => 'Existen los siguientes ambiente habilitados en el bloque: '.implode(',',
                             array_map(
                                 function ($classroom) {
-                                    return $classroom['classroom_name'];
+                                    return $classroom['name'];
                                 }, $enabledClassrooms
                             )
                         )
@@ -314,14 +312,14 @@ class BlockController extends Controller
     private function validateBlockData(Request $request)
     {
         return Validator::make($request->all(), [
-            'block_name' => '
+            'name' => '
                 required|
                 regex:/^[A-Z0-9\-\. ]+$/',
-            'block_maxfloor' => '
+            'maxfloor' => '
                 required|
                 integer|
                 min:0',
-            'block_maxclassrooms' => '
+            'maxclassrooms' => '
                 required|
                 integer|
                 min:0',
@@ -329,16 +327,16 @@ class BlockController extends Controller
                 integer|
                 exists:block_statuses,id'
         ], [
-            'block_name.required' => 'El atributo \'nombre\' no debe ser nulo o vacio',
-            'block_name.regex' => 'El nombre solamente puede tener caracteres alfanumericos y \'-\', \'.\', \' \'',
+            'name.required' => 'El atributo \'nombre\' no debe ser nulo o vacio',
+            'name.regex' => 'El nombre solamente puede tener caracteres alfanumericos y \'-\', \'.\', \' \'',
 
-            'block_maxfloor.required' => 'El atributo \'pisos\' no debe ser nulo o vacio',
-            'block_maxfloor.integer' => 'La \'pisos\' debe ser un valor entero',
-            'block_maxfloor.min' => 'Debe seleccionar una \'pisos\' mayor o igual a 0',
+            'maxfloor.required' => 'El atributo \'pisos\' no debe ser nulo o vacio',
+            'maxfloor.integer' => 'La \'pisos\' debe ser un valor entero',
+            'maxfloor.min' => 'Debe seleccionar una \'pisos\' mayor o igual a 0',
 
-            'block_maxclassrooms.required' => 'El atributo \'capacidad de ambientes\' no debe ser nulo o vacio',
-            'block_maxclassrooms.integer' => 'El \'capacidad de ambientes\' debe ser un valor entero',
-            'block_maxclassrooms.exists' => 'El \'capacidad de ambientes\' debe ser un numero mayor a 0',
+            'maxclassrooms.required' => 'El atributo \'capacidad de ambientes\' no debe ser nulo o vacio',
+            'maxclassrooms.integer' => 'El \'capacidad de ambientes\' debe ser un valor entero',
+            'maxclassrooms.exists' => 'El \'capacidad de ambientes\' debe ser un numero mayor a 0',
 
             'block_status_id.integer' => 'El \'estado\' debe ser un valor entero',
             'block_status_id.exists' => 'El \'estado\' debe ser una seleccion valida'
