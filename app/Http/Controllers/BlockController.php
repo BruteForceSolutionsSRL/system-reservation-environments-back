@@ -10,13 +10,13 @@ use Exception;
 use App\Service\ServiceImplementation\{
     BlockServiceImpl,
     ClassroomServiceImpl
-}; 
+};
 
 use Illuminate\Support\Facades\Validator;
 
 class BlockController extends Controller
 {
-    private $blockService; 
+    private $blockService;
     private $classroomService;
     public function __construct()
     {
@@ -35,7 +35,7 @@ class BlockController extends Controller
             //$blockStatus = $request->query('status', 'ENABLE');
 
             return response()->json(
-                $this->blockService->getAllBlocks(), 
+                $this->blockService->getAllBlocks(),
                 200
             );
         } catch (Exception $e) {
@@ -51,22 +51,22 @@ class BlockController extends Controller
 
     /**
      * Retrieve a list of all blocks with statistics of used classrooms by dates and time_slots
-     * @param Request $request 
+     * @param Request $request
      * @return Response
      */
-    public function listBlocksForSpecial(Request $request): Response 
+    public function listBlocksForSpecial(Request $request): Response
     {
         try {
 
-            $validator = $this->validateForListBlocks($request); 
-            if ($validator->fails()) 
+            $validator = $this->validateForListBlocks($request);
+            if ($validator->fails())
                 return response()->json(
                     ['message' => implode(',', $validator->errors()->all())],
                     400
                 );
             $data = $validator->validated();
             return response()->json(
-                $this->blockService->listBlocksForSpecialReservation($data), 
+                $this->blockService->listBlocksForSpecialReservation($data),
                 200
             );
         } catch (Exception $e) {
@@ -81,7 +81,7 @@ class BlockController extends Controller
     }
 
     /**
-     * Validate body data passed to validate date and time slots 
+     * Validate body data passed to validate date and time slots
      * @param Request $request
      * @return mixed
      */
@@ -121,11 +121,11 @@ class BlockController extends Controller
      * @param Request $request
      * @return Response
      */
-    public function show(int $blockId, Request $request): Response 
+    public function show(int $blockId, Request $request): Response
     {
         try {
             return response()->json(
-                $this->blockService->getBlock($blockId), 
+                $this->blockService->getBlock($blockId),
                 200
             );
         } catch (Exception $e) {
@@ -145,11 +145,11 @@ class BlockController extends Controller
      * @param Request $request
      * @return Response
      */
-    public function getBlockStatistics(int $blockId, Request $request): Response 
+    public function getBlockStatistics(int $blockId, Request $request): Response
     {
         try {
             return response()->json(
-                $this->blockService->getBlockStatistics($blockId), 
+                $this->blockService->getBlockStatistics($blockId),
                 200
             );
         } catch (Exception $e) {
@@ -168,11 +168,11 @@ class BlockController extends Controller
      * @param Request $request
      * @return Response
      */
-    public function store(Request $request): Response 
+    public function store(Request $request): Response
     {
         try {
-            $validator = $this->validateBlockData($request); 
-            if ($validator->fails()) 
+            $validator = $this->validateBlockData($request);
+            if ($validator->fails())
                 return response()->json(
                     ['message' => implode('.', $validator->errors()->all())],
                     400
@@ -180,14 +180,14 @@ class BlockController extends Controller
 
             $data = $validator->validated();
 
-            if (empty($this->blockService->findByName($data['block_name'])))
+            if (!empty($this->blockService->findByName($data['block_name'])))
                 return response()->json(
-                    ['message' => 'El nombre del bloque '.$data['block_name'].' ya existe, por favor escriba otro nombre.'], 
+                    ['message' => 'El nombre del bloque '.$data['block_name'].' ya existe, por favor escriba otro nombre.'],
                     400
                 );
 
             return response()->json(
-                ['message' => $this->blockService->store($data)], 
+                ['message' => $this->blockService->store($data)],
                 200
             );
         } catch (Exception $e) {
@@ -207,11 +207,11 @@ class BlockController extends Controller
      * @param Request $request
      * @return Response
      */
-    public function update(int $block_id, Request $request): Response 
+    public function update(int $block_id, Request $request): Response
     {
         try {
-            $validator = $this->validateBlockData($request); 
-            if ($validator->fails()) 
+            $validator = $this->validateBlockData($request);
+            if ($validator->fails())
                 return response()->json(
                     ['message' => implode('.', $validator->errors()->all())],
                     400
@@ -219,32 +219,32 @@ class BlockController extends Controller
 
             $data = $validator->validated();
 
-            $block = $this->blockService->getBlock($block_id); 
+            $block = $this->blockService->getBlock($block_id);
 
             if (empty($block))
                 return response()->json(
-                    ['message' => 'El id del bloque no existe'], 
+                    ['message' => 'El id del bloque no existe'],
                     400
                 );
 
             if (count($block['block_classrooms']) > $data['block_maxclassrooms'])
                 return response()->json(
-                    ['message' => 'La capacidad de ambientes no debe ser menor a la cantidad actual de ambientes pertenecientes al bloque en especifico.'], 
+                    ['message' => 'La capacidad de ambientes no debe ser menor a la cantidad actual de ambientes pertenecientes al bloque en especifico.'],
                     400
                 );
 
-            $max_floor = 0; 
+            $max_floor = 0;
             foreach ($block['block_classrooms'] as $classroom)
-                $max_floor = max($max_floor, $classroom['floor']); 
+                $max_floor = max($max_floor, $classroom['floor']);
 
-            if ($max_floor > $data['block_maxfloor']) 
+            if ($max_floor > $data['block_maxfloor'])
                 return response()->json(
-                    ['message' => 'La piso maximo seleccionado debe ser mayor o igual al piso de los ambientes existentes pertenecientes al bloque.'], 
+                    ['message' => 'La piso maximo seleccionado debe ser mayor o igual al piso de los ambientes existentes pertenecientes al bloque.'],
                     400
                 );
 
             return response()->json(
-                ['message' => $this->blockService->update($data, $block_id)], 
+                ['message' => $this->blockService->update($data, $block_id)],
                 200
             );
         } catch (Exception $e) {
@@ -264,35 +264,35 @@ class BlockController extends Controller
      * @param Request $request
      * @return Response
      */
-    public function destroy(int $blockId, Request $request): Response 
+    public function destroy(int $blockId, Request $request): Response
     {
         try {
-            $block = $this->blockService->getBlock($blockId); 
+            $block = $this->blockService->getBlock($blockId);
 
             if (empty($block))
                 return response()->json(
-                    ['message' => 'El id del bloque no existe'], 
+                    ['message' => 'El id del bloque no existe'],
                     400
                 );
 
             $enabledClassrooms = $this->classroomService
-                ->getDisponibleClassroomsByBlock($blockId); 
+                ->getDisponibleClassroomsByBlock($blockId);
 
-            if (!empty($enabledClassrooms)) 
+            if (!empty($enabledClassrooms))
                 return response()->json(
-                    ['message' => 'Existen los siguientes ambiente habilitados en el bloque: '.implode(',', 
+                    ['message' => 'Existen los siguientes ambiente habilitados en el bloque: '.implode(',',
                             array_map(
                                 function ($classroom) {
                                     return $classroom['classroom_name'];
                                 }, $enabledClassrooms
                             )
                         )
-                    ], 
+                    ],
                     400
                 );
 
-            return response()->json( 
-                ['message' => $this->blockService->delete($blockId)], 
+            return response()->json(
+                ['message' => $this->blockService->delete($blockId)],
                 200
             );
         } catch (Exception $e) {
