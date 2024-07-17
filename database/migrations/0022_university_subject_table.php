@@ -17,8 +17,14 @@ return new class extends Migration
         Schema::create('university_subjects', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->unsignedBigInteger('department_id');
             $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
             $table->timestamp('updated_at')->default(DB::raw('CURRENT_TIMESTAMP'));
+        
+            $table->foreign('department_id')
+                    ->references('id')
+                    ->on('departments')
+                    ->cascadeOnDelete();
         });
     }
 

@@ -19,7 +19,6 @@ return new class extends Migration
             $table->string('group_number');
             $table->unsignedBigInteger('person_id');
             $table->unsignedBigInteger('university_subject_id');
-            $table->unsignedBigInteger('academic_period_id');
             $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
             $table->timestamp('updated_at')->default(DB::raw('CURRENT_TIMESTAMP'));
 
@@ -30,10 +29,6 @@ return new class extends Migration
             $table->foreign('university_subject_id')
                     ->references('id')
                     ->on('university_subjects')
-                    ->cascadeOnDelete();
-            $table->foreign('academic_period_id')
-                    ->references('id')
-                    ->on('academic_periods')
                     ->cascadeOnDelete();
         }); 
         DB::unprepared('
@@ -58,11 +53,17 @@ return new class extends Migration
             from 
                 people as P, 
                 academic_periods as AP, 
-                university_subjects as US
+                university_subjects as US,
+                study_plans as SP,
+                study_plan_university_subject as SPUS
             where 
                 new.person_id = P.id 
-                and new.academic_period_id = AP.id
-                and new.university_subject_id = US.id;
+                and SPUS.university_subject_id = new.university_subject_id
+                and SPUS.study_plan_id = SP.id
+                and AP.id = SP.academic_period_id
+                and new.university_subject_id = US.id
+            limit 1
+            ;
     
             insert into teacher_subject_logs (
                 teacher_subject_id,
@@ -104,11 +105,17 @@ return new class extends Migration
             from 
                 people as P, 
                 academic_periods as AP, 
-                university_subjects as US
+                university_subjects as US,
+                study_plans as SP,
+                study_plan_university_subject as SPUS
             where 
                 new.person_id = P.id 
-                and new.academic_period_id = AP.id
-                and new.university_subject_id = US.id;
+                and SPUS.university_subject_id = new.university_subject_id
+                and SPUS.study_plan_id = SP.id
+                and AP.id = SP.academic_period_id
+                and new.university_subject_id = US.id
+            limit 1
+            ;
     
             insert into teacher_subject_logs (
                 teacher_subject_id,
@@ -138,5 +145,11 @@ return new class extends Migration
     public function down()
     {
         Schema::dropIfExists('teacher_subjects');
+        DB::unprepared('
+            drop trigger if exists teacher_subject_insert;
+        ');
+        DB::unprepared('
+            drop trigger if exists teacher_subject_update;
+        ');
     }
 };

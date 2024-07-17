@@ -11,17 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('career_university_subject', function (Blueprint $table) {
+        Schema::create('study_plan_university_subject', function (Blueprint $table) {
             $table->id();
             $table->string('grade');
-            $table->unsignedBigInteger('career_id');
+            $table->unsignedBigInteger('study_plan_id');
             $table->unsignedBigInteger('university_subject_id');
             $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
             $table->timestamp('updated_at')->default(DB::raw('CURRENT_TIMESTAMP'));
 
-            $table->foreign('career_id')
+            $table->foreign('study_plan_id')
                     ->references('id')
-                    ->on('careers')
+                    ->on('study_plans')
                     ->cascadeOnDelete();
             $table->foreign('university_subject_id')
                     ->references('id')
@@ -35,6 +35,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('career_university_subject');
+        Schema::dropIfExists('study_plan_university_subject');
     }
 };

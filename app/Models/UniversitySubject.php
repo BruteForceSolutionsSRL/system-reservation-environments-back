@@ -15,8 +15,8 @@ class UniversitySubject extends Model
         return $this->hasMany(TeacherSubject::class);
     }
 
-    public function career()
+    public function studyPlan()
     {
-        return $this->belongsToMany(Career::class);
+        return $this->belongsToMany(StudyPlan::class);
     }
 }

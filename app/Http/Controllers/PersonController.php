@@ -168,7 +168,7 @@ class PersonController extends Controller
             $validator = $this->validateUpdateRoleInformation($request); 
             if ($validator->fails()) {
                 return response()->json(
-                    ['message' => implode(', ', $validator->errors()->all())],
+                    ['message' => implode(',', $validator->errors()->all())],
                     400
                 );
             }
