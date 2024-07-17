@@ -19,4 +19,14 @@ class UniversitySubject extends Model
     {
         return $this->belongsToMany(StudyPlan::class);
     }
+
+    public function department()
+    {
+        return $this->belongsTo(Department::class);
+    }
+
+    public function studyPlanUniversitySubject()
+    {
+        return $this->hasMany(StudyPlanUniversitySubject::class);
+    }
 }

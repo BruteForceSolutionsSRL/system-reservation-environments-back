@@ -165,7 +165,7 @@ values
 /*
     university_subjects
 */
-insert into university_subjects (departament_id, id, name, created_at)
+insert into university_subjects (department_id, id, name, created_at)
 values 
     (1, 1803001, 'INGLES I',                                            NOW()), /*ID 1 */  
     (1, 2006063, 'FISICA GENERAL',                                      NOW()), /*ID 2 */ 

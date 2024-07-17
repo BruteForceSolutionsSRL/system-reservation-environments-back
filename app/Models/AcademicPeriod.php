@@ -10,9 +10,9 @@ class AcademicPeriod extends Model
     use HasFactory;
     protected $table = 'academic_periods';
 
-    public function teacherSubjects()
+    public function study_plans()
     {
-        return $this->hasMany(TeacherSubject::class);
+        return $this->hasMany(StudyPlan::class);
     }
 
     public function reservations()

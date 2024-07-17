@@ -159,6 +159,7 @@ class PersonRepository extends Repository
      */
     public function update(array $data, int $personId): array 
     {
+        echo $personId;
         $person = $this->model::find($personId); 
         if (array_key_exists('user_name', $data)) {
             $person->user_name = $data['user_name'];

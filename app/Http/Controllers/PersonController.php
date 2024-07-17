@@ -134,10 +134,10 @@ class PersonController extends Controller
         }
     }
     
-    private function validateUpdateInformationSimple(Request $request) 
+    private function validateUpdateInformation(Request $request) 
     {
         return Validator::make($request->all(), [
-            'user_name' => 'string|min:3|unique:people:user_name',
+            'user_name' => 'string|min:3|unique:people,user_name',
             'email' => 'string|unique:people,email|regex:/^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/',
             'name' => 'string',
             'last_name' => 'string',
@@ -175,6 +175,13 @@ class PersonController extends Controller
 
             $data = $validator->validated();
 
+            if ($request['session_id'] == $personId) {
+                return response()->json(
+                    ['message' => 'Usted no puede cambiar sus propios permisos, intente con otro usuario.'],
+                    400
+                );
+            }
+
             return response()->json(
                 $this->personService->update($data, $personId),
                 200
@@ -192,8 +199,8 @@ class PersonController extends Controller
     private function validateUpdateRoleInformation(Request $request) 
     {
         return Validator::make($request->all(), [
-            'role_ids' => 'array',
-            'role_ids.*' => 'integer|exists:roles,id',
+            'role_ids' => 'required|array',
+            'role_ids.*' => 'required|integer|exists:roles,id',
         ], [
             'role_ids' => 'el campo roles debe ser de tipo array',
             'role_ids.*.integer' => 'los roles seleccionados deben hacer referencia a su id unico',
