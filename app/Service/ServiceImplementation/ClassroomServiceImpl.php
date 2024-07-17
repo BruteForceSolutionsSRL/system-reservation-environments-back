@@ -174,7 +174,7 @@ class ClassroomServiceImpl implements ClassroomService
         );
         $modifiedClassroom = $this->classroomRepository->update($data);
         if (($classroom['classroom_status_id'] != $modifiedClassroom['classroom_status_id'])
-              && ($classroom['classroom_status_id'] == ClassroomStatusRepository::disabled())) {
+              && ($modifiedClassroom['classroom_status_id'] == ClassroomStatusRepository::disabled())) {
             $this->disable($classroom['classroom_id']);
         }
 
@@ -285,10 +285,10 @@ class ClassroomServiceImpl implements ClassroomService
                         return $classroom['classroom_id'];
                     },
                     $classrooms
-                )
+		),
+		'priorities' => [1],
             ]
-        );
-
+	);
         if (array_key_exists('endpoint', $data)) {
             foreach ($reservations as $reservation) 
             foreach ($reservation['classrooms'] as $classroom) {
@@ -327,7 +327,7 @@ class ClassroomServiceImpl implements ClassroomService
     public function suggestClassrooms(array $data): array
     {
         $classroomSet = $this->getClassroomsByDisponibility($data); 
-        $classroomSets = []; 
+	$classroomSets = []; 
         $maxFloor = $this->blockRepository
             ->getBlock($data['block_id'])['block_maxfloor'];
         for ($i = 0; $i <= $maxFloor; $i++) 
@@ -524,7 +524,7 @@ class ClassroomServiceImpl implements ClassroomService
                     $dp[$reservation['parent_id']] = 1; 
                     $capacity = 0; 
                     $reservation = $this->reservationRepository
-                        ->getSpecialReservation($reservation['reservation_id']); 
+                        ->getSpecialReservation($reservation['parent_id']); 
                     foreach ($reservation['classrooms'] as $classroom) {
                         $classroomData = $this->getClassroomByID($classroom['classroom_id']);
                         if ($classroomData['classroom_status_id'] == ClassroomStatusRepository::disabled()) 

@@ -142,6 +142,7 @@ class ReservationRepository extends Repository
             }
         )
             ->where('reservation_status_id', ReservationStatuses::pending())
+            ->where('priority', 0)
             ->orderBy('date')->get()->map(
                 function ($reservation) {
                     return $this->formatOutput($reservation);
@@ -400,6 +401,12 @@ class ReservationRepository extends Repository
         return $this->formatOutput($reservation);
     }
 
+    /**
+     * Update the reservation status within status id based on its ID
+     * @param int $reservationId
+     * @param int $statusId
+     * @return array
+     */
     public function updateReservationStatus(int $reservationId, int $statusId): array 
     {
         $reservation = $this->model::find($reservationId); 
@@ -587,7 +594,6 @@ class ReservationRepository extends Repository
             'reservation_status' => $reservationStatus->status,
             'repeat' => $reservation->repeat,
             'date' => $reservation->date,
-            'special' => $reservation->priority,
             'observation' => $reservation->observation,
             'parent_id' => $reservation->parent_id,
             'created_at' => $createdAt,
@@ -892,13 +898,11 @@ class ReservationRepository extends Repository
         if (!empty($data['priorities'])) {
             $query->whereIn('priority', $data['priorities']);
         }
-        
         $reservations = $query->orderBy('date')->get()->map(
             function ($reservation) {
                 return $this->formatOutput($reservation);
             }
-        )->toArray();
-        
+	)->toArray();
         return $reservations;
     }
 

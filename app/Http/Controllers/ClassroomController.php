@@ -687,7 +687,8 @@ class ClassroomController extends Controller
                 );
 
             return response()->json(
-                $this->classroomService->deleteByClassroomId($classroomId)
+                $this->classroomService->deleteByClassroomId($classroomId),
+                200
             );
         } catch (Exception $e) {
             return response()->json(
