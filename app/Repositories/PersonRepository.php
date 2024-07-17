@@ -93,22 +93,6 @@ class PersonRepository extends Repository
     }
 
     /**
-     * Transform Person to array
-     * @param Person $person
-     * @return array
-     */
-    public function formatOutput($person): array
-    {
-        return [
-            'person_id' => $person->id, 
-            'person_name' => $person->name, 
-            'person_lastname' => $person->last_name, 
-            'person_email' => $person->email, 
-            'person_fullname' => $person->name.' '.$person->last_name
-        ]; 
-    }
-
-    /**
 	 * Retrieve all permissions of a person
 	 * @param array $data
 	 * @return bool
@@ -140,4 +124,52 @@ class PersonRepository extends Repository
         if ($person === null) return [];
         return $person->roles()->pluck('name')->toArray();
 	}
+
+    /**
+     * Update all data of a person by ID
+     * @param array $data
+     * @return array
+     */
+
+    public function update(array $data): array
+    {   
+        if (empty($data['person_id'])) {
+            return [];
+        }
+
+        $person = $this->model::find($data['person_id']);
+        
+        if (!empty($data['name'])) {
+            $person->name = $data['name'];
+        }
+        if (!empty($data['last_name'])) {
+            $person->last_name = $data['last_name'];
+        }
+        if (!empty($data['user_name'])) {
+            $person->user_name = $data['user_name'];
+        }
+        if (!empty($data['password'])) {
+            $person->password = $data['password'];
+        }
+        if (!empty($data['email'])) {
+            $person->email = $data['email'];
+        }
+        return $this->formatOutput($person);
+    }   
+    
+    /**
+     * Transform Person to array
+     * @param Person $person
+     * @return array
+     */
+    public function formatOutput($person): array
+    {
+        return [
+            'person_id' => $person->id, 
+            'person_name' => $person->name, 
+            'person_lastname' => $person->last_name, 
+            'person_email' => $person->email, 
+            'person_fullname' => $person->name.' '.$person->last_name
+        ]; 
+    }
 }

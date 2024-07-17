@@ -99,11 +99,11 @@ insert into person_role(person_id, role_id) values
     notification_types
 */
 insert into notification_types(description, color) values 
-('INFORMATIVO', 'BLANCO'),
-('ACEPTADA', 'VERDE'),
-('RECHAZADA', 'ROJO'), 
-('CANCELADA', 'NARANJA'),
-('ADVERTENCIA', 'AMARILLO');
+('INFORMATIVO'),
+('ACEPTADA'),
+('RECHAZADA'), 
+('CANCELADA'),
+('ADVERTENCIA');
 
 /*
     notification

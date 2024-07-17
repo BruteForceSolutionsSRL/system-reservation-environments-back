@@ -10,7 +10,8 @@ use Illuminate\Mail\Mailable;
 use App\Jobs\MailSenderJob;
 
 use App\Mail\{
-	ClassroomNotificationMailer,
+    AuthNotificationMailer,
+    ClassroomNotificationMailer,
 	ReservationNotificationMailer,
 	BlockNotificationMailer,
 	SpecialReservationNotificationMailer
@@ -26,7 +27,7 @@ class MailerServiceImpl implements MailerService
 {
 	private $personRepository;
 	public function __construct() {
-		$personRepository = new PersonRepository();
+		$this->personRepository = new PersonRepository();
 	}
 	/**
 	 * Queues a mail to send to all addresses
@@ -357,6 +358,29 @@ class MailerServiceImpl implements MailerService
 	}
 
 	/**
+	 * Function to send an email with a link to recover the password to the user
+	 * @param string $email
+	 * @return array
+	 */
+	public function sendRecoverPassword(string $email): array
+	{
+		$systemId = personRepository::system();
+		$emailData = [
+			'title' => 'RECUPERACION DE CONTRASEÑA',
+            'body' => 'Ingrese al siguiente link, para registrar una nueva contraseña',
+            'type' => NotificationTypeRepository::warning(),
+            'sendBy' => $this->personRepository->getPerson($systemId)['person_name'],
+            'to' => [$email],
+			'sended' => 1,
+		];
+		$this->sendMail(
+			new AuthNotificationMailer($emailData),
+			$emailData['to']
+		);
+		return $emailData;
+	}
+
+	/**
 	 * Create a Mailable class with data
 	 * @param array $data
 	 * @return void
@@ -448,12 +472,18 @@ class MailerServiceImpl implements MailerService
 		);
 	}
 
+	/**
+	 * 
+	 */
 	private function getPersonsByReservation(array &$emailData, array $reservation): void
 	{
 		for ($i =0 ; $i < count($reservation['groups']); $i++)
 			array_push($emailData['to'], $reservation['groups'][$i]);
 	}
 
+	/**
+	 * 
+	 */
 	private function getPersonsBySpecialReservation(array &$emailData, array $reservation): void
 	{
 		foreach ($reservation['groups'][0] as $administrator) {

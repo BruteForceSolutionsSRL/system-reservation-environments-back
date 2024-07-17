@@ -17,17 +17,23 @@ use Illuminate\Support\Facades\{
 };
 
 use App\Service\ServiceImplementation\{
-    PersonServiceImpl
+    PersonServiceImpl,
+    AuthServiceImpl
 };
+
+use Exception;
 
 class AuthController extends Controller
 {
     private $personService;
+    private $authService;
 
     public function __construct()
     {
         $this->personService = new PersonServiceImpl();
+        $this->authService = new AuthServiceImpl();
     }
+
     /**
      * Function to register people
      * @param Request $request
@@ -207,6 +213,115 @@ class AuthController extends Controller
             'password.string' => 'La contraseña tiene que tener un formato valido',
             'password.min' => 'La cantidad de caracteres minima para una contraseña es 8',
             'password.max' => 'La cantidad de caracteres maxima para una contraseña es 50'
+        ]);
+    }
+
+    /**
+     * Function to recover password with email of an user
+     * @param string
+     * @return Response
+     */
+    public function recoverPassword(Request $request): Response
+    {
+        try {
+            $validator = $this->validateRecoverData($request);
+    
+            if ($validator->fails()) 
+                return response()->json(
+                    ['message' => implode('.',$validator->errors()->all())], 
+                    400
+                );
+
+            $data = $validator->validated();
+            return response()->json(
+                $this->authService->recoverPassword($data),
+                200
+            );
+
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'message' => 'Hubo un error en el servidor',
+                    'error' => $e->getMessage()
+                ],
+                500
+            );
+        }
+    }
+
+    /**
+     * Function to validate the email of users to recover their passwords.
+     * @param Request $request
+     * @return mixed
+     */
+    private function validateRecoverData(Request $request)
+    {
+        return Validator::make($request->all(),[
+            'email' => '
+                required|
+                email|
+                exists:people,email'
+        ],[
+            'email.required'=> 'Debe ingresar un correo',
+            'email.email'=> 'Debe ingresar un correo valido',
+            'email.exists'=> 'El correo ingresado no se encuentra registrado'
+        ]);
+    }
+
+    /**
+     * Function to change password by email
+     * @param Request $request
+     * @return Response
+     */
+    public function changePassword(Request $request): Response
+    {
+        try {
+            $validator = $this->validatChangePasswordData($request);
+    
+            if ($validator->fails()) 
+                return response()->json(
+                    ['message' => implode('.',$validator->errors()->all())], 
+                    400
+                );
+
+            $data = $validator->validated();
+            return response()->json(
+                $this->authService->changePassword($data),
+                200
+            );
+
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'message' => 'Hubo un error en el servidor',
+                    'error' => $e->getMessage()
+                ],
+                500
+            );
+        }
+    }
+
+    /**
+     * Validate data for password recovery and change
+     * @param Request $request
+     * @return mixed
+     */
+    private function validatChangePasswordData(Request $request)
+    {
+        return Validator::make($request->all(), [
+            'new_password' => 'required|string|min:8|max:50',
+            'confirmation_password' => 'required|string|min:8|max:50|same:new_password'
+        ],[
+            'new_password.required' => 'La contraseña nueva es obligatoria',
+            'new_password.string' => 'La contraseña nueva tiene que tener un formato valido',
+            'new_password.min' => 'La cantidad de caracteres minima para la contraseña nueva es 8',
+            'new_password.max' => 'La cantidad de caracteres maxima para la contraseña nueva es 50',
+
+            'confirmation_password.required' => 'La contraseña de confirmacion es obligatoria',
+            'confirmation_password.string' => 'La contraseña de confirmacion tiene que tener un formato valido',
+            'confirmation_password.min' => 'La cantidad de caracteres minima para la contraseña de confirmacion es 8',
+            'confirmation_password.max' => 'La cantidad de caracteres maxima para la contraseña de confirmacion es 50',
+            'confirmation_password.same' => 'La contraseña de confirmacion no coincide con la nueva contraseña'
         ]);
     }
 
