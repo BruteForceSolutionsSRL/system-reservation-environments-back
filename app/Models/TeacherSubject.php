@@ -24,4 +24,9 @@ class TeacherSubject extends Model
     {
         return $this->hasMany(PersonReservation::class);
     }
+
+    public function academicPeriod()
+    {
+        return $this->belongsTo(AcademicPeriod::class);
+    }
 }

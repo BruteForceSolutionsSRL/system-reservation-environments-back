@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\{
+    AcademicPeriodController,
     TeacherSubjectController,
     TimeSlotController,
     BlockController,
@@ -36,10 +37,10 @@ use App\Http\Controllers\{
  * reservation_handling => atender solicitudes (administrador)
  * availability => ver disponibilidad (all) Mejor lo quitamos no tiene sentido protegerlo
  * classrooms_statistics => ver estadisticas de ambientes (all)
- * notify => notificaciones solo se protege el post del controlador (ENCARGADO) 
- * report => generar reportes de uso de ambiente (Administrador) 
- * environment_register => registrar ambiente (ENCARGADO) 
- * environment_update => editar ambiente (ENCARGADO) 
+ * notify => notificaciones solo se protege el post del controlador (ENCARGADO)
+ * report => generar reportes de uso de ambiente (Administrador)
+ * environment_register => registrar ambiente (ENCARGADO)
+ * environment_update => editar ambiente (ENCARGADO)
  * environment_remove => eliminar ambiente (ENCARGADO)
  * reservation_cancel => cancelar solicitues de reserva (DOCENTE)
  * history => Obtener el historia de solicitudes (DOCENTE)
@@ -48,7 +49,7 @@ use App\Http\Controllers\{
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
- 
+
 Route::controller(AuthController::class)->group(function() {
     Route::get('/token/status','tokenStatus');
     Route::get('/token/refresh','tokenRefresh');
@@ -59,7 +60,7 @@ Route::controller(AuthController::class)->group(function() {
 
         Route::group(['middleware' => ['jwt.verify']], function () {
             Route::post('/logout', 'logout');
-            Route::post('/get-user', 'getUser'); 
+            Route::post('/get-user', 'getUser');
         });
     });
 });
@@ -72,11 +73,11 @@ Route::controller(ReservationReasonController::class)->group(function() {
 
 Route::controller(ReservationStatusController::class)->group(function() {
     Route::group(['middleware' => ['jwt.verify','permissions:report']], function () {
-        Route::get('/reservations/statuses', 'list'); 
+        Route::get('/reservations/statuses', 'list');
     });
 });
 
-Route::controller(ReservationController::class)->group(function() { 
+Route::controller(ReservationController::class)->group(function() {
     Route::group(['middleware' => ['jwt.verify']], function () {
         Route::get('/reservations', 'list');
         Route::middleware('permissions:special_reservation')->get('/reservations/special', 'getActiveSpecialReservations');
@@ -99,7 +100,7 @@ Route::controller(ReservationController::class)->group(function() {
 
         Route::middleware('permissions:request_reserve')->post('/reservations', 'store');
         Route::middleware('permissions:special_reservation')->post('/reservations/special', 'storeSpecialRequest');
-    }); 
+    });
 });
 
 Route::controller(ClassroomStatusController::class)->group(function() {
@@ -117,13 +118,13 @@ Route::controller(ClassroomTypeController::class)->group(function() {
 Route::controller(ClassroomController::class)->group(function() {
     Route::group(['middleware' => ['jwt.verify']], function () {
         Route::get('/classrooms', 'list');
-        Route::get('/classrooms/block/{blockId}','classroomsByBlock'); 
+        Route::get('/classrooms/block/{blockId}','classroomsByBlock');
         Route::get('/classrooms/block/{blockId}/available', 'availableClassroomsByBlock');
         Route::get('/classrooms/last-validated', 'retriveLastClassroom');
         Route::middleware('permissions:environment_remove')->get('/classrooms/statistics/list','getAllClassroomsWithStatistics');
-    
+
         Route::middleware('permissions:environment_remove')->delete('/classrooms/delete/{classroomId}','destroy');
-    });  
+    });
 
     Route::group(['middleware' => ['sanitize:api','jwt.verify']], function () {
         Route::middleware('permissions:request_reserve')->post('/classrooms/reservation/suggest', 'suggestClassrooms');
@@ -132,7 +133,7 @@ Route::controller(ClassroomController::class)->group(function() {
         Route::post('/classrooms/stats', 'getClassroomStats');
         Route::post('/classrooms/disponible', 'getClassroomsByDisponibility');
 
-        Route::middleware('permissions:environment_update')->put('/classrooms/{classroomId}', 'update');  
+        Route::middleware('permissions:environment_update')->put('/classrooms/{classroomId}', 'update');
     });
 });
 
@@ -147,7 +148,7 @@ Route::controller(NotificationController::class)->group(function() {
     Route::group(['middleware' => ['jwt.verify']], function () {
         Route::get('/notifications/inbox', 'list');
         Route::get('/notifications/inbox/{notificationId}', 'show');
-    });   
+    });
 
     Route::group(['middleware' => ['sanitize:api','jwt.verify']], function () {
         Route::middleware('permissions:notify')->post('/notifications/sendNotification', 'store');
@@ -157,18 +158,18 @@ Route::controller(NotificationController::class)->group(function() {
 Route::controller(BlockController::class)->group(function() {
     Route::group(['middleware' => ['jwt.verify']], function () {
         Route::get('/blocks', 'list');
-        Route::get('/blocks/{block_id}', 'show'); 
+        Route::get('/blocks/{block_id}', 'show');
         Route::middleware('permissions:block_remove')->get('/blocks/{block_id}/statistics', 'getBlockStatistics');
-        
-        Route::middleware('permissions:block_remove')->delete('/blocks/{block_id}', 'destroy'); 
+
+        Route::middleware('permissions:block_remove')->delete('/blocks/{block_id}', 'destroy');
     });
 
     Route::group(['middleware' => ['sanitize:api','jwt.verify']], function () {
-        Route::middleware('permissions:block_register')->post('/blocks', 'store'); 
+        Route::middleware('permissions:block_register')->post('/blocks', 'store');
 
         Route::middleware('permissions:block_update')->put('/blocks/{block_id}', 'update');
-        Route::post('/blocks/reservation/special', 'listBlocksForSpecial'); 
-    });    
+        Route::post('/blocks/reservation/special', 'listBlocksForSpecial');
+    });
 });
 
 Route::controller(TimeSlotController::class)->group(function() {
@@ -187,4 +188,11 @@ Route::controller(UniversitySubjectController::class)->group(function() {
     Route::group(['middleware' => ['jwt.verify']], function () {
         Route::middleware('permissions:report')->get('/university-subjects', 'list');
     });
+});
+
+Route::controller(AcademicPeriodController::class)->group(function() {
+    Route::get('/academic-periods/active', 'getActiveAcademicPeriod');
+
+    Route::post('/academic-periods', 'store');
+    Route::patch('/academic-periods/deactivate-current', 'deactivateActiveAcademicPeriod');
 });
