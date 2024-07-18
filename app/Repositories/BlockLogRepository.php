@@ -23,6 +23,7 @@ class BlockLogRepository
             'block_name' => $blockLog->name, 
             'block_maxfloor' => $blockLog->max_floor, 
             'block_maxclassrooms' => $blockLog->max_classrooms,
+			'status_name' => $blockLog->block_status_name,
             'block_status_id' => $this->blockStatusRepository->findByName(
             	$blockLog->block_id
             )['id'], 

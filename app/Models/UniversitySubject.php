@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class UniversitySubject extends Model
 {
     use HasFactory;
+    protected $table = 'university_subjects';
 
     public function teacherSubjects()
     {
@@ -16,6 +17,6 @@ class UniversitySubject extends Model
 
     public function career()
     {
-        return $this->belongsTo(Career::class);
+        return $this->belongsToMany(Career::class);
     }
 }

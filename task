@@ -1,0 +1,16 @@
+1. Recuperar password. Emer 
+2. Cambio de password. Emer
+3. Generar sql de datos de prueba. Alex
+4. Crear gestion(Tener solamente una gestion activa por fecha). Will 
+5. Obtener datos totales de una gestion especifica. Will
+6. Re-escribir funciones de creacion de reservas (normales, especiales) + update de docentes ligados a grupos de materias. Alex
+7. Manejo de sesiones. Emer 
+8. Copiar gestiones. Emer
+9. Verificar solicitud de reserva legitima + fechas festivas. Will 
+10. Tareas concurrentes(programacion concurrente). Will
+11. Web Tokens => para notificaciones. Alex 
+12. Pasar a laravel 11 en Windows. Emer 
+13. Agregar roles a usuarios. Alex
+14. Editar perfil de usuario. Alex
+Posibles pero solo si tiene tiempo
+15. Whatsapp y Telegram

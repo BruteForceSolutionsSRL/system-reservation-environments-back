@@ -47,8 +47,8 @@ class BlockStatusRepository
 	public function formatOutput($blockStatus): array 
 	{
 		return [
-			'id' => $blockRepository->id, 
-			'name' => $blockRepository->name,
+			'id' => $blockStatus->id, 
+			'name' => $blockStatus->name,
 		];
 	}
 
