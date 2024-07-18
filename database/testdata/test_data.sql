@@ -137,7 +137,6 @@ insert into notification_types(description) values
 ('CANCELADA'),
 ('ADVERTENCIA')
 ;
-
 /*
     departments
 */
@@ -145,14 +144,12 @@ insert into departments(name)
 value 
     ('DEPARTAMENTO DE INFORMATICA - SISTEMAS')
 ;
-
 /**
     academic_periods
 */
 insert into academic_periods(name, initial_date, end_date, activated) values
     ('I-2024', '2024-04-01', '2024-09-01', 1) /*ID 1 - I-2024*/
 ;
-
 /*
     careers
 */
@@ -220,7 +217,6 @@ values
     (1, 2010217, 'BUSSINESS INTELLIGENCE Y BIG DATA',                   NOW()),  /*ID 51 */
     (1, 2010218, 'CIENCIA DE DATOS Y MACHINE LEARNING',                 NOW())  /*ID 52 */
 ;
-
 /**
     study_plan_university_subject
 */
@@ -279,7 +275,6 @@ values
     (1, 2010217, 'I'), /* INFORMATICA - BUSSINESS INTELLIGENCE */
     (1, 2010218, 'I') /* INFORMATICA - CIENCIA DE DATOS Y MACHINE LEARNING */
 ;
-
 /*
     teacher_subjects
 */
@@ -437,7 +432,6 @@ values
 
     ('1', 46, 2010218)      /* ID 99  |MACHINE LEARNING - ERIKA PATRICIA*/
 ; 
-
 /*
     block_statuses
 */
@@ -449,13 +443,29 @@ insert into block_statuses(name) values
 /*
     blocks
 */
-insert into blocks (name, max_floor, block_status_id, max_classrooms)
+insert into blocks (id, name, max_floor, block_status_id, max_classrooms)
 values 
-    ('AULAS INF-LAB',                        0, 1, 20),     /*ID 1*/
-    ('EDIFICIO MEMI',                        2, 1, 20),     /*ID 2*/       
-    ('EDIFICIO ACADEMICO 2',                 3, 1, 20),     /*ID 3*/    
-    ('BLOQUE TRENCITO',                      0, 1, 20),     /*ID 4*/    
-    ('BLOQUE CENTRAL - EDIFICIO DECANATURA', 2, 1, 20)      /*ID 5*/    
+    (29, 'BLOQUE 29',                           0, 1, 20),     /*ID F*/
+    (9,  'DEPARTAMENTO DE BIOLOGIA',            2, 1, 20),     /*ID F*/       
+    (27, 'BLOQUE 27',                           3, 1, 20),     /*ID F*/    
+    (7,  'DEPARTAMENTO DE QUIMICA',             0, 1, 20),     /*ID F*/    
+    (28, 'BLOQUE 28',                           2, 1, 20),     /*ID F*/    
+    (4,  'DEPARTAMENTO DE FISICA',              0, 1, 20),     /*ID F*/
+    (12, 'BLOQUE 12',                           2, 1, 20),     /*ID F*/       
+    (13, 'BLOQUE 13',                           3, 1, 20),     /*ID F*/    
+    (11, 'BLOQUE 11',                           0, 1, 20),     /*ID F*/    
+    (15, 'BIBLIOTECA FCYT',                     2, 1, 20),     /*ID F*/    
+    (22, 'DEPARTAMENTO INDUSTRIAL',             0, 1, 20),     /*ID F*/
+    (17, 'PLANTA DE PROCESOS INDUSTRIALES',     2, 1, 20),     /*ID F*/       
+    (19, 'SECTOR LABORATORIOS MECANICA',        3, 1, 20),     /*ID F*/    
+    (20, 'EDIFICIO CAD - CAM',                  0, 1, 20),     /*ID F*/    
+    (1,  'BLOQUE CENTRAL EDIFICIO DECANATURA',  2, 1, 20),     /*ID F*/    
+    (16, 'EDIFICIO ACADEMICO 2',                0, 1, 20),     /*ID F*/
+    (65, 'BLOQUE TRENCITO',                     2, 1, 20),     /*ID F*/       
+    (63, 'AULAS INF - LAB',                     3, 1, 20),     /*ID F*/    
+    (64, 'EDIFICIO MEMI',                       2, 1, 20),     /*ID F*/    
+    (10, 'EDIFICIO ELEKTRO',                    0, 1, 20),     /*ID F*/
+    (26, 'EDIFICIO DE LABORATORIOS BASICOS',    2, 1, 20)      /*ID F*/       
 ; 
 /*
     classroom_types
@@ -475,59 +485,192 @@ values
     ('DESHABILITADO', NOW(), NOW()), 
     ('ELIMINADO', NOW(), NOW())
 ;
-
 /*
     classroom
 */
 insert into classrooms (name, capacity, floor, block_id, classroom_type_id, classroom_status_id, created_at, updated_at)
 values 
-    ('LABORATORIO DE COMPUTO 1',     50, 0, 1, 1, 1, NOW(), NOW()),          /*ID 1 |AULAS INF-LAB*/ 
-    ('LABORATORIO DE COMPUTO 2',     50, 0, 1, 1, 1, NOW(), NOW()),          /*ID 2 |AULAS INF-LAB*/ 
-    ('LABORATORIO DE REDES',         25, 0, 1, 1, 1, NOW(), NOW()),          /*ID 3 |AULAS INF-LAB*/ 
-    ('LABORATORIO DE DESARROLLO',    25, 0, 1, 1, 1, NOW(), NOW()),          /*ID 4 |AULAS INF-LAB*/ 
-    ('LABORATORIO DE MANTENIMIENTO', 25, 0, 1, 1, 1, NOW(), NOW()),          /*ID 5 |AULAS INF-LAB*/ 
-
-    ('LABORATORIO DE COMPUTO 3',  50, 2, 2, 1, 1, NOW(), NOW()),             /*ID 6 |EDIFICIO MEMI*/ 
-    ('LABORATORIO DE COMPUTO 4',  50, 2, 2, 1, 1, NOW(), NOW()),             /*ID 7 |EDIFICIO MEMI*/ 
-    ('AUDITORIO DE USO MULTIPLE', 75, 2, 2, 3, 1, NOW(), NOW()),             /*ID 8 |EDIFICIO MEMI*/ 
-
-    ('690A', 50, 0, 3, 2, 1, NOW(), NOW()),                /*ID 9  |EDIFICIO ACADEMICO 2*/ 
-    ('690B', 50, 0, 3, 2, 1, NOW(), NOW()),                /*ID 10 |EDIFICIO ACADEMICO 2*/ 
-    ('690C', 50, 0, 3, 2, 1, NOW(), NOW()),                /*ID 11 |EDIFICIO ACADEMICO 2*/ 
-    ('690D', 50, 0, 3, 2, 1, NOW(), NOW()),                /*ID 12 |EDIFICIO ACADEMICO 2*/ 
-    ('690E', 50, 0, 3, 2, 1, NOW(), NOW()),                /*ID 13 |EDIFICIO ACADEMICO 2*/ 
-    ('690MAT', 50, 0, 3, 2, 1, NOW(), NOW()),              /*ID 14 |EDIFICIO ACADEMICO 2*/ 
+    ('607',     50, 0, 29, 1, 1, NOW(), NOW()),          /*ID 1 |AULAS INF-LAB*/ 
     
-    ('691A', 100, 1, 3, 2, 1, NOW(), NOW()),               /*ID 15 |EDIFICIO ACADEMICO 2*/ 
-    ('691B', 100, 1, 3, 2, 1, NOW(), NOW()),               /*ID 16 |EDIFICIO ACADEMICO 2*/ 
-    ('691C', 100, 1, 3, 2, 1, NOW(), NOW()),               /*ID 17 |EDIFICIO ACADEMICO 2*/ 
-    ('691D', 100, 1, 3, 2, 1, NOW(), NOW()),               /*ID 18 |EDIFICIO ACADEMICO 2*/ 
-    ('691E', 100, 1, 3, 2, 1, NOW(), NOW()),               /*ID 19 |EDIFICIO ACADEMICO 2*/ 
-    ('691F', 100, 1, 3, 2, 1, NOW(), NOW()),               /*ID 20 |EDIFICIO ACADEMICO 2*/ 
+    ('606',     50, 1, 9, 1, 1, NOW(), NOW()),          /*ID 2 |AULAS INF-LAB*/ 
+    ('608',     25, 0, 9, 1, 1, NOW(), NOW()),          /*ID 3 |AULAS INF-LAB*/ 
+    ('609',     25, 0, 9, 1, 1, NOW(), NOW()),          /*ID 4 |AULAS INF-LAB*/ 
+    ('608A',    25, 0, 9, 1, 1, NOW(), NOW()),          /*ID 5 |AULAS INF-LAB*/ 
+    ('608B',    50, 0, 9, 1, 1, NOW(), NOW()),          /*ID 6 |EDIFICIO MEMI*/ 
+    ('609A',    50, 0, 9, 1, 1, NOW(), NOW()),          /*ID 7 |EDIFICIO MEMI*/ 
 
-    ('692A', 100, 2, 3, 2, 1, NOW(), NOW()),               /*ID 21 |EDIFICIO ACADEMICO 2*/ 
-    ('692B', 100, 2, 3, 2, 1, NOW(), NOW()),               /*ID 22 |EDIFICIO ACADEMICO 2*/ 
-    ('692C', 100, 2, 3, 2, 1, NOW(), NOW()),               /*ID 23 |EDIFICIO ACADEMICO 2*/ 
-    ('692D', 100, 2, 3, 2, 1, NOW(), NOW()),               /*ID 24 |EDIFICIO ACADEMICO 2*/ 
-    ('692E', 100, 2, 3, 2, 1, NOW(), NOW()),               /*ID 25 |EDIFICIO ACADEMICO 2*/ 
-    ('692F', 100, 2, 3, 2, 1, NOW(), NOW()),               /*ID 26 |EDIFICIO ACADEMICO 2*/ 
-    ('692G', 75, 2, 3, 2, 1,  NOW(), NOW()),               /*ID 27 |EDIFICIO ACADEMICO 2*/ 
-    ('692H', 75, 2, 3, 2, 1,  NOW(), NOW()),               /*ID 28 |EDIFICIO ACADEMICO 2*/ 
+    ('612',     75, 0, 27, 3, 1, NOW(), NOW()),             /*ID 8 |EDIFICIO MEMI*/ 
 
-    ('693A', 100, 2, 3, 2, 1,        NOW(), NOW()),        /*ID 29 |EDIFICIO ACADEMICO 2*/ 
-    ('693B', 100, 2, 3, 2, 1,        NOW(), NOW()),        /*ID 30 |EDIFICIO ACADEMICO 2*/ 
-    ('693C', 100, 2, 3, 2, 1,        NOW(), NOW()),        /*ID 31 |EDIFICIO ACADEMICO 2*/ 
-    ('693D', 100, 2, 3, 2, 1,        NOW(), NOW()),        /*ID 32 |EDIFICIO ACADEMICO 2*/ 
-    ('AUDITORIO 2', 300, 2, 3, 3, 1, NOW(), NOW()),        /*ID 33 |EDIFICIO ACADEMICO 2*/ 
+    ('613',  50, 0, 7, 2, 1, NOW(), NOW()),                /*ID 9  |EDIFICIO ACADEMICO 2*/ 
+    ('614',  50, 0, 7, 2, 1, NOW(), NOW()),                /*ID 10 |EDIFICIO ACADEMICO 2*/ 
+    ('615',  50, 0, 7, 2, 1, NOW(), NOW()),                /*ID 11 |EDIFICIO ACADEMICO 2*/ 
+    ('616',  50, 0, 7, 2, 1, NOW(), NOW()),                /*ID 12 |EDIFICIO ACADEMICO 2*/ 
+    ('616A', 50, 1, 7, 2, 1, NOW(), NOW()),                /*ID 13 |EDIFICIO ACADEMICO 2*/ 
 
-    ('660', 100, 0, 4, 2, 1, NOW(), NOW()),                /*ID 34 |BLOQUE TRENCITO*/ 
-    ('661', 100, 0, 4, 2, 1, NOW(), NOW()),                /*ID 35 |BLOQUE TRENCITO*/ 
+    ('617',   50, 1, 28, 2, 1, NOW(), NOW()),              /*ID 14 |EDIFICIO ACADEMICO 2*/ 
+    ('617B', 100, 0, 28, 2, 1, NOW(), NOW()),               /*ID 15 |EDIFICIO ACADEMICO 2*/ 
+    ('617C', 100, 0, 28, 2, 1, NOW(), NOW()),               /*ID 16 |EDIFICIO ACADEMICO 2*/ 
 
-    ('651', 50, 0, 5, 2, 1, NOW(), NOW()),                 /*ID 36 |BLOQUE CENTRAL - EDIFICIO DECANATURA*/ 
-    ('652', 50, 0, 5, 2, 1, NOW(), NOW()),                 /*ID 37 |BLOQUE CENTRAL - EDIFICIO DECANATURA*/ 
-    ('655', 50, 0, 5, 2, 1, NOW(), NOW())                  /*ID 38 |BLOQUE CENTRAL - EDIFICIO DECANATURA*/ 
+    ('618',                            100, 0, 4, 2, 1, NOW(), NOW()),               /*ID 17 |EDIFICIO ACADEMICO 2*/ 
+    ('619',                            100, 0, 4, 2, 1, NOW(), NOW()),               /*ID 18 |EDIFICIO ACADEMICO 2*/ 
+    ('619A',                           100, 0, 4, 2, 1, NOW(), NOW()),               /*ID 19 |EDIFICIO ACADEMICO 2*/ 
+    ('620',                            100, 0, 4, 2, 1, NOW(), NOW()),               /*ID 20 |EDIFICIO ACADEMICO 2*/ 
+    ('620B',                           100, 0, 4, 2, 1, NOW(), NOW()),               /*ID 21 |EDIFICIO ACADEMICO 2*/ 
+    ('621',                            100, 0, 4, 2, 1, NOW(), NOW()),               /*ID 22 |EDIFICIO ACADEMICO 2*/ 
+    ('621A',                           100, 0, 4, 2, 1, NOW(), NOW()),               /*ID 23 |EDIFICIO ACADEMICO 2*/ 
+    ('FISCOM GABINETE COMPUTO FISICA', 100, 0, 4, 2, 1, NOW(), NOW()),               /*ID 24 |EDIFICIO ACADEMICO 2*/ 
+
+    ('622', 100, 0, 12, 2, 1, NOW(), NOW()),               /*ID 25 |EDIFICIO ACADEMICO 2*/ 
+
+    ('623', 100, 0, 13, 2, 1, NOW(), NOW()),               /*ID 26 |EDIFICIO ACADEMICO 2*/ 
+    
+    ('624',  75, 0, 11, 2, 1,  NOW(), NOW()),               /*ID 27 |EDIFICIO ACADEMICO 2*/ 
+    
+    ('625C',  75, 2, 15, 2, 1,  NOW(), NOW()),               /*ID 28 |EDIFICIO ACADEMICO 2*/ 
+    ('625D',  75, 2, 15, 2, 1,  NOW(), NOW()),               /*ID 29 |EDIFICIO ACADEMICO 2*/ 
+    ('CAE',   75, 1, 15, 2, 1,  NOW(), NOW()),               /*ID 30 |EDIFICIO ACADEMICO 2*/ 
+
+    ('631',   100, 0, 22, 2, 1,        NOW(), NOW()),        /*ID 31 |EDIFICIO ACADEMICO 2*/ 
+    ('632',   100, 0, 22, 2, 1,        NOW(), NOW()),        /*ID 32 |EDIFICIO ACADEMICO 2*/ 
+    ('CAE 2', 100, 0, 22, 2, 1,        NOW(), NOW()),        /*ID 33 |EDIFICIO ACADEMICO 2*/ 
+
+    ('635', 100, 1, 17, 2, 1, NOW(), NOW()),                /*ID 34 |BLOQUE TRENCITO*/ 
+
+    ('640', 100, 0, 19, 2, 1, NOW(), NOW()),                /*ID 35 |BLOQUE TRENCITO*/ 
+    ('642', 100, 0, 19, 2, 1, NOW(), NOW()),                /*ID 36 |BLOQUE TRENCITO*/ 
+    ('643', 100, 0, 19, 2, 1, NOW(), NOW()),                /*ID 37 |BLOQUE TRENCITO*/ 
+
+    ('644',    100, 1, 20, 2, 1, NOW(), NOW()),                /*ID 38 |BLOQUE TRENCITO*/ 
+    ('644A',   100, 1, 20, 2, 1, NOW(), NOW()),                /*ID 39 |BLOQUE TRENCITO*/ 
+    ('AUDCIV', 100, 3, 20, 2, 1, NOW(), NOW()),                /*ID 40 |BLOQUE TRENCITO*/ 
+
+    ('651',    50, 0, 1, 2, 1, NOW(), NOW()),                 /*ID 41 |BLOQUE CENTRAL - EDIFICIO DECANATURA*/ 
+    ('652',    50, 0, 1, 2, 1, NOW(), NOW()),                 /*ID 42 |BLOQUE CENTRAL - EDIFICIO DECANATURA*/ 
+    ('655',    50, 0, 1, 2, 1, NOW(), NOW()),                 /*ID 43 |BLOQUE CENTRAL - EDIFICIO DECANATURA*/ 
+    ('AUDMEC', 50, 2, 1, 2, 1, NOW(), NOW()),                 /*ID 44 |BLOQUE CENTRAL - EDIFICIO DECANATURA*/ 
+    ('MAGCIV', 50, 2, 1, 2, 1, NOW(), NOW()),                 /*ID 45 |BLOQUE CENTRAL - EDIFICIO DECANATURA*/ 
+
+    ('690A',   50, 0, 16, 2, 1, NOW(), NOW()),                /*ID 46 |EDIFICIO ACADEMICO 2*/ 
+    ('690B',   50, 0, 16, 2, 1, NOW(), NOW()),                /*ID 47 |EDIFICIO ACADEMICO 2*/ 
+    ('690C',   50, 0, 16, 2, 1, NOW(), NOW()),                /*ID 48 |EDIFICIO ACADEMICO 2*/ 
+    ('690D',   50, 0, 16, 2, 1, NOW(), NOW()),                /*ID 49 |EDIFICIO ACADEMICO 2*/ 
+    ('690E',   50, 0, 16, 2, 1, NOW(), NOW()),                /*ID 50 |EDIFICIO ACADEMICO 2*/ 
+    ('690MAT', 50, 0, 16, 2, 1, NOW(), NOW()),                /*ID 51 |EDIFICIO ACADEMICO 2*/ 
+    
+    ('691A', 100, 1, 16, 2, 1, NOW(), NOW()),               /*ID 52 |EDIFICIO ACADEMICO 2*/ 
+    ('691B', 100, 1, 16, 2, 1, NOW(), NOW()),               /*ID 53 |EDIFICIO ACADEMICO 2*/ 
+    ('691C', 100, 1, 16, 2, 1, NOW(), NOW()),               /*ID 54 |EDIFICIO ACADEMICO 2*/ 
+    ('691D', 100, 1, 16, 2, 1, NOW(), NOW()),               /*ID 55 |EDIFICIO ACADEMICO 2*/ 
+    ('691E', 100, 1, 16, 2, 1, NOW(), NOW()),               /*ID 56 |EDIFICIO ACADEMICO 2*/ 
+    ('691F', 100, 1, 16, 2, 1, NOW(), NOW()),               /*ID 57 |EDIFICIO ACADEMICO 2*/ 
+
+    ('692A', 100, 2, 16, 2, 1, NOW(), NOW()),               /*ID 58 |EDIFICIO ACADEMICO 2*/ 
+    ('692B', 100, 2, 16, 2, 1, NOW(), NOW()),               /*ID 59 |EDIFICIO ACADEMICO 2*/ 
+    ('692C', 100, 2, 16, 2, 1, NOW(), NOW()),               /*ID 60 |EDIFICIO ACADEMICO 2*/ 
+    ('692D', 100, 2, 16, 2, 1, NOW(), NOW()),               /*ID 61 |EDIFICIO ACADEMICO 2*/ 
+    ('692E', 100, 2, 16, 2, 1, NOW(), NOW()),               /*ID 62 |EDIFICIO ACADEMICO 2*/ 
+    ('692F', 100, 2, 16, 2, 1, NOW(), NOW()),               /*ID 63 |EDIFICIO ACADEMICO 2*/ 
+    ('692G',  75, 2, 16, 2, 1,  NOW(), NOW()),               /*ID 64 |EDIFICIO ACADEMICO 2*/ 
+    ('692H',  75, 2, 16, 2, 1,  NOW(), NOW()),               /*ID 65 |EDIFICIO ACADEMICO 2*/ 
+
+    ('693A',        100, 2, 16, 2, 1,        NOW(), NOW()),        /*ID 66 |EDIFICIO ACADEMICO 2*/ 
+    ('693B',        100, 2, 16, 2, 1,        NOW(), NOW()),        /*ID 67 |EDIFICIO ACADEMICO 2*/ 
+    ('693C',        100, 2, 16, 2, 1,        NOW(), NOW()),        /*ID 68 |EDIFICIO ACADEMICO 2*/ 
+    ('693D',        100, 2, 16, 2, 1,        NOW(), NOW()),        /*ID 69 |EDIFICIO ACADEMICO 2*/ 
+    ('AUDITORIO 2', 300, 2, 16, 3, 1,        NOW(), NOW()),        /*ID 70 |EDIFICIO ACADEMICO 2*/ 
+
+    ('660',     50, 0, 65, 1, 1, NOW(), NOW()),          /*ID 71 |AULAS INF-LAB*/ 
+    ('661',     50, 0, 65, 1, 1, NOW(), NOW()),          /*ID 72 |AULAS INF-LAB*/ 
+
+    ('LABORATORIO DE COMPUTO 1',     50, 0, 63, 1, 1, NOW(), NOW()),          /*ID 73 |AULAS INF-LAB*/ 
+    ('LABORATORIO DE COMPUTO 2',     50, 0, 63, 1, 1, NOW(), NOW()),          /*ID 74 |AULAS INF-LAB*/ 
+    ('LABORATORIO DE REDES',         25, 0, 63, 1, 1, NOW(), NOW()),          /*ID 75 |AULAS INF-LAB*/ 
+    ('LABORATORIO DE DESARROLLO',    25, 0, 63, 1, 1, NOW(), NOW()),          /*ID 76 |AULAS INF-LAB*/ 
+    ('LABORATORIO DE MANTENIMIENTO', 25, 0, 63, 1, 1, NOW(), NOW()),          /*ID 77 |AULAS INF-LAB*/ 
+
+    ('LABORATORIO DE COMPUTO 3',                   50, 2, 64, 1, 1, NOW(), NOW()),          /*ID 78 |EDIFICIO MEMI*/ 
+    ('LABORATORIO DE COMPUTO 4 - VIRTUALIZACION',  50, 2, 64, 1, 1, NOW(), NOW()),          /*ID 79 |EDIFICIO MEMI*/ 
+    ('AUDITORIO DE USO MULTIPLE',                  75, 2, 64, 3, 1, NOW(), NOW()),          /*ID 80 |EDIFICIO MEMI*/ 
+
+    ('667A', 50, 0, 10, 2, 1, NOW(), NOW()),                /*ID 81 |EDIFICIO ACADEMICO 2*/ 
+    ('667B', 50, 0, 10, 2, 1, NOW(), NOW()),                /*ID 82 |EDIFICIO ACADEMICO 2*/ 
+    ('668',  50, 0, 10, 2, 1, NOW(), NOW()),                /*ID 83 |EDIFICIO ACADEMICO 2*/ 
+    
+    ('669A', 100, 1, 10, 2, 1, NOW(), NOW()),               /*ID 84 |EDIFICIO ACADEMICO 2*/ 
+    ('669B', 100, 1, 10, 2, 1, NOW(), NOW()),               /*ID 85 |EDIFICIO ACADEMICO 2*/ 
+    ('670',  100, 1, 10, 2, 1, NOW(), NOW()),               /*ID 86 |EDIFICIO ACADEMICO 2*/ 
+
+    ('671',  100, 2, 10, 2, 1, NOW(), NOW()),               /*ID 87 |EDIFICIO ACADEMICO 2*/ 
+    ('671A', 100, 2, 10, 2, 1, NOW(), NOW()),               /*ID 88 |EDIFICIO ACADEMICO 2*/ 
+    ('671B', 100, 2, 10, 2, 1, NOW(), NOW()),               /*ID 89 |EDIFICIO ACADEMICO 2*/ 
+    ('671C', 100, 2, 10, 2, 1, NOW(), NOW()),               /*ID 90 |EDIFICIO ACADEMICO 2*/ 
+    ('672',  100, 2, 10, 2, 1, NOW(), NOW()),               /*ID 91 |EDIFICIO ACADEMICO 2*/ 
+
+    ('674A', 100, 2, 10, 2, 1,        NOW(), NOW()),        /*ID 92 |EDIFICIO ACADEMICO 2*/ 
+    ('674B', 100, 2, 10, 2, 1,        NOW(), NOW()),        /*ID 93 |EDIFICIO ACADEMICO 2*/ 
+    ('675',  100, 2, 10, 2, 1,        NOW(), NOW()),        /*ID 94 |EDIFICIO ACADEMICO 2*/ 
+
+    ('680-A', 50, 0, 26, 2, 1, NOW(), NOW()),              /*ID 95 |EDIFICIO ACADEMICO 2*/ 
+    ('680-B', 50, 0, 26, 2, 1, NOW(), NOW()),              /*ID 96 |EDIFICIO ACADEMICO 2*/ 
+    ('680-C', 50, 0, 26, 2, 1, NOW(), NOW()),              /*ID 97 |EDIFICIO ACADEMICO 2*/ 
+    ('680-E', 50, 0, 26, 2, 1, NOW(), NOW()),              /*ID 98 |EDIFICIO ACADEMICO 2*/ 
+    ('680-F', 50, 0, 26, 2, 1, NOW(), NOW()),              /*ID 99 |EDIFICIO ACADEMICO 2*/ 
+    ('680-G', 50, 0, 26, 2, 1, NOW(), NOW()),              /*ID 100 |EDIFICIO ACADEMICO 2*/ 
+    ('680-H', 50, 0, 26, 2, 1, NOW(), NOW()),              /*ID 101 |EDIFICIO ACADEMICO 2*/ 
+    ('680-I', 50, 0, 26, 2, 1, NOW(), NOW()),              /*ID 102 |EDIFICIO ACADEMICO 2*/ 
+
+    ('681-A', 100, 1, 26, 2, 1, NOW(), NOW()),               /*ID 103 |EDIFICIO ACADEMICO 2*/ 
+    ('681-B', 100, 1, 26, 2, 1, NOW(), NOW()),               /*ID 104 |EDIFICIO ACADEMICO 2*/ 
+    ('681-C', 100, 1, 26, 2, 1, NOW(), NOW()),               /*ID 105 |EDIFICIO ACADEMICO 2*/ 
+    ('681-D', 100, 1, 26, 2, 1, NOW(), NOW()),               /*ID 106 |EDIFICIO ACADEMICO 2*/ 
+    ('681-E', 100, 1, 26, 2, 1, NOW(), NOW()),               /*ID 107 |EDIFICIO ACADEMICO 2*/ 
+    ('681-F', 100, 1, 26, 2, 1, NOW(), NOW()),               /*ID 108 |EDIFICIO ACADEMICO 2*/ 
+    ('681-G', 100, 1, 26, 2, 1, NOW(), NOW()),               /*ID 109 |EDIFICIO ACADEMICO 2*/ 
+    ('681-H', 100, 1, 26, 2, 1, NOW(), NOW()),               /*ID 110 |EDIFICIO ACADEMICO 2*/ 
+    ('681-I', 100, 1, 26, 2, 1, NOW(), NOW()),               /*ID 111 |EDIFICIO ACADEMICO 2*/ 
+    ('681-J', 100, 1, 26, 2, 1, NOW(), NOW()),               /*ID 112 |EDIFICIO ACADEMICO 2*/ 
+    ('681-K', 100, 1, 26, 2, 1, NOW(), NOW()),               /*ID 113 |EDIFICIO ACADEMICO 2*/ 
+    ('681-L', 100, 1, 26, 2, 1, NOW(), NOW()),               /*ID 114 |EDIFICIO ACADEMICO 2*/ 
+
+    ('682-A', 100, 2, 26, 2, 1, NOW(), NOW()),               /*ID 115 |EDIFICIO ACADEMICO 2*/ 
+    ('682-B', 100, 2, 26, 2, 1, NOW(), NOW()),               /*ID 116 |EDIFICIO ACADEMICO 2*/ 
+    ('682-C', 100, 2, 26, 2, 1, NOW(), NOW()),               /*ID 117 |EDIFICIO ACADEMICO 2*/ 
+    ('682-D', 100, 2, 26, 2, 1, NOW(), NOW()),               /*ID 118 |EDIFICIO ACADEMICO 2*/ 
+    ('682-E', 100, 2, 26, 2, 1, NOW(), NOW()),               /*ID 119 |EDIFICIO ACADEMICO 2*/ 
+    ('682-F', 100, 2, 26, 2, 1, NOW(), NOW()),               /*ID 120 |EDIFICIO ACADEMICO 2*/ 
+    ('682-G',  75, 2, 26, 2, 1,  NOW(), NOW()),              /*ID 121 |EDIFICIO ACADEMICO 2*/ 
+    ('682-H',  75, 2, 26, 2, 1,  NOW(), NOW()),              /*ID 122 |EDIFICIO ACADEMICO 2*/ 
+    ('682-I', 100, 2, 26, 2, 1, NOW(), NOW()),               /*ID 123 |EDIFICIO ACADEMICO 2*/ 
+    ('682-J',  75, 2, 26, 2, 1,  NOW(), NOW()),              /*ID 124 |EDIFICIO ACADEMICO 2*/ 
+    ('682-K',  75, 2, 26, 2, 1,  NOW(), NOW()),              /*ID 125 |EDIFICIO ACADEMICO 2*/ 
+    ('682-L',  75, 2, 26, 2, 1,  NOW(), NOW()),              /*ID 126 |EDIFICIO ACADEMICO 2*/ 
+
+    ('683-A', 100, 2, 26, 2, 1, NOW(), NOW()),               /*ID 127 |EDIFICIO ACADEMICO 2*/ 
+    ('683-B', 100, 2, 26, 2, 1, NOW(), NOW()),               /*ID 128 |EDIFICIO ACADEMICO 2*/ 
+    ('683-C', 100, 2, 26, 2, 1, NOW(), NOW()),               /*ID 129 |EDIFICIO ACADEMICO 2*/ 
+    ('683-D', 100, 2, 26, 2, 1, NOW(), NOW()),               /*ID 130 |EDIFICIO ACADEMICO 2*/ 
+    ('683-E', 100, 2, 26, 2, 1, NOW(), NOW()),               /*ID 131 |EDIFICIO ACADEMICO 2*/ 
+    ('683-F', 100, 2, 26, 2, 1, NOW(), NOW()),               /*ID 132 |EDIFICIO ACADEMICO 2*/ 
+    ('683-G',  75, 2, 26, 2, 1,  NOW(), NOW()),              /*ID 133 |EDIFICIO ACADEMICO 2*/ 
+    ('683-H',  75, 2, 26, 2, 1,  NOW(), NOW()),              /*ID 134 |EDIFICIO ACADEMICO 2*/ 
+    ('683-I', 100, 2, 26, 2, 1, NOW(), NOW()),               /*ID 135 |EDIFICIO ACADEMICO 2*/ 
+    ('683-J',  75, 2, 26, 2, 1,  NOW(), NOW()),              /*ID 136 |EDIFICIO ACADEMICO 2*/ 
+    ('683-K',  75, 2, 26, 2, 1,  NOW(), NOW()),              /*ID 137 |EDIFICIO ACADEMICO 2*/ 
+    ('683-L',  75, 2, 26, 2, 1,  NOW(), NOW()),              /*ID 138 |EDIFICIO ACADEMICO 2*/ 
+
+    ('683-A',  100, 2, 26, 2, 1, NOW(), NOW()),               /*ID 139 |EDIFICIO ACADEMICO 2*/ 
+    ('683-B',  100, 2, 26, 2, 1, NOW(), NOW()),               /*ID 140 |EDIFICIO ACADEMICO 2*/ 
+    ('683-C',  100, 2, 26, 2, 1, NOW(), NOW()),               /*ID 141 |EDIFICIO ACADEMICO 2*/ 
+    ('683-D',  100, 2, 26, 2, 1, NOW(), NOW()),               /*ID 142 |EDIFICIO ACADEMICO 2*/ 
+    ('BIBLIO', 100, 2, 26, 2, 1, NOW(), NOW()),               /*ID 143 |EDIFICIO ACADEMICO 2*/ 
+    ('683-E',  100, 2, 26, 2, 1, NOW(), NOW()),               /*ID 144 |EDIFICIO ACADEMICO 2*/ 
+    ('683-F',  100, 2, 26, 2, 1, NOW(), NOW()),               /*ID 145 |EDIFICIO ACADEMICO 2*/ 
+    ('683-G',   75, 2, 26, 2, 1,  NOW(), NOW()),              /*ID 146 |EDIFICIO ACADEMICO 2*/ 
+    ('683-H',   75, 2, 26, 2, 1,  NOW(), NOW()),              /*ID 147 |EDIFICIO ACADEMICO 2*/ 
+    ('683-I',  100, 2, 26, 2, 1, NOW(), NOW()),               /*ID 148 |EDIFICIO ACADEMICO 2*/ 
+    ('683-J',   75, 2, 26, 2, 1,  NOW(), NOW()),              /*ID 149 |EDIFICIO ACADEMICO 2*/ 
+    ('683-K',   75, 2, 26, 2, 1,  NOW(), NOW())               /*ID 150 |EDIFICIO ACADEMICO 2*/ 
 ;
-
 /*
     reservation_status
 */
@@ -541,7 +684,6 @@ values
     ('EXPIRADO RECHAZADO',      NOW(), NOW()),  /*ID 6*/
     ('EXPIRADO PENDIENTE',      NOW(), NOW())   /*ID 7*/
 ; 
-
 /*
     reservation_reasons
 */
@@ -552,7 +694,6 @@ values
     ('DEFENSA DE TESIS', NOW(), NOW()), /*ID 3*/
     ('PRACTICA',         NOW(), NOW())  /*ID 4*/
 ;
-
 /*
     time_slot
 */
@@ -580,173 +721,1157 @@ values
     ('21:00:00', NOW(), NOW()), /*ID 20*/
     ('21:45:00', NOW(), NOW())  /*ID 21*/
 ; 
-
-/* siempre hay un problema desde aqui <:V
+/* 
     reservation
 */
-insert into reservations (number_of_students, `repeat`, observation, priority, `date`, parent_id, reservation_reason_id, reservation_status_id, created_at, updated_at)
+/*
+    lunes:     '2024-04-22'
+    martes:    '2024-04-23'
+    miercoles: '2024-04-24'
+    jueves:    '2024-04-25'
+    viernes:   '2024-04-26'
+    sabado:    '2024-04-27'
+    domingo:   '2024-04-28'
+*/
+insert into reservations (quantity, `repeat`, observation, priority, `date`, parent_id, verified, configuration_flag, academic_period_id, reservation_reason_id, reservation_status_id, created_at, updated_at)
 VALUES
-    (125, 7, 'Ninguna', 0, '2024-04-23', 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
-    (125, 7, 'Ninguna', 0, '2024-04-26', 2, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-23', 1, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-26', 2, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
 
-    (125, 7, 'Ninguna', 0, '2024-04-23', 3, 2, 1, NOW(), NOW()),         /*3 INGLES I - GRUPO 2*/
-    (125, 7, 'Ninguna', 0, '2024-04-26', 4, 2, 1, NOW(), NOW()),         /*4 INGLES I - GRUPO 2*/
+    (125, 7, 'Clases', 0, '2024-04-23', 3, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-26', 4, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
 
-    (125, 7, 'Ninguna', 0, '2024-04-22', 5, 2, 1, NOW(), NOW()),         /*5 INGLES I - GRUPO 3*/
-    (125, 7, 'Ninguna', 0, '2024-04-24', 6, 2, 1, NOW(), NOW()),         /*6 INGLES I - GRUPO 3*/
+    (125, 7, 'Clases', 0, '2024-04-22', 5, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-24', 6, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
 
-    (80,  7, 'Ninguna', 0, '2024-04-23', 7, 2, 1, NOW(), NOW()),         /*7 INGLES II - GRUPO 1*/
-    (80,  7, 'Ninguna', 0, '2024-04-25', 8, 2, 1, NOW(), NOW()),         /*8 INGLES II - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-23', 7, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-24', 8, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
 
-    (80,  7, 'Ninguna', 0, '2024-04-25', 9, 2, 1, NOW(), NOW()),         /*9  INGLES II - GRUPO 2*/
-    (80,  7, 'Ninguna', 0, '2024-04-26', 10, 2, 1, NOW(), NOW()),        /*10 INGLES II - GRUPO 2*/
+    (125, 7, 'Practica', 0, '2024-04-25', 9, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
 
-    (150, 7, 'Ninguna', 0, '2024-04-25', 11, 2, 1, NOW(), NOW()),        /*11 INTRODUCCION A LA PROGRAMACION - GRUPO 1*/
-    (150, 7, 'Ninguna', 0, '2024-04-26', 12, 2, 1, NOW(), NOW()),        /*12 INTRODUCCION A LA PROGRAMACION - GRUPO 1*/
-    (150, 7, 'Ninguna', 0, '2024-04-26', 13, 2, 1, NOW(), NOW()),        /*13 INTRODUCCION A LA PROGRAMACION - GRUPO 1*/
+    (125, 7, 'Practica', 0, '2024-04-22', 10, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
 
-    (150, 7, 'Ninguna', 0, '2024-04-22', 14, 2, 1, NOW(), NOW()),        /*14 INTRODUCCION A LA PROGRAMACION - GRUPO 2*/
-    (150, 7, 'Ninguna', 0, '2024-04-24', 15, 2, 1, NOW(), NOW()),        /*15 INTRODUCCION A LA PROGRAMACION - GRUPO 2*/
-    (150, 7, 'Ninguna', 0, '2024-04-26', 16, 2, 1, NOW(), NOW()),        /*16 INTRODUCCION A LA PROGRAMACION - GRUPO 2*/
+    (125, 7, 'Practica', 0, '2024-04-24', 11, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
 
-    (150, 7, 'Ninguna', 0, '2024-04-22', 17, 2, 1, NOW(), NOW()),        /*17 INTRODUCCION A LA PROGRAMACION - GRUPO 3*/
-    (150, 7, 'Ninguna', 0, '2024-04-24', 18, 2, 1, NOW(), NOW()),        /*18 INTRODUCCION A LA PROGRAMACION - GRUPO 3*/
-    (150, 7, 'Ninguna', 0, '2024-04-26', 19, 2, 1, NOW(), NOW()),        /*19 INTRODUCCION A LA PROGRAMACION - GRUPO 3*/
+    (125, 7, 'Practica', 0, '2024-04-24', 12, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
 
-    (150, 7, 'Ninguna', 0, '2024-04-23', 20, 2, 1, NOW(), NOW()),         /*20 INTRODUCCION A LA PROGRAMACION - GRUPO 4*/
-    (150, 7, 'Ninguna', 0, '2024-04-24', 21, 2, 1, NOW(), NOW()),         /*21 INTRODUCCION A LA PROGRAMACION - GRUPO 4*/
-    (150, 7, 'Ninguna', 0, '2024-04-26', 22, 2, 1, NOW(), NOW()),         /*22 INTRODUCCION A LA PROGRAMACION - GRUPO 4*/
+    (125, 7, 'Practica', 0, '2024-04-24', 13, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
 
-    (150, 7, 'Ninguna', 0, '2024-04-24', 23, 2, 1, NOW(), NOW()),         /*23 INTRODUCCION A LA PROGRAMACION - GRUPO 5*/
-    (150, 7, 'Ninguna', 0, '2024-04-25', 24, 2, 1, NOW(), NOW()),         /*24 INTRODUCCION A LA PROGRAMACION - GRUPO 5*/
-    (150, 7, 'Ninguna', 0, '2024-04-27', 25, 2, 1, NOW(), NOW()),         /*25 INTRODUCCION A LA PROGRAMACION - GRUPO 5*/
+    (125, 7, 'Practica', 0, '2024-04-25', 14, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
 
-    (150, 7, 'Ninguna', 0, '2024-04-24', 26, 2, 1, NOW(), NOW()),         /*26 INTRODUCCION A LA PROGRAMACION - GRUPO 6*/
-    (150, 7, 'Ninguna', 0, '2024-04-25', 27, 2, 1, NOW(), NOW()),         /*27 INTRODUCCION A LA PROGRAMACION - GRUPO 6*/
-    (150, 7, 'Ninguna', 0, '2024-04-27', 28, 2, 1, NOW(), NOW()),         /*28 INTRODUCCION A LA PROGRAMACION - GRUPO 6*/
+    (125, 7, 'Clases', 0, '2024-04-23', 15, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-24', 16, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-26', 17, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
 
-    (150, 7, 'Ninguna', 0, '2024-04-23', 29, 2, 1, NOW(), NOW()),         /*29 INTRODUCCION A LA PROGRAMACION - GRUPO 7*/
-    (150, 7, 'Ninguna', 0, '2024-04-24', 30, 2, 1, NOW(), NOW()),         /*30 INTRODUCCION A LA PROGRAMACION - GRUPO 7*/
-    (150, 7, 'Ninguna', 0, '2024-04-25', 31, 2, 1, NOW(), NOW()),         /*31 INTRODUCCION A LA PROGRAMACION - GRUPO 7*/
+    (125, 7, 'Clases', 0, '2024-04-22', 18, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-23', 19, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-24', 20, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
 
-    (150, 7, 'Ninguna', 0, '2024-04-23', 32, 2, 1, NOW(), NOW()),         /*32 INTRODUCCION A LA PROGRAMACION - GRUPO 10*/
-    (150, 7, 'Ninguna', 0, '2024-04-25', 33, 2, 1, NOW(), NOW()),         /*33 INTRODUCCION A LA PROGRAMACION - GRUPO 10*/
-    (150, 7, 'Ninguna', 0, '2024-04-25', 34, 2, 1, NOW(), NOW()),         /*34 INTRODUCCION A LA PROGRAMACION - GRUPO 10*/
+    (125, 7, 'Clases',   0, '2024-04-24', 21, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Practica', 0, '2024-04-25', 22, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases',   0, '2024-04-26', 23, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
 
-    (100, 7, 'Ninguna', 0, '2024-04-23', 35, 2, 1, NOW(), NOW()),         /*35 ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 1*/
-    (100, 7, 'Ninguna', 0, '2024-04-24', 36, 2, 1, NOW(), NOW()),         /*36 ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 1*/
-    (100, 7, 'Ninguna', 0, '2024-04-26', 37, 2, 1, NOW(), NOW()),         /*37 ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-24', 24, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-26', 25, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-27', 26, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
 
-    (100, 7, 'Ninguna', 0, '2024-04-22', 38, 2, 1, NOW(), NOW()),         /*38 ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 2*/
-    (100, 7, 'Ninguna', 0, '2024-04-24', 39, 2, 1, NOW(), NOW()),         /*39 ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 2*/
-    (100, 7, 'Ninguna', 0, '2024-04-25', 40, 2, 1, NOW(), NOW()),         /*40 ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 2*/
+    (125, 7, 'Clases', 0, '2024-04-22', 27, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-23', 28, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-25', 29, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
 
-    (100, 7, 'Ninguna', 0, '2024-04-23', 41, 2, 1, NOW(), NOW()),         /*41 ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 3*/
-    (100, 7, 'Ninguna', 0, '2024-04-24', 42, 2, 1, NOW(), NOW()),         /*42 ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 3*/
-    (100, 7, 'Ninguna', 0, '2024-04-25', 43, 2, 1, NOW(), NOW()),         /*43 ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 3*/
+    (125, 7, 'Clases',   0, '2024-04-25', 30, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases',   0, '2024-04-26', 31, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Practica', 0, '2024-04-26', 32, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
 
-    (100, 7, 'Ninguna', 0, '2024-04-22', 44, 2, 1, NOW(), NOW()),         /*44 ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 5*/
-    (100, 7, 'Ninguna', 0, '2024-04-23', 45, 2, 1, NOW(), NOW()),         /*45 ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 5*/
-    (100, 7, 'Ninguna', 0, '2024-04-25', 46, 2, 1, NOW(), NOW()),         /*46 ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 5*/
+    (125, 7, 'Clases',   0, '2024-04-23', 33, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases',   0, '2024-04-25', 34, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Practica', 0, '2024-04-25', 35, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
 
-    (80,  7, 'Ninguna', 0, '2024-04-22', 47, 2, 1, NOW(), NOW()),         /*47 ARQUITECTURA DE COMPUTADORAS I - GRUPO 1*/
-    (80,  7, 'Ninguna', 0, '2024-04-23', 48, 2, 1, NOW(), NOW()),         /*48 ARQUITECTURA DE COMPUTADORAS I - GRUPO 1*/
+    (125, 7, 'Clases',   0, '2024-04-23', 36, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Practica', 0, '2024-04-24', 37, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases',   0, '2024-04-25', 38, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
 
-    (80,  7, 'Ninguna', 0, '2024-04-22', 49, 2, 1, NOW(), NOW()),         /*49 ARQUITECTURA DE COMPUTADORAS I - GRUPO 2*/
-    (80,  7, 'Ninguna', 0, '2024-04-25', 50, 2, 1, NOW(), NOW()),         /*50 ARQUITECTURA DE COMPUTADORAS I - GRUPO 2*/
+    (125, 7, 'Clases',   0, '2024-04-22', 39, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases',   0, '2024-04-24', 40, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Practica', 0, '2024-04-26', 41, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
 
-    (40,  7, 'Ninguna', 0, '2024-04-23', 51, 2, 1, NOW(), NOW()),         /*51 ALGORITMOS AVANZADOS - GRUPO 1*/
-    (40,  7, 'Ninguna', 0, '2024-04-25', 52, 2, 1, NOW(), NOW()),         /*52 ALGORITMOS AVANZADOS - GRUPO 1*/
-    (40,  7, 'Ninguna', 0, '2024-04-26', 53, 2, 1, NOW(), NOW()),         /*53 ALGORITMOS AVANZADOS - GRUPO 1*/
+    (125, 7, 'Clases',   0, '2024-04-23', 42, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases',   0, '2024-04-24', 43, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Practica', 0, '2024-04-26', 44, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
 
-    (50,  7, 'Ninguna', 0, '2024-04-22', 54, 2, 1, NOW(), NOW()),         /*54 TALLER DE INGENIERIA DE SOFTWARE - GRUPO 1*/
-    (50,  7, 'Ninguna', 0, '2024-04-23', 55, 2, 1, NOW(), NOW()),         /*55 TALLER DE INGENIERIA DE SOFTWARE - GRUPO 1*/
+    (125, 7, 'Clases',   0, '2024-04-24', 45, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases',   0, '2024-04-25', 46, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Practica', 0, '2024-04-27', 47, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
 
-    (50,  7, 'Ninguna', 0, '2024-04-23', 56, 2, 1, NOW(), NOW()),         /*56 TALLER DE INGENIERIA DE SOFTWARE - GRUPO 2*/
-    (50,  7, 'Ninguna', 0, '2024-04-24', 57, 2, 1, NOW(), NOW()),         /*57 TALLER DE INGENIERIA DE SOFTWARE - GRUPO 2*/
+    (125, 7, 'Clases',   0, '2024-04-24', 48, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases',   0, '2024-04-25', 49, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Practica', 0, '2024-04-27', 50, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
 
-    /*-------------------------------------------------------------------------------------------------*/
+    (125, 7, 'Practica', 0, '2024-04-23', 51, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases',   0, '2024-04-24', 52, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases',   0, '2024-04-25', 53, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
 
-    (150, 0, 'Ninguna', 0, '2024-07-23', 58, 1, 1, NOW(), NOW()),         /*58 INTRODUCCION A LA PROGRAMACION - GRUPO 1, 6 - CLASSROOMS ID: 5, 8, 14*/
-    
-    (100, 0, 'Ninguna', 0, '2024-07-24', 59, 1, 1, NOW(), NOW()),         /*59 CALCULO I - GRUPO 1 - CLASSROOMS ID: 20*/
-    
-    (75,  0, 'Ninguna', 0, '2024-07-25', 60, 1, 1, NOW(), NOW()),         /*60 ARQUITECTURA DE COMPUTADORAS I - GRUPO 1 - CLASSROOMS ID: 28*/
-    
-    (200, 0, 'Ninguna', 0, '2024-07-26', 61, 1, 3, NOW(), NOW()),         /*61 ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 1, 2, 3 - CLASSROOMS ID: 33*/
-    (220, 0, 'Ninguna', 0, '2024-07-26', 62, 1, 3, NOW(), NOW()),         /*62 FISICA GENERAL - GRUPO 1, 2 - CLASSROOMS ID: 33*/
-    (350, 0, 'Ninguna', 0, '2024-07-26', 63, 1, 3, NOW(), NOW()),         /*63 INTRODUCCION A LA PROGRAMACION - GRUPO 7, 10 - CLASSROOMS ID: 33*/
+    (125, 7, 'Clases', 0, '2024-04-23', 54, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-25', 55, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
 
-    (100, 0, 'Ninguna', 0, '2024-07-29', 64, 1, 1, NOW(), NOW()),         /*64 INGLES II - GRUPO 1, 2 - CLASSROOMS ID: 35*/
-    
-    (50,  0, 'Ninguna', 0, '2024-07-30', 65, 1, 1, NOW(), NOW()),         /*65 TALLER DE INGENIERIA DE SOFTWARE - GRUPO 2 - CLASSROOMS ID: 38*/
+    (125, 7, 'Clases', 0, '2024-04-25', 56, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-26', 57, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
 
-    /*-------------------------------------------------------------------------------------------------*/
+    (125, 7, 'Clases', 0, '2024-04-23', 58, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-26', 59, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
 
-    (250, 0, 'Ninguna', 0, '2024-06-21', 66, 1, 3, NOW(), NOW()),          /*66 CALCULO NUMERICO - GRUPO 1*/
-    (100, 0, 'Ninguna', 0, '2024-06-20', 67, 1, 3, NOW(), NOW()),          /*67 CALCULO NUMERICO - GRUPO 1*/
-    (200, 0, 'Ninguna', 0, '2024-05-15', 68, 4, 2, NOW(), NOW()),          /*68 CALCULO NUMERICO - GRUPO 1*/
-    (250, 0, 'Ninguna', 0, '2024-05-22', 69, 4, 2, NOW(), NOW()),          /*69 CALCULO NUMERICO - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-22', 60, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-23', 61, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-25', 62, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
 
-    (225, 0, 'Ninguna', 0, '2024-06-21', 70, 1, 3, NOW(), NOW()),          /*70 TEORIA DE GRAFOS - GRUPO 1*/
-    (100, 0, 'Ninguna', 0, '2024-06-20', 71, 1, 3, NOW(), NOW()),          /*71 TEORIA DE GRAFOS - GRUPO 1*/
-    (175, 0, 'Ninguna', 0, '2024-05-15', 72, 1, 1, NOW(), NOW()),          /*72 TEORIA DE GRAFOS - GRUPO 1*/
-    (200, 0, 'Ninguna', 0, '2024-05-22', 73, 1, 1, NOW(), NOW()),          /*73 TEORIA DE GRAFOS - GRUPO 1*/
-    (80,  0, 'Ninguna', 0, '2024-07-19', 74, 1, 4, NOW(), NOW()),          /*74 TEORIA DE GRAFOS - GRUPO 1*/
+    (125, 7, 'Clases',   0, '2024-04-25', 63, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases',   0, '2024-04-26', 64, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Practica', 0, '2024-04-27', 65, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
 
-    (75,  7, 'Ninguna', 0, '2024-06-07', 75, 2, 2, NOW(), NOW()),          /*75 PROGRAMACION FUNCIONAL - GRUPO 1*/
-    (150, 7, 'Ninguna', 0, '2024-06-10', 76, 2, 3, NOW(), NOW()),          /*76 PROGRAMACION FUNCIONAL - GRUPO 1*/
-    (175, 0, 'Ninguna', 0, '2024-06-11', 77, 1, 3, NOW(), NOW()),          /*77 PROGRAMACION FUNCIONAL - GRUPO 1*/
-    (50,  0, 'Ninguna', 0, '2024-04-24', 78, 3, 4, NOW(), NOW()),          /*78 PROGRAMACION FUNCIONAL - GRUPO 1*/
-    (50,  0, 'Ninguna', 0, '2024-04-25', 79, 3, 4, NOW(), NOW()),          /*79 PROGRAMACION FUNCIONAL - GRUPO 1*/
+    (125, 7, 'Clases',   0, '2024-04-22', 66, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Practica', 0, '2024-04-23', 67, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases',   0, '2024-04-25', 68, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
 
-    (90,  0, 'Ninguna', 0, '2024-06-07', 80, 1, 1, NOW(), NOW()),          /*80 BASE DE DATOS I - GRUPO 2*/
-    (120, 0, 'Ninguna', 0, '2024-06-10', 81, 1, 3, NOW(), NOW()),          /*81 BASE DE DATOS I - GRUPO 2*/
-    (200, 0, 'Ninguna', 0, '2024-06-11', 82, 4, 3, NOW(), NOW()),          /*82 BASE DE DATOS I - GRUPO 1*/
-    (150, 0, 'Ninguna', 0, '2024-05-15', 83, 4, 2, NOW(), NOW()),          /*83 BASE DE DATOS I - GRUPO 1*/
+    (125, 7, 'Clases',   0, '2024-04-23', 69, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Practica', 0, '2024-04-24', 70, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases',   0, '2024-04-26', 71, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
 
-    (200, 0, 'Ninguna', 0, '2024-06-05', 84, 1, 3, NOW(), NOW()),          /*84 BASE DE DATOS II - GRUPO 1*/
-    (200, 0, 'Ninguna', 0, '2024-06-06', 85, 1, 1, NOW(), NOW()),          /*85 BASE DE DATOS II - GRUPO 1*/
+    (125, 7, 'Clases',   0, '2024-04-24', 72, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Practica', 0, '2024-04-24', 73, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases',   0, '2024-04-25', 74, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
 
-    (300, 0, 'Ninguna', 0, '2024-06-20', 86, 1, 3, NOW(), NOW()),          /*86 INTELIGENCIA ARTIFICIAL I - GRUPO 1*/
-    (200, 7, 'Ninguna', 0, '2024-06-06', 87, 2, 2, NOW(), NOW()),          /*87 INTELIGENCIA ARTIFICIAL I - GRUPO 1*/
-    (100, 0, 'Ninguna', 0, '2024-05-15', 88, 3, 4, NOW(), NOW()),          /*88 INTELIGENCIA ARTIFICIAL I - GRUPO 1*/
-    (75,  0, 'Ninguna', 0, '2024-05-15', 89, 4, 1, NOW(), NOW()),          /*89 INTELIGENCIA ARTIFICIAL I - GRUPO 1*/
+    (125, 7, 'Clases',   0, '2024-04-23', 75, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Practica', 0, '2024-04-24', 76, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases',   0, '2024-04-26', 77, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
 
-    /*-------------------------------------------------------------------------------------------------*/
+    (125, 7, 'Clases',   0, '2024-04-22', 78, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Practica', 0, '2024-04-24', 79, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases',   0, '2024-04-25', 80, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
 
-    (100, 0, 'Ninguna', 0, '2024-08-01', 90, 1, 2, NOW(), NOW()),          /*90 INTELIGENCIA ARTIFICIAL I - GRUPO 1*/
+    (125, 7, 'Clases',   0, '2024-04-23', 81, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases',   0, '2024-04-24', 82, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Practica', 0, '2024-04-25', 83, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
 
-    (150, 0, 'Ninguna', 0, '2024-08-02', 91, 4, 4, NOW(), NOW()),          /*91 BASE DE DATOS II - GRUPO 1*/
+    (125, 7, 'Practica', 0, '2024-04-22', 84, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases',   0, '2024-04-23', 85, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases',   0, '2024-04-25', 86, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
 
-    (125, 0, 'Ninguna', 0, '2024-08-06', 92, 1, 2, NOW(), NOW()),          /*92 BASE DE DATOS I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-22', 87, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-23', 88, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
 
-    (90,  0, 'Ninguna', 0, '2024-08-07', 93, 4, 4, NOW(), NOW()),          /*93 PROGRAMACION FUNCIONAL - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-22', 89, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-25', 90, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
 
-    (100, 0, 'Ninguna', 0, '2024-08-08', 94, 1, 2, NOW(), NOW()),          /*94 TEORIA DE GRAFOS - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-22', 91, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-24', 92, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-26', 93, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
 
-    (150, 0, 'Ninguna', 0, '2024-08-09', 95, 1, 4, NOW(), NOW()),          /*95 CALCULO NUMERICO - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-22', 94, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-23', 95, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-25', 96, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
 
-    (1000, 0, 'Examen de ingreso', 1, '2024-08-01', 96, 1, 1, NOW(), NOW()),        /*96  RESERVA ESPECIAL - EXAMEN DE INGRESO*/
-    (1000, 0, 'Examen de ingreso', 1, '2024-08-02', 96, 1, 1, NOW(), NOW()),        /*97  RESERVA ESPECIAL - EXAMEN DE INGRESO*/
-    (1000, 0, 'Examen de ingreso', 1, '2024-08-03', 96, 1, 1, NOW(), NOW()),        /*98  RESERVA ESPECIAL - EXAMEN DE INGRESO*/
-    (1000, 0, 'Examen de ingreso', 1, '2024-08-04', 96, 1, 1, NOW(), NOW()),        /*99  RESERVA ESPECIAL - EXAMEN DE INGRESO*/
-    (1000, 0, 'Examen de ingreso', 1, '2024-08-05', 96, 1, 1, NOW(), NOW()),        /*100  RESERVA ESPECIAL - EXAMEN DE INGRESO*/
-    (1000, 0, 'Examen de ingreso', 1, '2024-08-06', 96, 1, 1, NOW(), NOW()),        /*101 RESERVA ESPECIAL - EXAMEN DE INGRESO*/
-    (1000, 0, 'Examen de ingreso', 1, '2024-08-07', 96, 1, 1, NOW(), NOW()),        /*102 RESERVA ESPECIAL - EXAMEN DE INGRESO*/
-    (1000, 0, 'Examen de ingreso', 1, '2024-08-08', 96, 1, 1, NOW(), NOW()),        /*103 RESERVA ESPECIAL - EXAMEN DE INGRESO*/
-    (1000, 0, 'Examen de ingreso', 1, '2024-08-09', 96, 1, 1, NOW(), NOW())         /*104 RESERVA ESPECIAL - EXAMEN DE INGRESO*/
+    (125, 7, 'Clases', 0, '2024-04-22', 97, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-23', 98, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-24', 99, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases',   0, '2024-04-22', 100, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases',   0, '2024-04-23', 101, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Practica', 0, '2024-04-25', 102, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-23', 103, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-25', 104, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases',   0, '2024-04-22', 105, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases',   0, '2024-04-23', 106, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Practica', 0, '2024-04-25', 107, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-23', 108, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-25', 109, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-22', 110, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-23', 111, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-24', 112, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-22', 113, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-26', 114, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-27', 115, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-22', 116, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-23', 117, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-24', 118, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-22', 119, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-26', 120, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-27', 121, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-22', 122, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-23', 123, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-26', 124, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-23', 125, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-24', 126, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-25', 127, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-23', 128, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-24', 129, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-25', 130, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-22', 131, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-23', 132, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-26', 133, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-24', 134, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-25', 135, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-26', 136, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-22', 137, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-23', 138, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-24', 139, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-22', 140, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-23', 141, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-24', 142, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-23', 143, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-25', 144, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-26', 145, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-22', 146, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-23', 147, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-24', 148, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-22', 149, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-23', 150, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-24', 151, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-22', 152, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-24', 153, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-26', 154, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-22', 155, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-23', 156, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-26', 157, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-23', 158, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-25', 159, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-27', 160, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-23', 161, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-24', 162, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-26', 163, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-24', 164, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-25', 165, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-26', 166, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-22', 167, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-23', 168, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-25', 169, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-23', 170, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-24', 171, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-25', 172, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-23', 173, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-24', 174, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-25', 175, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-22', 176, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-23', 177, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-24', 178, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-23', 179, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-24', 180, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-25', 181, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-23', 182, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-24', 183, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-26', 184, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-22', 185, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-24', 186, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-26', 187, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-22', 188, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-23', 189, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-25', 190, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-22', 191, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-23', 192, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-25', 193, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-22', 194, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-26', 195, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-23', 196, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-25', 197, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-22', 198, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-25', 199, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-24', 200, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-25', 201, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-23', 202, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-24', 203, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-25', 204, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-23', 205, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-24', 206, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-24', 207, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-22', 208, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-24', 209, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-22', 210, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-23', 211, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-23', 212, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-24', 213, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-22', 214, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-25', 215, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-26', 216, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-23', 217, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-25', 218, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-23', 219, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-24', 220, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-25', 221, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-26', 222, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-27', 223, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-22', 224, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-25', 225, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-23', 226, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-24', 227, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-25', 228, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-22', 229, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-23', 230, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-24', 231, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-22', 232, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-24', 233, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-25', 234, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-22', 235, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-24', 236, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-25', 237, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-24', 238, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-26', 239, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-23', 240, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-24', 241, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-23', 242, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-26', 243, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-23', 244, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-25', 245, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-22', 246, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-23', 247, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-23', 248, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-25', 249, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-23', 250, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-25', 251, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-23', 252, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-24', 253, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-22', 254, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-24', 255, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-27', 256, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-27', 257, 1, 1, 1, 2, 1, NOW(), NOW()),         /*2 INGLES I - GRUPO 1*/
+
+    (125, 7, 'Clases', 0, '2024-04-22', 258, 1, 1, 1, 2, 1, NOW(), NOW()),         /*1 INGLES I - GRUPO 1*/
+    (125, 7, 'Clases', 0, '2024-04-24', 259, 1, 1, 1, 2, 1, NOW(), NOW())         /*2 INGLES I - GRUPO 1*/
 ;
 /*
-lunes:     '2024-04-22'
-martes:    '2024-04-23'
-miercoles: '2024-04-24'
-jueves:    '2024-04-25'
-viernes:   '2024-04-26'
-sabado:    '2024-04-27'
-domingo:   '2024-04-28'
+    time_slot_reservations
 */
+insert into reservation_time_slot (reservation_id, time_slot_id, created_at, updated_at)
+values
+    (1, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (1, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
 
+    (2, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (2, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+
+    (3, 7, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (3, 8, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (4, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (4, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (5, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (5, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (6, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (6, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (7, 7, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (7, 8, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (8, 11, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (8, 12, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (9, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (9, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (10, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (10, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (11, 9,  NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (11, 10, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (12, 7, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (12, 8, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (13, 7, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (13, 8, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (14, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (14, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (15, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (15, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (16, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (16, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (17, 15, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (17, 16, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (18, 12, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (18, 13, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (19, 11, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (19, 12, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (20, 7, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (20, 8, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (21, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (21, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (22, 9,  NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (22, 10, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (23, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (23, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (24, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (24, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (25, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (25, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (26, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (26, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (27, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (27, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (28, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (28, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (29, 7, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (29, 8, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (30, 7, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (30, 8, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (31, 15, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (31, 16, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (32, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (32, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (33, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (33, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (34, 9, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (34, 10, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (35, 15, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (35, 16, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (36, 15, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (36, 16, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (37, 13, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (37, 14, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (38, 9, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (38, 10, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (39, 9, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (39, 10, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (40, 9, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (40, 10, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (41, 13, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (41, 14, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (42, 13, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (42, 14, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (43, 15, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (43, 16, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (44, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (44, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (45, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (45, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (46, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (46, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (47, 15, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (47, 16, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (48, 15, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (48, 16, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (49, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (49, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (50, 9, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (50, 10, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (51, 13, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (51, 14, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (52, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (52, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (53, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (53, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (54, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (54, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (55, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (55, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (56, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (56, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (57, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (57, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (58, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (58, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (59, 15, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (59, 16, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (60, 15, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (60, 16, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (61, 17, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (61, 18, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (62, 13, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (62, 14, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (63, 15, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (63, 16, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (64, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (64, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (65, 7, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (65, 8, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (66, 11, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (66, 12, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (67, 11, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (67, 12, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (68, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (68, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (69, 11, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (69, 12, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (70, 9, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (70, 10, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (71, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (71, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (72, 11, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (72, 12, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (73, 11, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (73, 12, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (74, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (74, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (75, 7, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (75, 8, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (76, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (76, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (77, 9, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (77, 10, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (78, 13, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (78, 14, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (79, 9, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (79, 10, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (80, 17, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (80, 18, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (81, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (81, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (82, 9, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (82, 10, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (83, 9, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (83, 10, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (84, 11, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (84, 12, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (85, 11, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (85, 12, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (86, 15, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (86, 16, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (87, 7, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (87, 8, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (88, 11, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (88, 12, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (89, 11, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (89, 12, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (90, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (90, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (91, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (91, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (92, 7, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (92, 8, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (93, 9, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (93, 10, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (94, 7, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (94, 8, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (95, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (95, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (96, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (96, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (97, 13, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (97, 14, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (98, 13, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (98, 14, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (99, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (99, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (100, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (100, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (101, 11, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (101, 12, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (102, 13, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (102, 14, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (103, 15, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (103, 16, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (104, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (104, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (105, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (105, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (106, 15, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (106, 16, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (107, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (107, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (108, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (108, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (109, 7, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (109, 8, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (110, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (110, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (111, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (111, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (112, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (112, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (113, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (113, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (114, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (114, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (115, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (115, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (116, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (116, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (117, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (117, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (118, 9, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (118, 10, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (119, 17, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (119, 18, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (120, 7, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (120, 8, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (121, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (121, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (122, 9, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (122, 10, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (123, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (123, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (124, 13, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (124, 14, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (125, 13, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (125, 14, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (126, 13, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (126, 14, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (127, 9, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (127, 10, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (128, 9, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (128, 10, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (129, 9, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (129, 10, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (130, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (130, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (131, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (131, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (132, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (132, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (133, 13, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (133, 14, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (134, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (134, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (135, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (135, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (136, 15, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (136, 16, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (137, 15, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (137, 16, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (138, 7, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (138, 8, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (139, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (139, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (140, 11, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (140, 12, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (141, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (141, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (142, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (142, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (143, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (143, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (144, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (144, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (145, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (145, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (146, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (146, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (147, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (147, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (148, 9, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (148, 10, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (149, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (149, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (150, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (150, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (151, 13, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (151, 14, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (152, 11, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (152, 12, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (153, 11, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (153, 12, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (154, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (154, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (155, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (155, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (156, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (156, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (157, 17, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (157, 18, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (158, 19, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (158, 20, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (159, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (159, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (160, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (160, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (161, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (161, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (162, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (162, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (163, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (163, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (164, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (164, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (165, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (165, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (166, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (166, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (167, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (167, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (168, 7, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (168, 8, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (169, 9, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (169, 10, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (170, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (170, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (171, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (171, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (172, 7, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (172, 8, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (173, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (173, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (174, 7, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (174, 8, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (175, 9, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (175, 10, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (176, 9, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (176, 10, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (177, 9, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (177, 10, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (178, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (178, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (179, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (179, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (180, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (180, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (181, 7, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (181, 8, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (182, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (182, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (183, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (183, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (184, 9, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (184, 10, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (185, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (185, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (186, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (186, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (187, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (187, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (188, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (188, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (189, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (189, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (190, 7, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (190, 8, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (191, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (191, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (192, 7, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (192, 8, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (193, 9, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (193, 10, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (194, 9, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (194, 10, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (195, 17, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (195, 18, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (196, 17, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (196, 18, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (197, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (197, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (198, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (198, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (199, 9, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (199, 10, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (200, 9, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (200, 10, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (201, 9, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (201, 10, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (202, 7, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (202, 8, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (203, 9, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (203, 10, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (204, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (204, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (205, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (205, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (206, 11, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (206, 12, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (207, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (207, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (208, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (208, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (209, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (209, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (210, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (210, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (211, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (211, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (212, 11, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (212, 12, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (213, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (213, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (214, 13, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (214, 14, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (215, 1, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (215, 2, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (216, 16, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (216, 17, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (217, 11, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (217, 12, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (218, 11, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (218, 12, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (219, 11, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (219, 12, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (220, 17, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (220, 18, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (221, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (221, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (222, 9, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (222, 10, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (223, 17, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (223, 18, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (224, 7, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (224, 8, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (225, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (225, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (226, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (226, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (227, 7, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (227, 8, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (228, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (228, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (229, 9, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (229, 10, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (230, 15, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (230, 16, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+
+    (231, 7, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (231, 8, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+
+    (232, 15, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (232, 16, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+
+    (233, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (233, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+
+    (234, 7, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (234, 8, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+
+    (235, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (235, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+
+    (236, 11, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (236, 12, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+
+    (237, 11, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (237, 12, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+
+    (238, 11, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (238, 12, NOW(), NOW()),              /*INGLES I - GRUPO 1*/    
+
+    (239, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (239, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+
+    (240, 19, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (240, 20, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (241, 19, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (241, 20, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (242, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (242, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (243, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (243, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (244, 7, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (244, 8, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (245, 7, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (245, 8, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (246, 7, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (246, 8, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (247, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (247, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (248, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (248, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/    
+    
+    (249, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (249, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (250, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (250, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (251, 11, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (251, 12, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (252, 7, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (252, 8, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (253, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (253, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (254, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (254, 4, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (255, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (255, 6, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (256, 7, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (256, 8, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    
+    (257, 9, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
+    (257, 10, NOW(), NOW())              /*INGLES I - GRUPO 1*/
+;
+/*HASTA AQUI TODO CORRECTO*/
 /*
     reservation_classrooms
 */
@@ -1335,293 +2460,3 @@ values
 
     /*LAS RESERVACIONES ESPECIALES NO CUENTAN CON UN "reservation_teacher_subject"*/
 ; 
-/*
-    time_slot_reservations
-*/
-insert into reservation_time_slot (reservation_id, time_slot_id, created_at, updated_at)
-values
-    (1, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
-    (1, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
-    (2, 3, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
-    (2, 5, NOW(), NOW()),              /*INGLES I - GRUPO 1*/
-
-    (3, 7, NOW(), NOW()),              /*INGLES I - GRUPO 2*/
-    (3, 9, NOW(), NOW()),              /*INGLES I - GRUPO 2*/
-    (4, 5, NOW(), NOW()),              /*INGLES I - GRUPO 2*/
-    (4, 7, NOW(), NOW()),              /*INGLES I - GRUPO 2*/
-
-    (5, 1, NOW(), NOW()),              /*INGLES I - GRUPO 3*/
-    (5, 3, NOW(), NOW()),              /*INGLES I - GRUPO 3*/
-    (6, 1, NOW(), NOW()),              /*INGLES I - GRUPO 3*/
-    (6, 3, NOW(), NOW()),              /*INGLES I - GRUPO 3*/
-
-    (7, 5, NOW(), NOW()),              /*INGLES II - GRUPO 1*/
-    (7, 7, NOW(), NOW()),              /*INGLES II - GRUPO 1*/
-    (8, 1, NOW(), NOW()),              /*INGLES II - GRUPO 1*/
-    (8, 3, NOW(), NOW()),              /*INGLES II - GRUPO 1*/
-
-    ( 9, 5, NOW(), NOW()),              /*INGLES II - GRUPO 2*/
-    ( 9, 7, NOW(), NOW()),              /*INGLES II - GRUPO 2*/
-    (10, 5, NOW(), NOW()),              /*INGLES II - GRUPO 2*/
-    (10, 7, NOW(), NOW()),              /*INGLES II - GRUPO 2*/
-
-    (11, 7, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 1*/
-    (11, 9, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 1*/
-    (12, 7, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 1*/
-    (12, 9, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 1*/
-    (13, 15, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 1*/
-    (13, 17, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 1*/
-
-    (14, 15, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 2*/
-    (14, 17, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 2*/
-    (15, 15, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 2*/
-    (15, 17, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 2*/
-    (16, 13, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 2*/
-    (16, 15, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 2*/
-
-    (17,  9, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 3*/
-    (17, 11, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 3*/
-    (18,  9, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 3*/
-    (18, 11, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 3*/
-    (19,  9, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 3*/
-    (19, 11, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 3*/
-
-    (20, 13, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 4*/
-    (20, 15, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 4*/
-    (21, 13, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 4*/
-    (21, 15, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 4*/
-    (22, 15, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 4*/
-    (22, 17, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 4*/
-
-    (23, 5, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 5*/
-    (23, 7, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 5*/
-    (24, 5, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 5*/
-    (24, 7, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 5*/
-    (25, 5, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 5*/
-    (25, 7, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 5*/
-
-    (26, 15, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 6*/
-    (26, 17, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 6*/
-    (27, 15, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 6*/
-    (27, 17, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 6*/
-    (28, 3, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 6*/
-    (28, 5, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 6*/
-
-    (29,  9, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 7*/
-    (29, 11, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 7*/
-    (30, 13, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 7*/
-    (30, 15, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 7*/
-    (31, 3, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 7*/
-    (31, 5, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 7*/
-
-    (32, 5, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 10*/
-    (32, 7, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 10*/
-    (33, 5, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 10*/
-    (33, 7, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 10*/
-    (34, 11, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 10*/
-    (34, 13, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 10*/
-
-    (35, 3, NOW(), NOW()),              /*ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 1*/
-    (35, 5, NOW(), NOW()),              /*ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 1*/
-    (36, 7, NOW(), NOW()),              /*ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 1*/
-    (36, 9, NOW(), NOW()),              /*ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 1*/
-    (37, 3, NOW(), NOW()),              /*ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 1*/
-    (37, 5, NOW(), NOW()),              /*ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 1*/
-
-    (38,  9, NOW(), NOW()),              /*ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 2*/
-    (38, 11, NOW(), NOW()),              /*ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 2*/
-    (39, 13, NOW(), NOW()),              /*ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 2*/
-    (39, 15, NOW(), NOW()),              /*ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 2*/
-    (40,  9, NOW(), NOW()),              /*ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 2*/
-    (40, 11, NOW(), NOW()),              /*ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 2*/
-
-    (41, 17, NOW(), NOW()),              /*ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 3*/
-    (41, 19, NOW(), NOW()),              /*ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 3*/
-    (42, 1, NOW(), NOW()),              /*ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 3*/
-    (42, 3, NOW(), NOW()),              /*ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 3*/
-    (43, 9, NOW(), NOW()),              /*ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 3*/
-    (43, 11, NOW(), NOW()),              /*ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 3*/
-
-    (44,  9, NOW(), NOW()),              /*ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 5*/
-    (44, 11, NOW(), NOW()),              /*ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 5*/
-    (45, 11, NOW(), NOW()),              /*ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 5*/
-    (45, 13, NOW(), NOW()),              /*ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 5*/
-    (46, 11, NOW(), NOW()),              /*ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 5*/
-    (46, 13, NOW(), NOW()),              /*ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 5*/
-
-    (47, 15, NOW(), NOW()),              /*ARQUITECTURA DE COMPUTADORAS I - GRUPO 1*/
-    (47, 17, NOW(), NOW()),              /*ARQUITECTURA DE COMPUTADORAS I - GRUPO 1*/
-    (48,  7, NOW(), NOW()),              /*ARQUITECTURA DE COMPUTADORAS I - GRUPO 1*/
-    (48,  9, NOW(), NOW()),              /*ARQUITECTURA DE COMPUTADORAS I - GRUPO 1*/
-
-    (49,  9, NOW(), NOW()),              /*ARQUITECTURA DE COMPUTADORAS I - GRUPO 2*/
-    (49, 11, NOW(), NOW()),              /*ARQUITECTURA DE COMPUTADORAS I - GRUPO 2*/
-    (50,  9, NOW(), NOW()),              /*ARQUITECTURA DE COMPUTADORAS I - GRUPO 2*/
-    (50, 11, NOW(), NOW()),              /*ARQUITECTURA DE COMPUTADORAS I - GRUPO 2*/
-
-    (51, 1, NOW(), NOW()),              /*ALGORITMOS AVANZADOS - GRUPO 1*/
-    (51, 3, NOW(), NOW()),              /*ALGORITMOS AVANZADOS - GRUPO 1*/
-    (52, 1, NOW(), NOW()),              /*ALGORITMOS AVANZADOS - GRUPO 1*/
-    (52, 3, NOW(), NOW()),              /*ALGORITMOS AVANZADOS - GRUPO 1*/
-    (53, 1, NOW(), NOW()),              /*ALGORITMOS AVANZADOS - GRUPO 1*/
-    (53, 3, NOW(), NOW()),              /*ALGORITMOS AVANZADOS - GRUPO 1*/
-
-    (54, 5, NOW(), NOW()),              /*TALLER DE INGENIERIA DE SOFTWARE - GRUPO 1*/
-    (54, 7, NOW(), NOW()),              /*TALLER DE INGENIERIA DE SOFTWARE - GRUPO 1*/
-    (55, 5, NOW(), NOW()),              /*TALLER DE INGENIERIA DE SOFTWARE - GRUPO 1*/
-    (55, 7, NOW(), NOW()),              /*TALLER DE INGENIERIA DE SOFTWARE - GRUPO 1*/
-
-    (56, 3, NOW(), NOW()),              /*TALLER DE INGENIERIA DE SOFTWARE - GRUPO 2*/
-    (56, 5, NOW(), NOW()),              /*TALLER DE INGENIERIA DE SOFTWARE - GRUPO 2*/
-    (57, 3, NOW(), NOW()),              /*TALLER DE INGENIERIA DE SOFTWARE - GRUPO 2*/
-    (57, 5, NOW(), NOW()),              /*TALLER DE INGENIERIA DE SOFTWARE - GRUPO 2*/
-
-    /*------------------------------------------------------------------------------*/
-
-    (58, 3, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 1, 6*/
-    (58, 5, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 1, 6*/
-    
-    (59, 5, NOW(), NOW()),              /*CALCULO I - GRUPO 1*/
-    (59, 7, NOW(), NOW()),              /*CALCULO I - GRUPO 1*/
-    
-    (60, 17, NOW(), NOW()),             /*ARQUITECTURA DE COMPUTADORAS I - GRUPO 1*/
-    (60, 19, NOW(), NOW()),             /*ARQUITECTURA DE COMPUTADORAS I - GRUPO 1*/
-    
-    (61, 3, NOW(), NOW()),              /*ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 1, 2, 3*/
-    (61, 7, NOW(), NOW()),              /*ELEM. DE PROGRAMACION Y ESTRUC. DE DATOS - GRUPO 1, 2, 3*/
-    
-    (62, 3, NOW(), NOW()),              /*FISICA GENERAL - GRUPO 1, 2*/
-    (62, 7, NOW(), NOW()),              /*FISICA GENERAL - GRUPO 1, 2*/
-    
-    (63, 3, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 7, 10*/
-    (63, 7, NOW(), NOW()),              /*INTRODUCCION A LA PROGRAMACION - GRUPO 7, 10*/
-    
-    (64, 11, NOW(), NOW()),             /*INGLES II - GRUPO 1, 2*/
-    (64, 13, NOW(), NOW()),             /*INGLES II - GRUPO 1, 2*/
-    
-    (65, 1, NOW(), NOW()),              /*TALLER DE INGENIERIA DE SOFTWARE - GRUPO 2*/
-    (65, 3, NOW(), NOW()),              /*TALLER DE INGENIERIA DE SOFTWARE - GRUPO 2*/
-
-    /*------------------------------------------------------------------------------*/
-
-    (66, 7, NOW(), NOW()),              /*CALCULO NUMERICO - GRUPO 1*/
-    (66, 9, NOW(), NOW()),              /*CALCULO NUMERICO - GRUPO 1*/
-
-    (67, 5, NOW(), NOW()),              /*CALCULO NUMERICO - GRUPO 1*/
-    (67, 7, NOW(), NOW()),              /*CALCULO NUMERICO - GRUPO 1*/
-
-    (68, 13, NOW(), NOW()),             /*CALCULO NUMERICO - GRUPO 1*/
-    (68, 15, NOW(), NOW()),             /*CALCULO NUMERICO - GRUPO 1*/
-
-    (69, 17, NOW(), NOW()),             /*CALCULO NUMERICO - GRUPO 1*/
-    (69, 21, NOW(), NOW()),             /*CALCULO NUMERICO - GRUPO 1*/
-
-    (70, 7, NOW(), NOW()),              /*TEORIA DE GRAFOS - GRUPO 1*/
-    (70, 9, NOW(), NOW()),              /*TEORIA DE GRAFOS - GRUPO 1*/
-
-    (71, 5, NOW(), NOW()),              /*TEORIA DE GRAFOS - GRUPO 1*/
-    (71, 7, NOW(), NOW()),              /*TEORIA DE GRAFOS - GRUPO 1*/
-
-    (72, 13, NOW(), NOW()),             /*TEORIA DE GRAFOS - GRUPO 1*/
-    (72, 15, NOW(), NOW()),             /*TEORIA DE GRAFOS - GRUPO 1*/
-
-    (73, 17, NOW(), NOW()),             /*TEORIA DE GRAFOS - GRUPO 1*/
-    (73, 21, NOW(), NOW()),             /*TEORIA DE GRAFOS - GRUPO 1*/
-
-    (74, 3, NOW(), NOW()),             /*TEORIA DE GRAFOS - GRUPO 1*/
-    (74, 5, NOW(), NOW()),             /*TEORIA DE GRAFOS - GRUPO 1*/
-
-    (75, 9, NOW(), NOW()),             /*PROGRAMACION FUNCIONAL - GRUPO 1*/
-    (75, 11, NOW(), NOW()),            /*PROGRAMACION FUNCIONAL - GRUPO 1*/
-
-    (76, 1, NOW(), NOW()),             /*PROGRAMACION FUNCIONAL - GRUPO 1*/
-    (76, 3, NOW(), NOW()),             /*PROGRAMACION FUNCIONAL - GRUPO 1*/
-
-    (77, 5, NOW(), NOW()),             /*PROGRAMACION FUNCIONAL - GRUPO 1*/
-    (77, 9, NOW(), NOW()),             /*PROGRAMACION FUNCIONAL - GRUPO 1*/
-
-    (78, 19, NOW(), NOW()),            /*PROGRAMACION FUNCIONAL - GRUPO 1*/
-    (78, 21, NOW(), NOW()),            /*PROGRAMACION FUNCIONAL - GRUPO 1*/
-
-    (79, 9, NOW(), NOW()),             /*PROGRAMACION FUNCIONAL - GRUPO 1*/
-    (79, 13, NOW(), NOW()),            /*PROGRAMACION FUNCIONAL - GRUPO 1*/
-
-    (80, 9, NOW(), NOW()),             /*BASE DE DATOS I - GRUPO 2*/
-    (80, 11, NOW(), NOW()),            /*BASE DE DATOS I - GRUPO 2*/
-
-    (81, 1, NOW(), NOW()),             /*BASE DE DATOS I - GRUPO 2*/
-    (81, 3, NOW(), NOW()),             /*BASE DE DATOS I - GRUPO 2*/    
-    
-    (82, 5, NOW(), NOW()),             /*BASE DE DATOS I - GRUPO 1*/
-    (82, 9, NOW(), NOW()),             /*BASE DE DATOS I - GRUPO 1*/
-
-    (83, 7, NOW(), NOW()),             /*BASE DE DATOS I - GRUPO 1*/
-    (83, 9, NOW(), NOW()),             /*BASE DE DATOS I - GRUPO 1*/
-
-    (84, 15, NOW(), NOW()),            /*BASE DE DATOS II - GRUPO 1*/
-    (84, 17, NOW(), NOW()),            /*BASE DE DATOS II - GRUPO 1*/
-    
-    (85, 11, NOW(), NOW()),            /*BASE DE DATOS II - GRUPO 1*/
-    (85, 13, NOW(), NOW()),            /*BASE DE DATOS II - GRUPO 1*/
-
-    (86, 15, NOW(), NOW()),            /*INTELIGENCIA ARTIFICIAL I - GRUPO 1*/
-    (86, 17, NOW(), NOW()),            /*INTELIGENCIA ARTIFICIAL I - GRUPO 1*/
-    
-    (87, 11, NOW(), NOW()),            /*INTELIGENCIA ARTIFICIAL I - GRUPO 1*/
-    (87, 13, NOW(), NOW()),            /*INTELIGENCIA ARTIFICIAL I - GRUPO 1*/
-
-    (88, 5, NOW(), NOW()),             /*INTELIGENCIA ARTIFICIAL I - GRUPO 1*/
-    (88, 9, NOW(), NOW()),             /*INTELIGENCIA ARTIFICIAL I - GRUPO 1*/
-
-    (89, 7, NOW(), NOW()),             /*INTELIGENCIA ARTIFICIAL I - GRUPO 1*/
-    (89, 9, NOW(), NOW()),             /*INTELIGENCIA ARTIFICIAL I - GRUPO 1*/
-
-    /*------------------------------------------------------------------------------*/
-
-    (90, 3, NOW(), NOW()),             /*INTELIGENCIA ARTIFICIAL I - GRUPO 1*/
-    (90, 5, NOW(), NOW()),             /*INTELIGENCIA ARTIFICIAL I - GRUPO 1*/
-
-    (91, 7, NOW(), NOW()),             /*BASE DE DATOS II - GRUPO 1*/
-    (91, 9, NOW(), NOW()),             /*BASE DE DATOS II - GRUPO 1*/
-
-    (92, 9, NOW(), NOW()),             /*BASE DE DATOS I - GRUPO 1*/
-    (92, 11, NOW(), NOW()),            /*BASE DE DATOS I - GRUPO 1*/
-
-    (93, 1, NOW(), NOW()),             /*PROGRAMACION FUNCIONAL - GRUPO 1*/
-    (93, 5, NOW(), NOW()),             /*PROGRAMACION FUNCIONAL - GRUPO 1*/
-
-    (94, 3, NOW(), NOW()),             /*TEORIA DE GRAFOS - GRUPO 1*/
-    (94, 5, NOW(), NOW()),             /*TEORIA DE GRAFOS - GRUPO 1*/
-
-    (95, 9, NOW(), NOW()),             /*CALCULO NUMERICO - GRUPO 1*/
-    (95, 11, NOW(), NOW()),            /*CALCULO NUMERICO - GRUPO 1*/
-
-    /*RESERVA ESPECIAL DESDE LAS 8:15 - 15-45*/
-
-    (96, 3, NOW(), NOW()),            /*96  RESERVA ESPECIAL - EXAMEN DE INGRESO*/
-    (96, 13, NOW(), NOW()),           /*96  RESERVA ESPECIAL - EXAMEN DE INGRESO*/
-
-    (97, 3, NOW(), NOW()),            /*97  RESERVA ESPECIAL - EXAMEN DE INGRESO*/
-    (97, 13, NOW(), NOW()),           /*97  RESERVA ESPECIAL - EXAMEN DE INGRESO*/
-
-    (98, 3, NOW(), NOW()),            /*98  RESERVA ESPECIAL - EXAMEN DE INGRESO*/
-    (98, 13, NOW(), NOW()),           /*98  RESERVA ESPECIAL - EXAMEN DE INGRESO*/
-
-    (99, 3, NOW(), NOW()),            /*99  RESERVA ESPECIAL - EXAMEN DE INGRESO*/
-    (99, 13, NOW(), NOW()),           /*99  RESERVA ESPECIAL - EXAMEN DE INGRESO*/
-
-    (100, 3, NOW(), NOW()),           /*100 RESERVA ESPECIAL - EXAMEN DE INGRESO*/
-    (100, 13, NOW(), NOW()),          /*100 RESERVA ESPECIAL - EXAMEN DE INGRESO*/
-
-    (101, 3, NOW(), NOW()),           /*101 RESERVA ESPECIAL - EXAMEN DE INGRESO*/
-    (101, 13, NOW(), NOW()),          /*101 RESERVA ESPECIAL - EXAMEN DE INGRESO*/
-
-    (102, 3, NOW(), NOW()),           /*102 RESERVA ESPECIAL - EXAMEN DE INGRESO*/
-    (102, 13, NOW(), NOW()),          /*102 RESERVA ESPECIAL - EXAMEN DE INGRESO*/
-
-    (103, 3, NOW(), NOW()),           /*102 RESERVA ESPECIAL - EXAMEN DE INGRESO*/
-    (103, 13, NOW(), NOW()),          /*102 RESERVA ESPECIAL - EXAMEN DE INGRESO*/
-
-    (104, 3, NOW(), NOW()),           /*102 RESERVA ESPECIAL - EXAMEN DE INGRESO*/
-    (104, 13, NOW(), NOW())           /*102 RESERVA ESPECIAL - EXAMEN DE INGRESO*/
-;
