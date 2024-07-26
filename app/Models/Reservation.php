@@ -51,7 +51,7 @@ class Reservation extends Model
         return $this->belongsTo(ReservationReason::class);
     }
 
-    public function personReservation()
+    public function personReservations()
     {
         return $this->hasMany(PersonReservation::class);
     }

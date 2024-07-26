@@ -402,7 +402,7 @@ class ReservationRepository extends Repository
                 foreach ($data['persons'] as $person) {
                     $dp[$person['person_id']] = $person['teacher_subject_ids'];
                 }
-                foreach ($reservation->personReservation as $personReservation) {
+                foreach ($reservation->personReservations as $personReservation) {
                     $personReservation->teacherSubjects()->attach($dp[$personReservation->person_id]);
                 }
             }
@@ -546,7 +546,7 @@ class ReservationRepository extends Repository
         $reservationReason = $reservation->reservationReason;
         $reservationStatus = $reservation->reservationStatus;
         $classrooms = $reservation->classrooms;
-        $teacherSubjects = $reservation->persons;
+        $personReservations = $reservation->personReservations;
         $timeSlots = $reservation->timeSlots;
         $priority = 0;
         $createdAt = $reservation->created_at;
@@ -563,21 +563,13 @@ class ReservationRepository extends Repository
         }
 
         $subjectName = 'RESERVA ESPECIAL'; 
-        if ($teacherSubjects->first() !== null) 
-            $subjectName = $teacherSubjects->first()->universitySubject->name;
-
-        $groups = ['teacher_name' => 'ADMINISTRACION DEL SISTEMA SURA - FCYT.']; 
-        if ($teacherSubjects->first() !== null) {
-            $groups = $teacherSubjects->map(function ($teacherSubject) {
-                $person = Person::find($teacherSubject->person_id);
-                return [
-                    'teacher_name' => $person->name . ' ' . $person->last_name,
-                    'group_number' => $teacherSubject->group_number,
-                    'person_email' => $person->email,
-                    'person_id' => $teacherSubject->person_id,
-                ];
-            })->toArray();
-        }
+        if ($personReservations->first() !== null) {
+            $personReservation = $personReservations->first(); 
+            if ($personReservation->teacherSubjects->first() !== null) {
+                $teacherSubject = $personReservation->teacherSubjects->first(); 
+                $subjectName = $teacherSubject->universitySubject->name;
+            }
+        } 
 
         if (Carbon::now()->diffInDays(Carbon::parse($reservation->date)) <= 5) {
             $priority = 1;
@@ -591,14 +583,32 @@ class ReservationRepository extends Repository
             $dp[$classroom->block->name] = 1;
         }
 
-        $output =  [
+        return [
             'reservation_id' => $reservation->id,
             'subject_name' => $subjectName,
             'quantity' => $reservation->number_of_students,
             'reservation_date' => $reservation->date,
             'time_slot' => $times,
-            'groups' => $groups,
-            'block_name' => $blockNames,
+            'block_names' => $blockNames,
+            'persons' => $reservation->personReservations->map(
+                function ($personReservation) 
+                {
+                    return [
+                        'name' => $personReservation->person->name, 
+                        'last_name' => $personReservation->person->last_name, 
+                        'created_by_me' => $personReservation->created_by_me, 
+                        'groups' => $personReservation->teacherSubjects->map(
+                            function ($teacherSubject) 
+                            {
+                                return [
+                                    'group_number' => $teacherSubject->group_number, 
+                                    'group_id' => $teacherSubject->id
+                                ];
+                            }
+                        )->toArray()
+                    ];
+                }
+            )->toArray(),
             'classrooms' => $classrooms->map(
                 function ($classroom) use ($reservation) {
                     $classroomData = $this->classroomLog->retriveLastClassroom(
@@ -620,11 +630,9 @@ class ReservationRepository extends Repository
             'parent_id' => $reservation->parent_id,
             'created_at' => $createdAt,
             'updated_at' => $updatedAt,
+            'academic_period_name' => $reservation->academicPeriod->name, 
+            'academic_period_id' => $reservation->academicPeriod->id
         ];
-        if ((count($output['block_name']) == 1) && 
-            ($reservation->priority == 0)) 
-                $output['block_name'] = $output['block_name'][0];
-        return $output;
     }
 
     /**
@@ -706,6 +714,41 @@ class ReservationRepository extends Repository
             ];
         }
         return $formatReservations;
+    }
+
+    public function statsOfReserve(array $data): array 
+    {
+        $query = DB::table('reservations')
+            ->join('reservation_teacher_subject', 'reservations.id', '=', 'reservation_teacher_subject.reservation_id')
+            ->join('teacher_subjects', 'reservation_teacher_subject.teacher_subject_id', '=', 'teacher_subjects.id')
+            ->join('people', 'teacher_subjects.person_id', '=', 'people.id')
+            ->join('classroom_reservation', 'reservations.id', '=', 'classroom_reservation.reservation_id')
+            ->join('classrooms', 'classroom_reservation.classroom_id', '=', 'classrooms.id')
+            ->join('blocks', 'classrooms.block_id', '=', 'blocks.id')
+            ->join('reservation_time_slot', 'reservations.id', '=', 'reservation_time_slot.reservation_id')
+            ->join('time_slots', 'reservation_time_slot.time_slot_id', '=', 'time_slots.id')
+            ->join('reservation_reasons', 'reservation_reasons.id', '=', 'reservations.reservation_reason_id')
+            ->select(
+                'reservations.id as reservation_id',
+                'reservations.date',
+                DB::raw('CONCAT(people.name, " ", people.last_name) as teacher_name'),
+                'blocks.name as block_name',
+                'classrooms.name as classroom_name',
+                'time_slots.time as time_slot_time',
+                'reservations.created_at as date_send',
+                'reservations.updated_at as date_approval',
+                'reservations.reservation_status_id',
+                'reservation_reasons.reason'
+            );
+        if (!empty($data['statuses'])) {
+            $query->whereIn('reservation_status_id', $data['statuses']);
+        }
+
+        if (!empty($data['group_ids'])) {
+        }
+
+
+        return $query->get()->toArray();
     }
 
     /**
@@ -868,9 +911,9 @@ class ReservationRepository extends Repository
             'reservationStatus:id,status',
             'reservationReason:id,reason',
             'timeSlots:id,time',
-            'teacherSubjects:id,group_number,person_id,university_subject_id',
-            'teacherSubjects.person:id,name,last_name,email',
-            'teacherSubjects.universitySubject:id,name',
+            'personReservations.teacherSubjects:id,group_number,person_id,university_subject_id',
+            'personReservations.person:id,name,last_name,email',
+            'personReservations.teacherSubjects.universitySubject:id,name',
             'classrooms:id,name,capacity,block_id',
             'classrooms.block:id,name',
             'classrooms.classroomType:id,description'
@@ -924,7 +967,7 @@ class ReservationRepository extends Repository
             function ($reservation) {
                 return $this->formatOutput($reservation);
             }
-	)->toArray();
+    	)->toArray();
         return $reservations;
     }
 

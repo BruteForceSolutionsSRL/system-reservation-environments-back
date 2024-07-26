@@ -698,6 +698,10 @@ class ReservationController extends Controller
             'time_slot_ids.required' => 'Se requieren dos periodos de tiempo.',
             'time_slot_ids.array' => 'Los periodos de tiempo deben ser un arreglo.',
         ]);
+    }
 
+    public function test(): Response
+    {
+        return response()->json($this->reservationService->test(), 200);
     }
 }

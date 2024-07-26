@@ -331,6 +331,24 @@ class ReservationServiceImpl implements ReservationService
     }
 
     /**
+     * Function to retrieve if a group could have a reservation (max. 5)
+     * @param array $groupIds
+     * @return bool 
+     */
+    public function couldReserve(array $groupIds): bool 
+    {
+        $stats = $this->reservationRepository->statsOfReserves(
+            [
+                'group_ids' => $groupIds,
+                'reservation_statuses' => [
+                    ReservationStatuses::accepted()
+                ]
+            ]
+        );
+        return max($stats) < 5;
+    }
+
+    /**
      * Function to store full data about a request and automatic accept/reject
      * @param array $data
      * @return mixed
@@ -824,5 +842,12 @@ class ReservationServiceImpl implements ReservationService
     public function getActiveSpecialReservations(): array 
     {
         return $this->reservationRepository->getActiveSpecialReservations();
+    }
+
+    public function test()
+    {
+        return $this->reservationRepository->getReservations([
+            
+        ]);
     }
 }
