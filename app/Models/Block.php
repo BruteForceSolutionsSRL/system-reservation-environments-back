@@ -19,4 +19,8 @@ class Block extends Model
         return $this->belongsTo(BlockStatus::class);
     }
 
+    public function faculty()
+    {
+        return $this->belongsTo(Faculty::class);
+    }
 }

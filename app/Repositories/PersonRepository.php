@@ -138,18 +138,18 @@ class PersonRepository extends Repository
                     $query->whereIn('id', $teacherSubjectIds);
                 }
             )->get()->map(
-                function ($person) use ($teacherSubjectIds)
+                function ($person)
                 {
                     $personFormatted = $this->formatOutput($person);
                     $personFormatted['teacher_subject_ids'] = []; 
                     foreach ($person->teacherSubjects as $teacherSubject) {
-                        if (in_array($teacherSubject->id, $teacherSubject)) {
-                            array_push($teacherSubject->id, $personFormatted['teacher_subject_ids']);
+                        if (in_array($teacherSubject->id, $teacherSubject->toArray())) {
+                            array_push($personFormatted['teacher_subject_ids'], $teacherSubject->id);
                         }
                     }
                     return $personFormatted;
                 }
-            );
+            )->toArray();
     }
 
     /**

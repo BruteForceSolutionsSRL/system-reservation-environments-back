@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('name');
             $table->integer('max_classrooms');
             $table->unsignedBigInteger('block_status_id');
+            $table->unsignedBigInteger('faculty_id');
             
             $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
             $table->timestamp('updated_at')->default(DB::raw('CURRENT_TIMESTAMP'));
@@ -27,6 +28,10 @@ return new class extends Migration
             $table->foreign('block_status_id')
                 ->references('id')
                 ->on('block_statuses')
+                ->cascadeOnDelete();
+            $table->foreign('faculty_id')
+                ->references('id')
+                ->on('faculties')
                 ->cascadeOnDelete();
         });
         DB::unprepared('

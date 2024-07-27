@@ -1,9 +1,16 @@
 /*
-    LAST MODIFICATION: 11/07/2024 15:54
+    LAST MODIFICATION: 26/07/2024 20:30
     VERSION: 
         2.0 (RESERVAS ESPECIALES + GESTION ACADEMICA)
 */
 use test3;
+/*
+    constants
+*/
+insert into constants(identifier, value) values
+    ('AUTOMATIC_RESERVATION', '1'),
+    ('MAXIMAL_RESERVATIONS_PER_GROUP', '5')
+;
 /*
     roles
 */
@@ -144,11 +151,88 @@ insert into departments(name)
 value 
     ('DEPARTAMENTO DE INFORMATICA - SISTEMAS')
 ;
-/**
+/*
+    time_slot
+*/
+insert into time_slots(time, created_at, updated_at)
+values
+    ('06:30:00', NOW(), NOW()), /*ID 1*/
+    ('06:45:00', NOW(), NOW()), /*ID 2*/
+    ('07:00:00', NOW(), NOW()), /*ID 3*/
+    ('07:15:00', NOW(), NOW()), /*ID 4*/
+    ('07:30:00', NOW(), NOW()), /*ID 5*/
+    ('07:45:00', NOW(), NOW()), /*ID 6*/
+    ('08:00:00', NOW(), NOW()), /*ID 7*/
+    ('08:15:00', NOW(), NOW()), /*ID 8*/
+    ('08:30:00', NOW(), NOW()), /*ID 9*/
+    ('08:45:00', NOW(), NOW()), /*ID 10*/
+    ('09:00:00', NOW(), NOW()), /*ID 11*/
+    ('09:15:00', NOW(), NOW()), /*ID 12*/
+    ('09:30:00', NOW(), NOW()), /*ID 13*/
+    ('09:45:00', NOW(), NOW()), /*ID 14*/
+    ('10:00:00', NOW(), NOW()), /*ID 15*/
+    ('10:15:00', NOW(), NOW()), /*ID 16*/
+    ('10:30:00', NOW(), NOW()), /*ID 17*/
+    ('10:45:00', NOW(), NOW()), /*ID 18*/
+    ('11:00:00', NOW(), NOW()), /*ID 19*/
+    ('11:15:00', NOW(), NOW()), /*ID 20*/
+    ('11:30:00', NOW(), NOW()), /*ID 21*/
+    ('11:45:00', NOW(), NOW()), /*ID 22*/
+    ('12:00:00', NOW(), NOW()), /*ID 23*/
+    ('12:15:00', NOW(), NOW()), /*ID 24*/
+    ('12:30:00', NOW(), NOW()), /*ID 25*/
+    ('12:45:00', NOW(), NOW()), /*ID 26*/
+    ('13:00:00', NOW(), NOW()), /*ID 27*/
+    ('13:15:00', NOW(), NOW()), /*ID 28*/
+    ('13:30:00', NOW(), NOW()), /*ID 29*/
+    ('13:45:00', NOW(), NOW()), /*ID 30*/
+    ('14:00:00', NOW(), NOW()), /*ID 31*/
+    ('14:15:00', NOW(), NOW()), /*ID 32*/
+    ('14:30:00', NOW(), NOW()), /*ID 33*/
+    ('14:45:00', NOW(), NOW()), /*ID 34*/
+    ('15:15:00', NOW(), NOW()), /*ID 35*/
+    ('15:30:00', NOW(), NOW()), /*ID 36*/
+    ('15:45:00', NOW(), NOW()), /*ID 37*/
+    ('16:00:00', NOW(), NOW()), /*ID 38*/
+    ('16:15:00', NOW(), NOW()), /*ID 39*/
+    ('16:30:00', NOW(), NOW()), /*ID 40*/
+    ('16:45:00', NOW(), NOW()), /*ID 41*/
+    ('17:00:00', NOW(), NOW()), /*ID 42*/
+    ('17:15:00', NOW(), NOW()), /*ID 43*/
+    ('17:30:00', NOW(), NOW()), /*ID 44*/
+    ('17:45:00', NOW(), NOW()), /*ID 45*/
+    ('18:00:00', NOW(), NOW()), /*ID 46*/
+    ('18:15:00', NOW(), NOW()), /*ID 47*/
+    ('18:30:00', NOW(), NOW()), /*ID 48*/
+    ('18:45:00', NOW(), NOW()), /*ID 49*/
+    ('19:00:00', NOW(), NOW()), /*ID 50*/
+    ('19:15:00', NOW(), NOW()), /*ID 51*/
+    ('19:30:00', NOW(), NOW()), /*ID 52*/
+    ('19:45:00', NOW(), NOW()), /*ID 53*/
+    ('20:00:00', NOW(), NOW()), /*ID 54*/
+    ('20:15:00', NOW(), NOW()), /*ID 55*/
+    ('20:30:00', NOW(), NOW()), /*ID 56*/
+    ('20:45:00', NOW(), NOW()), /*ID 57*/
+    ('21:00:00', NOW(), NOW()), /*ID 58*/
+    ('21:15:00', NOW(), NOW()), /*ID 59*/
+    ('21:30:00', NOW(), NOW()), /*ID 60*/
+    ('21:45:00', NOW(), NOW()), /*ID 61*/
+    ('22:00:00', NOW(), NOW()), /*ID 62*/
+    ('22:15:00', NOW(), NOW()), /*ID 63*/
+    ('22:30:00', NOW(), NOW()), /*ID 64*/
+    ('22:45:00', NOW(), NOW())  /*ID 65*/
+;
+/*
+    faculties
+*/
+insert into faculties(name, time_slot_id) values
+    ('FACULTAD DE CIENCIAS Y TECNOLOGIA - FCYT', 2)
+; 
+/*
     academic_periods
 */
-insert into academic_periods(name, initial_date, end_date, activated) values
-    ('I-2024', '2024-04-01', '2024-09-01', 1) /*ID 1 - I-2024*/
+insert into academic_periods(name, initial_date, end_date, activated, faculty_id) values
+    ('I-2024', '2024-04-01', '2024-09-01', 1, 1) /*ID 1 - I-2024*/
 ;
 /*
     careers
@@ -444,29 +528,29 @@ insert into block_statuses(name) values
 /*
     blocks
 */
-insert into blocks (id, name, max_floor, block_status_id, max_classrooms)
+insert into blocks (id, name, max_floor, block_status_id, max_classrooms, faculty_id)
 values 
-    (29, 'BLOQUE 29',                           0, 1, 20),     /*ID F*/
-    (9,  'DEPARTAMENTO DE BIOLOGIA',            2, 1, 20),     /*ID F*/       
-    (27, 'BLOQUE 27',                           3, 1, 20),     /*ID F*/    
-    (7,  'DEPARTAMENTO DE QUIMICA',             0, 1, 20),     /*ID F*/    
-    (28, 'BLOQUE 28',                           2, 1, 20),     /*ID F*/    
-    (4,  'DEPARTAMENTO DE FISICA',              0, 1, 20),     /*ID F*/
-    (12, 'BLOQUE 12',                           2, 1, 20),     /*ID F*/       
-    (13, 'BLOQUE 13',                           3, 1, 20),     /*ID F*/    
-    (11, 'BLOQUE 11',                           0, 1, 20),     /*ID F*/    
-    (15, 'BIBLIOTECA FCYT',                     2, 1, 20),     /*ID F*/    
-    (22, 'DEPARTAMENTO INDUSTRIAL',             0, 1, 20),     /*ID F*/
-    (17, 'PLANTA DE PROCESOS INDUSTRIALES',     2, 1, 20),     /*ID F*/       
-    (19, 'SECTOR LABORATORIOS MECANICA',        3, 1, 20),     /*ID F*/    
-    (20, 'EDIFICIO CAD - CAM',                  0, 1, 20),     /*ID F*/    
-    (1,  'BLOQUE CENTRAL EDIFICIO DECANATURA',  2, 1, 20),     /*ID F*/    
-    (16, 'EDIFICIO ACADEMICO 2',                0, 1, 20),     /*ID F*/
-    (65, 'BLOQUE TRENCITO',                     2, 1, 20),     /*ID F*/       
-    (63, 'AULAS INF - LAB',                     3, 1, 20),     /*ID F*/    
-    (64, 'EDIFICIO MEMI',                       2, 1, 20),     /*ID F*/    
-    (10, 'EDIFICIO ELEKTRO',                    0, 1, 20),     /*ID F*/
-    (26, 'EDIFICIO DE LABORATORIOS BASICOS',    2, 1, 20)      /*ID F*/       
+    (29, 'BLOQUE 29',                           0, 1, 20, 1),     /*ID F*/
+    (9,  'DEPARTAMENTO DE BIOLOGIA',            2, 1, 20, 1),     /*ID F*/       
+    (27, 'BLOQUE 27',                           3, 1, 20, 1),     /*ID F*/    
+    (7,  'DEPARTAMENTO DE QUIMICA',             0, 1, 20, 1),     /*ID F*/    
+    (28, 'BLOQUE 28',                           2, 1, 20, 1),     /*ID F*/    
+    (4,  'DEPARTAMENTO DE FISICA',              0, 1, 20, 1),     /*ID F*/
+    (12, 'BLOQUE 12',                           2, 1, 20, 1),     /*ID F*/       
+    (13, 'BLOQUE 13',                           3, 1, 20, 1),     /*ID F*/    
+    (11, 'BLOQUE 11',                           0, 1, 20, 1),     /*ID F*/    
+    (15, 'BIBLIOTECA FCYT',                     2, 1, 20, 1),     /*ID F*/    
+    (22, 'DEPARTAMENTO INDUSTRIAL',             0, 1, 20, 1),     /*ID F*/
+    (17, 'PLANTA DE PROCESOS INDUSTRIALES',     2, 1, 20, 1),     /*ID F*/       
+    (19, 'SECTOR LABORATORIOS MECANICA',        3, 1, 20, 1),     /*ID F*/    
+    (20, 'EDIFICIO CAD - CAM',                  0, 1, 20, 1),     /*ID F*/    
+    (1,  'BLOQUE CENTRAL EDIFICIO DECANATURA',  2, 1, 20, 1),     /*ID F*/    
+    (16, 'EDIFICIO ACADEMICO 2',                0, 1, 20, 1),     /*ID F*/
+    (65, 'BLOQUE TRENCITO',                     2, 1, 20, 1),     /*ID F*/       
+    (63, 'AULAS INF - LAB',                     3, 1, 20, 1),     /*ID F*/    
+    (64, 'EDIFICIO MEMI',                       2, 1, 20, 1),     /*ID F*/    
+    (10, 'EDIFICIO ELEKTRO',                    0, 1, 20, 1),     /*ID F*/
+    (26, 'EDIFICIO DE LABORATORIOS BASICOS',    2, 1, 20, 1)      /*ID F*/       
 ; 
 /*
     classroom_types
@@ -695,33 +779,6 @@ values
     ('DEFENSA DE TESIS', NOW(), NOW()), /*ID 3*/
     ('PRACTICA',         NOW(), NOW())  /*ID 4*/
 ;
-/*
-    time_slot
-*/
-insert into time_slots(time, created_at, updated_at)
-values
-    ('06:45:00', NOW(), NOW()), /*ID 1*/
-    ('07:30:00', NOW(), NOW()), /*ID 2*/
-    ('08:15:00', NOW(), NOW()), /*ID 3*/
-    ('09:00:00', NOW(), NOW()), /*ID 4*/
-    ('09:45:00', NOW(), NOW()), /*ID 5*/
-    ('10:30:00', NOW(), NOW()), /*ID 6*/
-    ('11:15:00', NOW(), NOW()), /*ID 7*/
-    ('12:00:00', NOW(), NOW()), /*ID 8*/
-    ('12:45:00', NOW(), NOW()), /*ID 9*/
-    ('13:30:00', NOW(), NOW()), /*ID 10*/
-    ('14:15:00', NOW(), NOW()), /*ID 11*/
-    ('15:00:00', NOW(), NOW()), /*ID 12*/
-    ('15:45:00', NOW(), NOW()), /*ID 13*/
-    ('16:30:00', NOW(), NOW()), /*ID 14*/
-    ('17:15:00', NOW(), NOW()), /*ID 15*/
-    ('18:00:00', NOW(), NOW()), /*ID 16*/
-    ('18:45:00', NOW(), NOW()), /*ID 17*/
-    ('19:30:00', NOW(), NOW()), /*ID 18*/
-    ('20:15:00', NOW(), NOW()), /*ID 19*/
-    ('21:00:00', NOW(), NOW()), /*ID 20*/
-    ('21:45:00', NOW(), NOW())  /*ID 21*/
-; 
 /* 
     reservation
 */

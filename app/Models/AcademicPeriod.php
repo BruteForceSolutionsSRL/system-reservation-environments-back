@@ -19,4 +19,9 @@ class AcademicPeriod extends Model
     {
         return $this->hasMany(Reservation::class);
     }
+
+    public function faculty() 
+    {
+        return $this->belongsTo(Faculty::class);
+    }
 }

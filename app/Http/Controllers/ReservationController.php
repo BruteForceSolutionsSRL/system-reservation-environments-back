@@ -318,14 +318,18 @@ class ReservationController extends Controller
             $data = $validator->validated();
 
             $requestedHour = Carbon::parse($data['date'].' '.$this->timeSlotService
-                ->getTimeSlot($data['time_slot_id'][0])['time'])->addHours(4); 
+                ->getTimeSlot($data['time_slot_ids'][0])['time'])->addHours(4); 
 
             $now = Carbon::now();
             if ($now >= $requestedHour)
                 return response()->json(
                     ['message' => 'La hora elegida ya paso, no es posible realizar una reserva, intente seleccionar una hora mayor.'], 
                     404
-                ); 
+                );
+            
+            if (array_key_exists('faculty_id', $request->toArray())) {
+                $data['faculty_id'] = $request['faculty_id']; 
+            } 
 
             $result = $this->reservationService->store($data);
             $pos = strpos($result, 'No existen');
@@ -368,7 +372,7 @@ class ReservationController extends Controller
             'teacher_subject_ids.*' => 'exists:teacher_subjects,id',
             'classroom_ids.*' => 'required|exists:classrooms,id',
             'time_slot_ids.*' => 'required|exists:time_slots,id',
-            'time_slot_id' => [
+            'time_slot_ids' => [
                 'required',
                 'array',
                 function ($attribute, $value, $fail) {
@@ -380,6 +384,7 @@ class ReservationController extends Controller
                 }
             ],
             'block_id' => 'required|int|exists:blocks,id',
+            'faculty_id' => 'int|exists:faculty,id',
         ], [
             'quantity.required' => 'El número de estudiantes es obligatorio.',
             'quantity.integer' => 'El número de estudiantes debe ser un valor entero.',
@@ -405,8 +410,11 @@ class ReservationController extends Controller
             'time_slot_ids.array' => 'Los periodos de tiempo deben ser un arreglo.',
             
             'block_id.required' => 'Debe seleccionar un bloque.',
-            'block_id.int' => 'El id del bloque debe ser un entero',
-            'block_id.exists' => 'El id del bloque seleccionado, no existe'
+            'block_id.int' => 'El id del bloque debe ser un entero.',
+            'block_id.exists' => 'El id del bloque seleccionado, no existe.',
+
+            'faculty_id.int' => 'El id de la facultad debe ser un entero.',
+            'faculty_id.exists' => 'La facultad seleccionada no existe, por favor intente de nuevo mas tarde.',
         ]);
     }
 
@@ -674,6 +682,7 @@ class ReservationController extends Controller
             ],
             'block_id' => 'array',
             'block_id.*' => 'nullable|int|exists:blocks,id',
+            'faculty_id' => 'required|int|exists:faculty,id',
         ], [
             'quantity.required' => 'El número de estudiantes es obligatorio.',
             'quantity.integer' => 'El número de estudiantes debe ser un valor entero.',
@@ -697,6 +706,11 @@ class ReservationController extends Controller
             'time_slot_ids.*.exists' => 'Uno de los periodos de tiempo seleccionados no es válido.',
             'time_slot_ids.required' => 'Se requieren dos periodos de tiempo.',
             'time_slot_ids.array' => 'Los periodos de tiempo deben ser un arreglo.',
+
+            'faculty_id.required' => 'Debe seleccionar una facultad.',
+            'faculty_id.int' => 'El id de la facultad debe ser un entero.',
+            'faculty_id.exists' => 'La facultad seleccionada no existe, por favor intente mas tarde.',
+
         ]);
     }
 

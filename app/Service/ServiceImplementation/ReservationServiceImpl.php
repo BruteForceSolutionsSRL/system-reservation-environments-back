@@ -12,7 +12,8 @@ use App\Repositories\{
     ReservationStatusRepository as ReservationStatuses,
     ReservationRepository,
     RoleRepository,
-    ConstantRepository
+    ConstantRepository,
+    AcademicPeriodRepository
 };
 use Carbon\Carbon;
 
@@ -21,6 +22,7 @@ class ReservationServiceImpl implements ReservationService
     private $personRepository;
     private $reservationRepository;
     private $roleRepository;
+    private $academicPeriodRepository;
 
     private $mailService;
     private $timeSlotService;
@@ -34,6 +36,7 @@ class ReservationServiceImpl implements ReservationService
         $this->personRepository = new PersonRepository();
         $this->reservationRepository = new ReservationRepository();
         $this->roleRepository = new RoleRepository();
+        $this->academicPeriodRepository = new AcademicPeriodRepository();
 
         $this->timeSlotService = new TimeSlotServiceImpl();
         $this->mailService = new MailerServiceImpl();
@@ -335,17 +338,26 @@ class ReservationServiceImpl implements ReservationService
      * @param array $groupIds
      * @return bool 
      */
-    public function couldReserve(array $groupIds): bool 
+    public function couldReserve(array $groupIds, int $academicPeriodId): bool 
     {
-        $stats = $this->reservationRepository->statsOfReserves(
+        $piv = 0; 
+        $dp = []; 
+        foreach ($groupIds as $groupId) $dp[$groupId] = 0; 
+        $reservations = $this->reservationRepository->getReservations(
             [
-                'group_ids' => $groupIds,
-                'reservation_statuses' => [
-                    ReservationStatuses::accepted()
-                ]
+                'reservation_statuses' => [ReservationStatuses::accepted()],
+                'teacher_subjects' => $groupIds,
+                'academic_period' => $academicPeriodId,
+                'repeat' => 0,
             ]
         );
-        return max($stats) < 5;
+        foreach ($reservations as $reservation)
+        foreach ($reservation['persons'] as $person)
+            foreach ($person['groups'] as $group) {
+                $dp[$group['group_id']]++; 
+                $piv = max($piv, $dp[$group['group_id']]);
+            }
+        return $piv < ConstantRepository::getMaximalReservationPerGroup();
     }
 
     /**
@@ -379,10 +391,14 @@ class ReservationServiceImpl implements ReservationService
             $data['priority'] = 0;
         }
 
-        // teacher_subject_ids => cada uno pertenece a una materia especifica: 
+        $academicPeriod = 1; 
         $data['persons'] = $this->personRepository->getTeachersBySubjectGroups(
             $data['teacher_subject_ids']
         );
+
+
+        $data['academic_period'] = $this->academicPeriodRepository->getActualAcademicPeriod($data['faculty_id']);
+        dd($data);
 
         $reservation = $this->reservationRepository->save($data);
 
@@ -457,7 +473,10 @@ class ReservationServiceImpl implements ReservationService
             'quantity' => '',
             'classroom' => [
                 'message' => '',
-                'list' => array()
+                'list' => []
+            ],
+            'group' => [
+                'message' => ''
             ],
             'ok' => 0
         ];
@@ -465,7 +484,7 @@ class ReservationServiceImpl implements ReservationService
 
         $usagePercent = $reservation['quantity'] / $totalCapacity * 100;
         if ($usagePercent < 50.0) {
-            $message = 'la capacidad de los ambientes solicitados es muy elevada para la cantidad de estudiantes.';
+            $message = 'La capacidad de los ambientes solicitados es muy elevada para la cantidad de estudiantes.';
             $result['quantity'] .= $message;
             $result['ok'] = 1;
         }
@@ -477,7 +496,7 @@ class ReservationServiceImpl implements ReservationService
 
         if ($this->getTotalFloors($reservation['classrooms']) > 2) {
             $result['ok'] = 1;
-            $message = 'los ambientes solicitados, se encuentran en mas de 2 pisos diferentes.';
+            $message = 'Los ambientes solicitados, se encuentran en mas de 2 pisos diferentes.';
             $result['classroom']['message'] .= $message;
         }
 
@@ -527,6 +546,16 @@ class ReservationServiceImpl implements ReservationService
             $result['classroom']['message'] .= 'Existen ambientes que se quieren ocupar por diversos docentes en los mismos periodos y fecha especificada.';
             $result['ok'] = 1;
         }
+
+        $teacherSubjectIds = []; 
+        foreach ($reservation['persons'] as $person) 
+        foreach ($person['groups'] as $group) 
+            array_push($teacherSubjectIds, $group['group_id']);
+        if (!$this->couldReserve($teacherSubjectIds, $reservation['academic_period_id'])) {
+            $result['ok'] = 1; 
+            $result['group']['message'] = 'Existen grupos que ya cumplieron su maxima cantidad de reservas en el periodo academico.';
+        }
+
         return $result;
     }
 

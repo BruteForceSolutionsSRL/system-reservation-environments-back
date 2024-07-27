@@ -219,7 +219,7 @@ class BlockServiceImpl implements BlockService
                             'date_start' => $data['date_start'],
                             'date_end' => $data['date_end']
                         ],
-                        'time_slots' => $data['time_slot_id'],
+                        'time_slots' => $data['time_slot_ids'],
                         'classrooms' => $classrooms,
                         'reservation_statuses' => [
                             ReservationStatusRepository::accepted(), 

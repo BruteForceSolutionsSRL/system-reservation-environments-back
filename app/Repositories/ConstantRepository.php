@@ -17,4 +17,10 @@ class ConstantRepository
         return Constant::where('identifier', 'AUTOMATIC_RESERVATION')
             ->get()->first()->value;
     }
+
+    public static function getMaximalReservationPerGroup()
+    {
+        return Constant::where('identifier', 'MAXIMAL_RESERVATIONS_PER_GROUP')
+            ->get()->first()->value;
+    }
 }

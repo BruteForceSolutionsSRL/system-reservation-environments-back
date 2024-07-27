@@ -370,17 +370,23 @@ class ReservationRepository extends Repository
     {
         $data['time_slot_ids'][1]--;
         $reservation = new Reservation();
-        $reservation->number_of_students = $data['quantity'];
+        $reservation->quantity = $data['quantity'];
         $reservation->repeat = $data['repeat'];
         $reservation->date = $data['date'];
         $reservation->reservation_reason_id = $data['reservation_reason_id'];
         $reservation->reservation_status_id = ReservationStatuses::pending();
         $reservation->priority = $data['priority'];
+        $reservation->verified = 0;
         $reservation->observation = (array_key_exists('observation', $data))? $data['observation']: 'Ninguna';
 
         if (array_key_exists('parent_id', $data)) {
             $reservation->parent_id = $data['parent_id'];
         }
+
+        if (!array_key_exists('configuration_flag', $data)) {
+            $data['configuration_flag'] = 0;
+        }
+        $reservation->configuration_flag = $data['configuration_flag'];
         
         $reservation->save();
         
@@ -918,15 +924,33 @@ class ReservationRepository extends Repository
             'classrooms.block:id,name',
             'classrooms.classroomType:id,description'
         ]);
+
+        if (!empty($data['academic_period'])) {
+            $query->where('academic_period_id', $data['academic_period']);
+        }
     
         if (!empty($data['reservation_statuses'])) {
             $query->whereIn('reservation_status_id', $data['reservation_statuses']);
         }
-    
+
+        if (array_key_exists('repeat', $data)) {
+            $query->where('repeat', $data['repeat']);
+        }
+
+        if (!empty($data['no_repeat'])) {
+            $query->where('repeat', 0);
+        }
+
         if (!empty($data['time_slots'])) {
             $data['time_slots'][1]--;
             $query->whereHas('timeSlots', function($q) use ($data) {
                 $q->whereBetween('time_slot_id', $data['time_slots']);
+            });
+        }
+
+        if (!empty($data['teacher_subjects'])) {
+            $query->whereHas('personReservations.teacherSubjects', function ($q) use ($data) {
+                $q->whereIn('teacher_subjects.id', $data['teacher_subjects']);
             });
         }
     
@@ -934,10 +958,6 @@ class ReservationRepository extends Repository
             $query->whereHas('classrooms', function($q) use ($data) {
                 $q->whereIn('classroom_id', $data['classrooms']);
             });
-        }
-
-        if (!empty($data['no_repeat'])) {
-            $query->where('repeat', 0);
         }
 
         if (!empty($data['dates'])) {
@@ -963,6 +983,7 @@ class ReservationRepository extends Repository
         if (!empty($data['priorities'])) {
             $query->whereIn('priority', $data['priorities']);
         }
+
         $reservations = $query->orderBy('date')->get()->map(
             function ($reservation) {
                 return $this->formatOutput($reservation);
