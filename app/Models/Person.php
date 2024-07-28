@@ -54,9 +54,14 @@ class Person extends Authenticatable implements JWTSubject
         return [];
     }
 
-    public function notifications()
+    public function personNotifications()
     {
         return $this->hasMany(NotificationPerson::class);
+    }
+
+    public function notifications()
+    {
+        return $this->belongsToMany(Notification::class, 'person_notification');
     }
 
     public function roles()

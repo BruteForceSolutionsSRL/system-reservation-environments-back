@@ -100,6 +100,7 @@ Route::controller(ReservationController::class)->group(function() {
         Route::middleware('permissions:request_reserve')->post('/reservations', 'store');
         Route::middleware('permissions:special_reservation')->post('/reservations/special', 'storeSpecialRequest');
     }); 
+    Route::get('/test', 'test');
 });
 
 Route::controller(ClassroomStatusController::class)->group(function() {

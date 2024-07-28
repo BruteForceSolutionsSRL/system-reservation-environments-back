@@ -41,7 +41,7 @@ class ClassroomLogsRepository
     {
         return [
             'classroom_id' => $classroomLogs->classroom_id,
-            'classroom_name' => $classroomLogs->name,
+            'name' => $classroomLogs->name,
             'capacity' => $classroomLogs->capacity,
             'floor' => $classroomLogs->floor,
             'block_name' => $classroomLogs->block_name,

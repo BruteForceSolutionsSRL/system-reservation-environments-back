@@ -39,6 +39,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('notification_persons');
+        Schema::dropIfExists('person_notification');
     }
 };

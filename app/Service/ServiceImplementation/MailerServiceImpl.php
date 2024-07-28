@@ -450,15 +450,13 @@ class MailerServiceImpl implements MailerService
 
 	private function getPersonsByReservation(array &$emailData, array $reservation): void
 	{
-		for ($i =0 ; $i < count($reservation['groups']); $i++)
-			array_push($emailData['to'], $reservation['groups'][$i]);
+		foreach ($reservation['persons'] as $person)
+			array_push($emailData['to'], $person);
 	}
 
 	private function getPersonsBySpecialReservation(array &$emailData, array $reservation): void
 	{
-		foreach ($reservation['groups'][0] as $administrator) {
-			array_push($emailData['to'], $administrator);
-		}
+		$this->getPersonsByReservation($emailData, $reservation);
 	}
 
 	/**

@@ -275,11 +275,24 @@ class ReservationController extends Controller
         try {
             $personId = $request['session_id'];
             $person = $this->personService->getUser($personId);
-
-            $message = $this->reservationService->cancel(
-                $reservationId,
-                'Razon de la cancelacion es: El usuario: '.$person['fullname'].' cancelo la reserva'
-            ); 
+            $reservation = $this->reservationService->getReservation($reservationId);
+            $ok = 0; 
+            foreach ($reservation['persons'] as $person) 
+            if ($person['id'] === $personId) {
+                if ($person['created_by_me'] == 1) $ok = 1;
+                break;
+            }
+            $message = 
+                $ok==1? 
+                $this->reservationService->cancel(
+                    $reservationId,
+                    'Razon de la cancelacion es: El usuario: '.$person['fullname'].' cancelo la reserva'
+                ): 
+                $this->reservationService->detachPersonFromRequest(
+                    $personId, 
+                    $reservationId
+                )
+            ;     
             
             $pos = strpos($message, 'No existe');
             if ($pos !== false) 
@@ -288,7 +301,6 @@ class ReservationController extends Controller
             $pos = strpos($message, 'expirada');
             if ($pos !== false) 
                 return response()->json(['message' => $message], 400);
-            
 
             return response()->json(['message' => $message], 200);
         } catch (Exception $e) {
@@ -329,7 +341,9 @@ class ReservationController extends Controller
             
             if (array_key_exists('faculty_id', $request->toArray())) {
                 $data['faculty_id'] = $request['faculty_id']; 
-            } 
+            } else $data['faculty_id'] = 1;
+
+            $data['person_id']  = $request['session_id'];
 
             $result = $this->reservationService->store($data);
             $pos = strpos($result, 'No existen');

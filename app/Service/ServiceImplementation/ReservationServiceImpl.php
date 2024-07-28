@@ -13,7 +13,8 @@ use App\Repositories\{
     ReservationRepository,
     RoleRepository,
     ConstantRepository,
-    AcademicPeriodRepository
+    AcademicPeriodRepository,
+    TeacherSubjectRepository
 };
 use Carbon\Carbon;
 
@@ -23,6 +24,7 @@ class ReservationServiceImpl implements ReservationService
     private $reservationRepository;
     private $roleRepository;
     private $academicPeriodRepository;
+    private $teacherSubjectRepository;
 
     private $mailService;
     private $timeSlotService;
@@ -37,6 +39,7 @@ class ReservationServiceImpl implements ReservationService
         $this->reservationRepository = new ReservationRepository();
         $this->roleRepository = new RoleRepository();
         $this->academicPeriodRepository = new AcademicPeriodRepository();
+        $this->teacherSubjectRepository = new TeacherSubjectRepository();
 
         $this->timeSlotService = new TimeSlotServiceImpl();
         $this->mailService = new MailerServiceImpl();
@@ -259,15 +262,20 @@ class ReservationServiceImpl implements ReservationService
      */
     public function accept(int $reservationId, bool $ignoreFlag): string
     {
+        echo 'fuera';
         $reservation = $this->reservationRepository->getReservation($reservationId);
-        if (empty($reservation))
+        if (empty($reservation)) {
             return 'La solicitud de reserva no existe, por favor intente ingresar a otra reserva.';
+        }
+        echo 'llego';
 
-        if ($reservation['reservation_status'] != 'PENDIENTE')
+        if ($reservation['reservation_status'] != 'PENDIENTE') {
             return 'Esta solicitud ya fue atendida en fecha: '.$reservation['updated_at'];
+        }
 
-        if ($this->isExpired($reservation)) 
+        if ($this->isExpired($reservation)) {
             return 'Esta solicitud ya es expirada, no puede atenderse.';
+        }
 
         if (!$this->checkAvailibility($reservation)) {
             $this->reject(
@@ -277,16 +285,18 @@ class ReservationServiceImpl implements ReservationService
             );
             return 'La solicitud se rechazo, existen ambientes ocupados que solicito en su reserva, por favor elija otras aulas u algun otro horario.';
         }
+        echo 'tarde';
 
         $alertas = $this->alertReservation($reservation);
 
         if (!$ignoreFlag && ($alertas['ok'] != 0)) 
             return 'Tu solicitud debe ser revisada por un encargado responsable, esto fue producido por que existen advertencias en tu reserva: '.$alertas['quantity'].' '.$alertas['classroom']['message'].': '.implode(',',$alertas['classroom']['list']);
-        
+        echo 'abs';
         $reservation = $this->reservationRepository->updateReservationStatus(
             $reservation['reservation_id'],
             ReservationStatuses::accepted()
         );
+        echo 'zzz';
 
         $reservationSet = $this->reservationRepository->getReservations(
             [
@@ -309,6 +319,7 @@ class ReservationServiceImpl implements ReservationService
                 )
             ]
         );
+        echo 'find';
 
         foreach ($reservationSet as $reservationIterable)
             $this->reject(
@@ -323,6 +334,7 @@ class ReservationServiceImpl implements ReservationService
                 PersonRepository::system()
             )
         );
+        echo 'pipipi';
 
         return 'La reserva fue aceptada correctamente, se le fue asignadas las siguientes aulas: '.implode(',', array_map(
                 function ($classroom) {
@@ -381,8 +393,9 @@ class ReservationServiceImpl implements ReservationService
             );
         }
 
-        if (!$this->classroomService->sameBlock($data['classroom_ids'])) 
-            return 'Los ambientes no pertenecen al bloque, vuelva a seleccionar los ambientes disponibles del bloque seleccionado.';
+        if (!$this->classroomService->sameBlock($data['classroom_ids'])) {
+            return 'Los ambientes no pertenecen al bloque, vuelva a seleccionar los ambientes disponibles del bloque seleccionado.';            
+        } 
 
         if (!array_key_exists('repeat', $data)) {
             $data['repeat'] = 0;
@@ -391,14 +404,19 @@ class ReservationServiceImpl implements ReservationService
             $data['priority'] = 0;
         }
 
-        $academicPeriod = 1; 
+        if (!$this->teacherSubjectRepository->sameSubject($data['teacher_subject_ids'])) {
+            return 'No se puede realizar la reserva, los grupos seleccionados no son de la misma materia.'; 
+        } 
+
         $data['persons'] = $this->personRepository->getTeachersBySubjectGroups(
             $data['teacher_subject_ids']
         );
+        if (!$this->isResposible($data['persons'], $data['person_id'])) {
+            return 'No eres responsable de ninguno de los grupos seleccionados, debe seleccionar al menos un grupo a su nombre.';
+        }
 
-
-        $data['academic_period'] = $this->academicPeriodRepository->getActualAcademicPeriod($data['faculty_id']);
-        dd($data);
+        $data['academic_period'] = $this->academicPeriodRepository
+            ->getActualAcademicPeriod($data['faculty_id']);
 
         $reservation = $this->reservationRepository->save($data);
 
@@ -414,6 +432,23 @@ class ReservationServiceImpl implements ReservationService
         }
 
         return $this->accept($reservation['reservation_id'], false);
+    }
+
+    /**
+     * Retrieve a boolean if a person is from a set of people
+     * @param int $personId
+     * @param array $data
+     * return bool
+     */
+    public function isResposible(array &$persons, int $personId): bool 
+    {
+        $ok =0 ;
+        foreach ($persons as $person) 
+        if ($person['person_id'] == $personId) {
+            $ok = 1; 
+            break;
+        }
+        return $ok === 1; 
     }
 
     /**
@@ -707,7 +742,8 @@ class ReservationServiceImpl implements ReservationService
     {
         $now = Carbon::now();
         $requestedHour = Carbon::parse($reservation['date'].' '.$reservation['time_slot'][0])->addHours(4);
-        return ($now > $requestedHour);
+        echo 'isExpired';
+        return $now > $requestedHour;
     }
 
     /**
@@ -871,6 +907,13 @@ class ReservationServiceImpl implements ReservationService
     public function getActiveSpecialReservations(): array 
     {
         return $this->reservationRepository->getActiveSpecialReservations();
+    }
+
+    public function detachPersonFromRequest(int $personId, int $reservationId): string 
+    {
+        $reservation = $this->reservationRepository
+            ->detachPersonFromReservation($personId, $reservationId);
+        return 'Usted fue eliminado de la solicitud/reserva '.$reservation['reservation_id'].'.';
     }
 
     public function test()

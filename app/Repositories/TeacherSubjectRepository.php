@@ -63,6 +63,22 @@ class TeacherSubjectRepository
     }
 
     /**
+     * Check if an array of teacher subjects are from the same university subject
+     */
+    public function sameSubject(array $teacherSubjectIds): bool 
+    {
+        if (empty($teacherSubjectIds)) {
+            return true;
+        }
+        $subjectId = $this->model::find($teacherSubjectIds[0])->university_subject_id;
+        foreach ($teacherSubjectIds as $teacherSubjectId) {
+            $auxSubjectId = $this->model::find($teacherSubjectId)->university_subject_id; 
+            if ($auxSubjectId !== $subjectId) return false;
+        }
+        return true;
+    }
+
+    /**
      * Transform TeacherSubject to array
      * @param TeacherSubject $universitySubject
      * @return array

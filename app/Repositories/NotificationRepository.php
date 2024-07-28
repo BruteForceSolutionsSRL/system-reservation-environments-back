@@ -60,7 +60,7 @@ class NotificationRepository
 		return $this->model::whereHas('receptors', 
 			function ($query) use ($personId) 
 			{
-				$query->where('notification_person.person_id', $personId);
+				$query->where('person_notification.person_id', $personId);
 			}
 		)->get()->map(
 			function ($notification) 
@@ -141,7 +141,7 @@ class NotificationRepository
 			'to' => $receptors->map(
 				function ($user) use ($notification)
 				{
-					$person = DB::table('notification_person')
+					$person = DB::table('person_notification')
 						->where('notification_id', $notification->id)
 						->where('person_id', $user->id)
 						->get()
@@ -181,7 +181,6 @@ class NotificationRepository
 				$result['reservation_id'] = intval($reservationID);
 			}
 		}
-
 		return $result;
 	}
 }

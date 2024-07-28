@@ -12,11 +12,11 @@ class NotificationPerson extends Model
     
     public function receptor()
     {
-        return $this->belongsToMany(Person::class); 
+        return $this->belongsTo(Person::class); 
     }
 
     public function notification()
     {
-        return $this->belongsToMany(Notification::class);
+        return $this->belongsTo(Notification::class);
     }
 }

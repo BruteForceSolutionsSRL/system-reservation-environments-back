@@ -24,9 +24,9 @@ class AcademicPeriodRepository
         $now = $now->format('Y-m-d');
         return $this->formatOutput(
             $this->model::where('faculty_id', $facultyId)
-                ->where('initial_date', '>=', $now)
-                ->where('end_date', '<=', $now)
-                ->get()
+                ->where('initial_date', '<=', $now)
+                ->where('end_date', '>=', $now)
+                ->get()->first()
         );
     }
 
