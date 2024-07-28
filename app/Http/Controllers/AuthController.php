@@ -110,15 +110,14 @@ class AuthController extends Controller
     }
 
     /**
-     * Handle a login request to the application
+     * Handle a incomplete login request to the application
      * @param Request $request
      * @return Response
      */
-    public function login(Request $request): Response
+    public function incompleteLogin(Request $request): Response
     {
 
-        $validator = $this->validateLoginData($request);
-
+        $validator = $this->validateIncompleteLoginData($request);
         if ($validator->fails()) {
             $message = '';
             foreach ($validator->errors()->all() as $value)
@@ -139,12 +138,27 @@ class AuthController extends Controller
         ];
 
         try {
-            if (!$token = JWTAuth::claims(['type' => 'access'])->attempt($credentials)) {
+
+            $claims = [
+                'type' => 'access',
+                'faculty_id' => -1
+            ];
+            if (!$accessToken = JWTAuth::claims($claims)->attempt($credentials)) {
                 return response()->json(
                     ['message' => 'Login fallido'],
                     401
                 );
             }
+            
+            $person = Auth::user();
+
+            return response()->json(
+                [
+                    'person' => $this->personService->personToArray($person),
+                    'access_token' => $accessToken,
+                ],
+                200
+            );
         } catch (JWTException $e) {
             return response()->json(
                 [
@@ -154,44 +168,14 @@ class AuthController extends Controller
                 500
             );
         }
-
-        $person = Auth::user();
-        $roles = $this->personService->getRoles($person->id);
-
-        JWTAuth::factory()->setTTL(config('jwt.refresh_ttl'));
-        $refreshToken = JWTAuth::claims(['type' => 'refresh'])->fromUser($person);
-
-        return response()->json(
-            [
-                'token' => $token,
-                'refresh_token' => $refreshToken,
-                'user' => [
-                    'person_id' => $person->id,
-                    'name' => $person->name,
-                    'last_name' => $person->last_name,
-                    'email' => $person->email,
-                    'roles' => $roles
-                ]
-            ],
-            200
-        );
     }
 
     /**
-     * Function to retrive access and refresh tokens with data from a person
-     */
-    private function getTokens(array $data): array
-    {
-        
-        return [];
-    }
-
-    /**
-     * Validate all data of person
+     * Validate all data of incomplete login
      * @param Request $request
      * @return mixed
      */
-    private function validateLoginData(Request $request)
+    private function validateIncompleteLoginData(Request $request)
     {
         return Validator::make($request->all(), [
             'login' => 'required|string',
@@ -203,6 +187,87 @@ class AuthController extends Controller
             'password.string' => 'La contraseña tiene que tener un formato valido',
             'password.min' => 'La cantidad de caracteres minima para una contraseña es 8',
             'password.max' => 'La cantidad de caracteres maxima para una contraseña es 50'
+        ]);
+    }
+
+    /** 
+     * Handle a complete login request to the application
+     * @param Request $request
+     * @return Response
+    */
+    public function completeLogin(Request $request): Response
+    {
+        $validator = $this->validateCompleteLoginData($request);
+        if ($validator->fails()) {
+            $message = '';
+            foreach ($validator->errors()->all() as $value)
+                $message = $message . $value . '.';
+            return response()->json(
+                ['message' => $message],
+                400
+            );
+        }
+
+        $data = $validator->validated();
+        $token = JWTAuth::parseToken();
+        $person = $token->authenticate();
+        
+        try {
+
+            $claims = [
+                'type' => 'access',
+                'faculty_id' => $data['faculty_id']
+            ];
+            if (!$accessToken = JWTAuth::claims($claims)->fromUser($person)) {
+                return response()->json(
+                    ['message' => 'Login fallido'],
+                    401
+                );
+            }
+
+            JWTAuth::factory()->setTTL(config('jwt.refresh_ttl'));
+            $claims = ['type' => 'refresh'];
+            if (!$refreshToken = JWTAuth::claims($claims)->fromUser($person)) {
+                return response()->json(
+                    ['message' => 'Login fallido'],
+                    401
+                );
+            }
+
+            JWTAuth::invalidate($token);
+        
+            return response()->json(
+                [
+                    'person' => $this->personService->personToArray($person),
+                    'access_token' => $accessToken,
+                    'refresh_token' => $refreshToken
+                ],
+                200
+            );
+        } catch (JWTException $e) {
+            return response()->json(
+                [
+                    'message' => 'Error en el servidor',
+                    'error' => $e->getMessage()
+                ],
+                500
+            );
+        }
+
+    }
+
+    /**
+     * Validate all data of complete login
+     * @param Request $request
+     * @return mixed
+     */
+    private function validateCompleteLoginData(Request $request)
+    {
+        return Validator::make($request->all(), [
+            'faculty_id' => 'required|Integer'/* |exists:,id' */,
+        ], [
+            'faculty_id.required' => 'Seleccione una facultad',
+            /* 'faculty_id.exists' => 'La faculta selecciona no existe' */
         ]);
     }
 

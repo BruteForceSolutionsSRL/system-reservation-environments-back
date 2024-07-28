@@ -54,11 +54,12 @@ Route::controller(AuthController::class)->group(function() {
     Route::get('/auth/token/refresh','tokenRefresh');
 
     Route::group(['middleware' => ['sanitize:api']], function () {
-        Route::post('/auth/login', 'login');
+        Route::post('/auth/incomplete/login', 'incompleteLogin');
         Route::post('/auth/register', 'register');
         Route::post('/auth/recover/password', 'resetPassword');
         
         Route::group(['middleware' => ['jwt.verify']], function () {
+            Route::post('/auth/complete/login', 'completeLogin');
             Route::post('/auth/logout', 'logout');
             Route::post('/auth/get-user', 'getUser');
             Route::put('/auth/change/password','changePassword');
