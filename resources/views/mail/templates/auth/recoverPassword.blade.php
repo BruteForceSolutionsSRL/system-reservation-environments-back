@@ -103,7 +103,8 @@
         <h1>{{ $details['title'] }}</h1>
     </div>
     <div class="content">
-        <p>{{$details['body']}}</p>
+        <p>{{ $details['body'] }}</p>
+        <p><a href="{{ $details['url'] }}">Recuperar Contraseña</a></p>
     </div>
     <hr>
     <div class="footer">

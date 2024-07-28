@@ -52,16 +52,16 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::controller(AuthController::class)->group(function() {
     Route::get('/auth/token/status','tokenStatus');
     Route::get('/auth/token/refresh','tokenRefresh');
-    Route::post('/auth/recover/password', 'recoverPassword');
 
     Route::group(['middleware' => ['sanitize:api']], function () {
         Route::post('/auth/login', 'login');
         Route::post('/auth/register', 'register');
-
+        Route::post('/auth/recover/password', 'resetPassword');
+        
         Route::group(['middleware' => ['jwt.verify']], function () {
             Route::post('/auth/logout', 'logout');
             Route::post('/auth/get-user', 'getUser');
-            //Route::post('/auth/recover/password');
+            Route::put('/auth/change/password','changePassword');
         });
     });
 });

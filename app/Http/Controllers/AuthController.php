@@ -56,27 +56,14 @@ class AuthController extends Controller
 
         $data = $validator->validated();
 
-        $person = $this->personService->store($data);
-
-        $credentials = [
-            'id' => $person['id'],
-            'email' => $person['email'],
-            'password' => $data['password']
-        ];
-
         try {
-            if (!$token = JWTAuth::attempt($credentials)) {
-                return response()->json(
-                    ['message' => 'Error token no generado'], 
-                    401
-                );
-            }
-        } catch (JWTException $e) {
+            $person = $this->authService->store($data);
+        } catch (Exception $e) {
             return response()->json(
                 [
                     'message' => 'Error en el servidor',
                     'error' => $e->getMessage()
-                ], 
+                ],
                 500
             );
         }
@@ -84,15 +71,9 @@ class AuthController extends Controller
         return response()->json(
             [
                 'message' => 'Usuario creado exitosamente!',
-                'token' => $token,
-                'person' => [
-                    'person_id' => $person['id'],
-                    'name' => $person['name'],
-                    'last_name' => $person['last_name'],
-                    'email' => $person['email']
-                ]
-            ]
-            ,201
+                'person' => $person
+            ],
+            201
         );
     }
 
@@ -197,6 +178,15 @@ class AuthController extends Controller
     }
 
     /**
+     * Function to retrive access and refresh tokens with data from a person
+     */
+    private function getTokens(array $data): array
+    {
+        
+        return [];
+    }
+
+    /**
      * Validate all data of person
      * @param Request $request
      * @return mixed
@@ -221,10 +211,10 @@ class AuthController extends Controller
      * @param string
      * @return Response
      */
-    public function recoverPassword(Request $request): Response
+    public function resetPassword(Request $request): Response
     {
         try {
-            $validator = $this->validateRecoverData($request);
+            $validator = $this->validateResetPasswordData($request);
     
             if ($validator->fails()) 
                 return response()->json(
@@ -233,8 +223,9 @@ class AuthController extends Controller
                 );
 
             $data = $validator->validated();
+
             return response()->json(
-                $this->authService->recoverPassword($data),
+                $this->authService->resetPassword($data),
                 200
             );
 
@@ -254,7 +245,7 @@ class AuthController extends Controller
      * @param Request $request
      * @return mixed
      */
-    private function validateRecoverData(Request $request)
+    private function validateResetPasswordData(Request $request)
     {
         return Validator::make($request->all(),[
             'email' => '
@@ -285,8 +276,47 @@ class AuthController extends Controller
                 );
 
             $data = $validator->validated();
+
+            $data['session_id'] = $request['session_id'];
+
+            $person = $this->authService->changePassword($data);
+            
+            $credentials = [
+                'email' => $person['person_email'],
+                'password' => $data['new_password']
+            ]; 
+
+            try {
+                if (!$accessToken = JWTAuth::claims(['type' => 'access'])->attempt($credentials)) {
+                    return response()->json(
+                        ['message' => 'Autenticacion fallida'],
+                        401
+                    );
+                }
+                JWTAuth::factory()->setTTL(config('jwt.refresh_ttl'));
+                if (!$refreshToken = JWTAuth::claims(['type' => 'refresh'])->fromUser(Auth::user())) {
+                    return response()->json(
+                        ['message' => 'Autenticacion fallida'],
+                        401
+                    );
+                }
+    
+            } catch (JWTException $e) {
+                return response()->json(
+                    [
+                        'message' => 'Error en el servidor',
+                        'error' => $e->getMessage()
+                    ],
+                    500
+                );
+            }
+
             return response()->json(
-                $this->authService->changePassword($data),
+                [
+                    'access_token' => $accessToken,
+                    'refresh_token' => $refreshToken,
+                    'person' => $person
+                ],
                 200
             );
 
@@ -394,53 +424,6 @@ class AuthController extends Controller
                     'message' => 'Error al invalidar el token',
                     'error' => $e->getMessage()
                 ],
-                500
-            );
-        }
-    }
-
-    /**
-     * 
-     * @param Request $request
-     * @return Response
-     */
-    public function getUser(Request $request):Response
-    {
-
-        $data = $request->only('token');
-
-        $validator = Validator::make($data, [
-            'token' => 'required'
-        ]);
-
-        if ($validator->fails()) {
-            $message = implode('.', $validator->errors()->all());
-            return response()->json(
-                ['message' => $message], 
-                400
-            );
-        }
-
-        try {
-            $user = JWTAuth::authenticate($request->token);
-
-            if (!$user) {
-                return response()->json(
-                    ['message' => 'Token es invalido o expiro'], 
-                    401
-                );
-            }
-
-            return response()->json(
-                ['user' => $user], 
-                200
-            );
-        } catch (JWTException $e) {
-            return response()->json(
-                [
-                    'message' => 'Error en el servidor', 
-                    'error' => $e->getMessage()
-                ], 
                 500
             );
         }

@@ -29,7 +29,7 @@ class PersonRepository extends Repository
      * @param array $data
      * @return array
      */
-    public function save(array $data): array 
+    public function store(array $data): array 
     {
         $person = new $this->model;
         $person->name = $data['name'];
@@ -38,7 +38,7 @@ class PersonRepository extends Repository
         $person->email = $data['email'];
         $person->password = bcrypt($data['password']);
         $person->save();
-        return $person->toArray();
+        return $this->formatOutput($person);
     }
 
     /**
@@ -51,6 +51,18 @@ class PersonRepository extends Repository
         $person = $this->model::find($personId); 
         if ($person === null) return [];
         return $this->formatOutput($person); 
+    }
+
+    /**
+     * Retrieve a Person by its email
+     * @param string $email
+     * @return mixed
+     */
+    public function getPersonByEmail(string $email) 
+    {
+        $person = $this->model::firstWhere('email',$email); 
+        if ($person === null) return null;
+        return $person; 
     }
 
     /**
@@ -130,30 +142,15 @@ class PersonRepository extends Repository
      * @param array $data
      * @return array
      */
-
-    public function update(array $data): array
+    public function changePassword(array $data): array
     {   
-        if (empty($data['person_id'])) {
-            return [];
+        $person = $this->model::find($data['session_id']);
+
+        if (!empty($data['new_password'])) {
+            $person->password = bcrypt($data['new_password']);
         }
 
-        $person = $this->model::find($data['person_id']);
-        
-        if (!empty($data['name'])) {
-            $person->name = $data['name'];
-        }
-        if (!empty($data['last_name'])) {
-            $person->last_name = $data['last_name'];
-        }
-        if (!empty($data['user_name'])) {
-            $person->user_name = $data['user_name'];
-        }
-        if (!empty($data['password'])) {
-            $person->password = $data['password'];
-        }
-        if (!empty($data['email'])) {
-            $person->email = $data['email'];
-        }
+        $person->save();
         return $this->formatOutput($person);
     }   
     
@@ -168,8 +165,9 @@ class PersonRepository extends Repository
             'person_id' => $person->id, 
             'person_name' => $person->name, 
             'person_lastname' => $person->last_name, 
+            'person_fullname' => $person->name.' '.$person->last_name,
             'person_email' => $person->email, 
-            'person_fullname' => $person->name.' '.$person->last_name
+            'person_roles' => $this->getRoles($person->id,)
         ]; 
     }
 }

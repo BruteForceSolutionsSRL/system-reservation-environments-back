@@ -359,18 +359,21 @@ class MailerServiceImpl implements MailerService
 
 	/**
 	 * Function to send an email with a link to recover the password to the user
-	 * @param string $email
+	 * @param array $data
 	 * @return array
 	 */
-	public function sendRecoverPassword(string $email): array
+	public function sendResetPassword(array $data): array
 	{
 		$systemId = personRepository::system();
+		//$url = route('password.reset', ['token' => $data['token']]);
+		$url = env('FRONTEND_URL').$data['token'];
 		$emailData = [
 			'title' => 'RECUPERACION DE CONTRASEÑA',
             'body' => 'Ingrese al siguiente link, para registrar una nueva contraseña',
+			'url' => $url,
             'type' => NotificationTypeRepository::warning(),
             'sendBy' => $this->personRepository->getPerson($systemId)['person_name'],
-            'to' => [$email],
+            'to' => [$data['email']],
 			'sended' => 1,
 		];
 		$this->sendMail(
