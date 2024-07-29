@@ -5,7 +5,6 @@ use App\Service\ReservationService;
 
 use App\Models\{
     Reservation,
-    ReservationStatus,
 };
 use App\Repositories\{
     PersonRepository,

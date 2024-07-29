@@ -10,7 +10,8 @@ use Illuminate\Mail\Mailable;
 use App\Jobs\MailSenderJob;
 
 use App\Mail\{
-	ClassroomNotificationMailer,
+    AuthNotificationMailer,
+    ClassroomNotificationMailer,
 	ReservationNotificationMailer,
 	BlockNotificationMailer,
 	SpecialReservationNotificationMailer
@@ -26,7 +27,7 @@ class MailerServiceImpl implements MailerService
 {
 	private $personRepository;
 	public function __construct() {
-		$personRepository = new PersonRepository();
+		$this->personRepository = new PersonRepository();
 	}
 	/**
 	 * Queues a mail to send to all addresses
@@ -357,6 +358,32 @@ class MailerServiceImpl implements MailerService
 	}
 
 	/**
+	 * Function to send an email with a link to recover the password to the user
+	 * @param array $data
+	 * @return array
+	 */
+	public function sendResetPassword(array $data): array
+	{
+		$systemId = personRepository::system();
+		//$url = route('password.reset', ['token' => $data['token']]);
+		$url = env('FRONTEND_URL').$data['token'];
+		$emailData = [
+			'title' => 'RECUPERACION DE CONTRASEÑA',
+            'body' => 'Ingrese al siguiente link, para registrar una nueva contraseña',
+			'url' => $url,
+            'type' => NotificationTypeRepository::warning(),
+            'sendBy' => $this->personRepository->getPerson($systemId)['person_name'],
+            'to' => [$data['email']],
+			'sended' => 1,
+		];
+		$this->sendMail(
+			new AuthNotificationMailer($emailData),
+			$emailData['to']
+		);
+		return $emailData;
+	}
+
+	/**
 	 * Create a Mailable class with data
 	 * @param array $data
 	 * @return void
@@ -448,12 +475,18 @@ class MailerServiceImpl implements MailerService
 		);
 	}
 
+	/**
+	 * 
+	 */
 	private function getPersonsByReservation(array &$emailData, array $reservation): void
 	{
 		foreach ($reservation['persons'] as $person)
 			array_push($emailData['to'], $person);
 	}
 
+	/**
+	 * 
+	 */
 	private function getPersonsBySpecialReservation(array &$emailData, array $reservation): void
 	{
 		$this->getPersonsByReservation($emailData, $reservation);

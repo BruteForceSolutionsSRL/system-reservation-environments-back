@@ -6,7 +6,6 @@ use Illuminate\Database\Seeder;
 
 use App\Models\{
     Person,
-    User
 };
 
 class DatabaseSeeder extends Seeder

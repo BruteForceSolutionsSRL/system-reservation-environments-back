@@ -29,7 +29,7 @@ class PersonRepository extends Repository
      * @param array $data
      * @return array
      */
-    public function save(array $data): array 
+    public function store(array $data): array 
     {
         $person = new $this->model;
         $person->name = $data['name'];
@@ -38,7 +38,7 @@ class PersonRepository extends Repository
         $person->email = $data['email'];
         $person->password = bcrypt($data['password']);
         $person->save();
-        return $person->toArray();
+        return $this->formatOutput($person);
     }
 
     /**
@@ -51,6 +51,18 @@ class PersonRepository extends Repository
         $person = $this->model::find($personId); 
         if ($person === null) return [];
         return $this->formatOutput($person); 
+    }
+
+    /**
+     * Retrieve a Person by its email
+     * @param string $email
+     * @return mixed
+     */
+    public function getPersonByEmail(string $email) 
+    {
+        $person = $this->model::firstWhere('email',$email); 
+        if ($person === null) return null;
+        return $person; 
     }
 
     /**
@@ -184,6 +196,23 @@ class PersonRepository extends Repository
         return $this->formatOutput($person);
     }
 
+    /**
+     * Update all data of a person by ID
+     * @param array $data
+     * @return array
+     */
+    public function changePassword(array $data): array
+    {   
+        $person = $this->model::find($data['session_id']);
+
+        if (!empty($data['new_password'])) {
+            $person->password = bcrypt($data['new_password']);
+        }
+
+        $person->save();
+        return $this->formatOutput($person);
+    }   
+    
     /**
      * Transform Person to array
      * @param Person $person

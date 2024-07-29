@@ -50,16 +50,19 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
  
 Route::controller(AuthController::class)->group(function() {
-    Route::get('/token/status','tokenStatus');
-    Route::get('/token/refresh','tokenRefresh');
+    Route::get('/auth/token/status','tokenStatus');
+    Route::get('/auth/token/refresh','tokenRefresh');
 
     Route::group(['middleware' => ['sanitize:api']], function () {
-        Route::post('/login', 'login');
-        Route::post('/register', 'register');
-
+        Route::post('/auth/incomplete/login', 'incompleteLogin');
+        Route::post('/auth/register', 'register');
+        Route::post('/auth/recover/password', 'resetPassword');
+        
         Route::group(['middleware' => ['jwt.verify']], function () {
-            Route::post('/logout', 'logout');
-            Route::post('/get-user', 'getUser'); 
+            Route::post('/auth/complete/login', 'completeLogin');
+            Route::post('/auth/logout', 'logout');
+            Route::post('/auth/get-user', 'getUser');
+            Route::put('/auth/change/password','changePassword');
         });
     });
 });
