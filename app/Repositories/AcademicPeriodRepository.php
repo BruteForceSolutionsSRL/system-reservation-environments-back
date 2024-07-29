@@ -18,6 +18,18 @@ class AcademicPeriodRepository
         return [];
     }
 
+    public function getActiveAcademicPeriods(string $date): array 
+    {
+        return $this->model::where('initial_date', '<=', $date)
+            ->where('end_date', '>=', $date)
+            ->get()->map(
+                function ($AcademicPeriod) 
+                {
+                    return $this->formatOutput($academicPeriod);
+                }
+            )->toArray();
+    }
+
     public function getActualAcademicPeriod(int $facultyId): array 
     {
         $now = Carbon::now();

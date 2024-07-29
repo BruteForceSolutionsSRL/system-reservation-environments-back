@@ -16,7 +16,8 @@ use App\Http\Controllers\{
     ReservationStatusController,
     PersonController,
     AuthController,
-    UniversitySubjectController
+    UniversitySubjectController,
+    FacultyController
 };
 
 /*
@@ -193,5 +194,12 @@ Route::controller(PersonController::class)->group(function() {
 Route::controller(UniversitySubjectController::class)->group(function() {
     Route::group(['middleware' => ['jwt.verify']], function () {
         Route::middleware('permissions:report')->get('/university-subjects', 'list');
+    });
+});
+
+Route::controller(FacultyController::class)->group(function() {
+    Route::get('/faculties', 'list');
+    Route::group(['middleware' => ['jwt.verify']], function () {
+        Route::get('/faculties/user', 'list');
     });
 });

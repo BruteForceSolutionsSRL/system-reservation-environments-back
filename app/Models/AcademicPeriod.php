@@ -10,7 +10,7 @@ class AcademicPeriod extends Model
     use HasFactory;
     protected $table = 'academic_periods';
 
-    public function study_plans()
+    public function studyPlans()
     {
         return $this->hasMany(StudyPlan::class);
     }

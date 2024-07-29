@@ -339,9 +339,14 @@ class ReservationController extends Controller
                     404
                 );
             
-            if (array_key_exists('faculty_id', $request->toArray())) {
-                $data['faculty_id'] = $request['faculty_id']; 
-            } else $data['faculty_id'] = 1;
+            if (\JWTAuth::parseToken($request->bearerToken())->getClaim('faculty_id') !== null) {
+                $data['faculty_id'] = \JWTAuth::parseToken($request->bearerToken())->getClaim('faculty_id'); 
+            } else {
+                return response()->json(
+                    ['message' => 'Existe un error con su token de acceso, por favor cierre sesion e ingrese nuevamente.'], 
+                    400
+                );
+            }
 
             $data['person_id']  = $request['session_id'];
 
