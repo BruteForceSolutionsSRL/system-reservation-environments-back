@@ -32,8 +32,8 @@ class UniversitySubjectRepository
     {
         return [
             'university_subject_id' => $universitySubject->id,
-            'university_subject_name' => $universitySubject->name,
-            'university_subject_grade' => $universitySubject->grade,
+            'name' => $universitySubject->name,
+            'grade' => $universitySubject->grade,
         ];
     }
 }

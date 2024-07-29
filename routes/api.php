@@ -16,7 +16,8 @@ use App\Http\Controllers\{
     ReservationStatusController,
     PersonController,
     AuthController,
-    UniversitySubjectController
+    UniversitySubjectController,
+    FacultyController
 };
 
 /*
@@ -50,16 +51,19 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
  
 Route::controller(AuthController::class)->group(function() {
-    Route::get('/token/status','tokenStatus');
-    Route::get('/token/refresh','tokenRefresh');
+    Route::get('/auth/token/status','tokenStatus');
+    Route::get('/auth/token/refresh','tokenRefresh');
 
     Route::group(['middleware' => ['sanitize:api']], function () {
-        Route::post('/login', 'login');
-        Route::post('/register', 'register');
-
+        Route::post('/auth/incomplete/login', 'incompleteLogin');
+        Route::post('/auth/register', 'register');
+        Route::post('/auth/recover/password', 'resetPassword');
+        
         Route::group(['middleware' => ['jwt.verify']], function () {
-            Route::post('/logout', 'logout');
-            Route::post('/get-user', 'getUser'); 
+            Route::post('/auth/complete/login', 'completeLogin');
+            Route::post('/auth/logout', 'logout');
+            Route::post('/auth/get-user', 'getUser');
+            Route::put('/auth/change/password','changePassword');
         });
     });
 });
@@ -100,6 +104,7 @@ Route::controller(ReservationController::class)->group(function() {
         Route::middleware('permissions:request_reserve')->post('/reservations', 'store');
         Route::middleware('permissions:special_reservation')->post('/reservations/special', 'storeSpecialRequest');
     }); 
+    Route::get('/test', 'test');
 });
 
 Route::controller(ClassroomStatusController::class)->group(function() {
@@ -181,10 +186,20 @@ Route::controller(PersonController::class)->group(function() {
     Route::get('/users/teachers', 'listTeachers');
     Route::get('/users', 'list');
     Route::get('/users/{personId}', 'show');
+
+    Route::middleware('sanitize:api')->middleware('jwt.verify')->post('/users/update', 'update'); 
+    Route::middleware('sanitize:api')->middleware('jwt.verify')->post('/users/{personId}/assignRoles', 'updateRoles'); // necesita permisos de administrador
 });
 
 Route::controller(UniversitySubjectController::class)->group(function() {
     Route::group(['middleware' => ['jwt.verify']], function () {
         Route::middleware('permissions:report')->get('/university-subjects', 'list');
+    });
+});
+
+Route::controller(FacultyController::class)->group(function() {
+    Route::get('/faculties', 'list');
+    Route::group(['middleware' => ['jwt.verify']], function () {
+        Route::get('/faculties/user', 'list');
     });
 });
