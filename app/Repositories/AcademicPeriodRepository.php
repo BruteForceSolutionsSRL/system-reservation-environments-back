@@ -42,6 +42,21 @@ class AcademicPeriodRepository
         );
     }
 
+
+    public function getAcademicPeriodById(int $academicPeriodId): array 
+    {
+        return $this->formatOutput(
+            $this->model::find($academicPeriodId)
+        );
+    }
+
+    private function formatOutputSpecial($academicPeriod): array 
+    {
+        return [
+            'falta hacer'
+        ];
+    }
+
     public function formatOutput($academicPeriod) 
     {
         return [

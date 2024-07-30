@@ -104,7 +104,7 @@
     </div>
     <div class="content">
         <p>{{$details['body']}}</p>
-        <h3>Detalle de la bloque</h3>
+        <h3>Detalle del bloque</h3>
         <div class="status">
             <p><b>Estado:</b> {{ $details['block_status_name'] }}</p>
             <i class="fa-solid fa-circle-xmark"></i>

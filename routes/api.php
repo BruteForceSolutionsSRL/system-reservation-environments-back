@@ -17,7 +17,8 @@ use App\Http\Controllers\{
     PersonController,
     AuthController,
     UniversitySubjectController,
-    FacultyController
+    FacultyController,
+    ConstantController
 };
 
 /*
@@ -203,3 +204,15 @@ Route::controller(FacultyController::class)->group(function() {
         Route::get('/faculties/user', 'list');
     });
 });
+
+// necesito que este endpoint sea solo para el administrador, nadie mas puede verlo, necesario
+Route::controller(ConstantController::class)->group(function() {
+    Route::group(['middleware' => ['jwt.verify']], function () {
+        Route::get('/constants/automatic-reservation', 'getAutomaticReservationConstant');
+        Route::get('/constants/maximal-reservations-per-group', 'getMaximalReservationPerGroup');
+
+        Route::post('/constants/automatic-reservation', 'updateAutomaticReservationConstant'); 
+        Route::post('/constants/maximal-reservations-per-group', 'updateMaximalReservationPerGroup');        
+    });
+});
+

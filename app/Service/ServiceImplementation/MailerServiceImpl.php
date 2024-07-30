@@ -38,6 +38,7 @@ class MailerServiceImpl implements MailerService
 	public function sendMail(Mailable $mail, array $addresses): void
 	{
 		MailSenderJob::dispatch($addresses, $mail);//->withTags(['mail']);
+		//\Mail::to($addresses)->send($mail);	
 	}
 
 	/**
@@ -166,6 +167,7 @@ class MailerServiceImpl implements MailerService
 	 */
 	public function cancelReservation(array $reservation, int $sender, string $message): array
 	{
+		echo 'z'; 
 		$this->personRepository = new PersonRepository();
 		$emailData = [
 			'title' => 'SOLICITUD DE RESERVA #'.$reservation['reservation_id'].' CANCELADA',
@@ -175,9 +177,10 @@ class MailerServiceImpl implements MailerService
 			'sended' => 1,
             'to' => []
 		];
+		echo 'y'; 
 
 		$this->getPersonsByReservation($emailData, $reservation);
-
+		dd($reservation);
         $emailData = array_merge($emailData, $reservation);
 		$addresses = $this->getAddresses($emailData['to']);
 		$emailData['to'] = array_unique(array_map(
@@ -187,6 +190,7 @@ class MailerServiceImpl implements MailerService
 			},
 			$emailData['to']
 		));
+		echo 'x';
 
 		$this->sendMail(
 			new ReservationNotificationMailer(
@@ -195,6 +199,7 @@ class MailerServiceImpl implements MailerService
 			),
 			$addresses
 		);
+		echo 'w';
 		$emailData['sendBy'] = $sender;
 		return $emailData;
 	}

@@ -444,7 +444,8 @@ class ReservationRepository extends Repository
     public function detachPersonFromReservation(int $personId, int $reservationId): array 
     {
         $reservation = $this->model::find($reservationId); 
-        $reservation->persons()->where('id', $personId)->detach();
+        $person = Person::find($personId); 
+        $reservation->persons()->detach($person);
         return $this->formatOutput($reservation);
     }
 

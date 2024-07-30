@@ -172,10 +172,12 @@ class ReservationServiceImpl implements ReservationService
      */
     public function cancel(int $reservationId, string $message): string
     {
+        echo 'a';
         $reservation = Reservation::find($reservationId);
 
-        if ($reservation == null) 
+        if ($reservation === null) {
             return 'No existe una solicitud con este ID, por favor intente ingresar a otra reserva.';
+        }
 
         $reservationStatusId = $reservation->reservation_status_id;
         $reservationAux = $this->reservationRepository->formatOutput($reservation);
@@ -185,10 +187,11 @@ class ReservationServiceImpl implements ReservationService
         if ($reservationStatusId == ReservationStatuses::rejected()) {
             return 'Esta solicitud ya fue rechazada en fecha: '.$reservationAux['updated_at'];
         }
+        echo 'b';
 
         $reservation->reservation_status_id = ReservationStatuses::cancelled();
         $reservation->save();
-
+        echo 'f';
         $this->notificationService->store(
             $this->mailService->cancelReservation(
                 $this->reservationRepository->formatOutput($reservation),
@@ -196,6 +199,7 @@ class ReservationServiceImpl implements ReservationService
                 $message
             )
         );
+        echo 'c';
 
         $reservation = $this->reservationRepository->getReservation($reservation->id);
 
@@ -206,6 +210,7 @@ class ReservationServiceImpl implements ReservationService
                 'classrooms' => $reservation['classrooms']
             ]
         );
+        echo 'd';
 
         return 'La solicitud de reserva fue cancelada correctamente.';
     }
@@ -261,12 +266,10 @@ class ReservationServiceImpl implements ReservationService
      */
     public function accept(int $reservationId, bool $ignoreFlag): string
     {
-        echo 'fuera';
         $reservation = $this->reservationRepository->getReservation($reservationId);
         if (empty($reservation)) {
             return 'La solicitud de reserva no existe, por favor intente ingresar a otra reserva.';
         }
-        echo 'llego';
 
         if ($reservation['reservation_status'] != 'PENDIENTE') {
             return 'Esta solicitud ya fue atendida en fecha: '.$reservation['updated_at'];
@@ -284,18 +287,15 @@ class ReservationServiceImpl implements ReservationService
             );
             return 'La solicitud se rechazo, existen ambientes ocupados que solicito en su reserva, por favor elija otras aulas u algun otro horario.';
         }
-        echo 'tarde';
 
         $alertas = $this->alertReservation($reservation);
 
         if (!$ignoreFlag && ($alertas['ok'] != 0)) 
             return 'Tu solicitud debe ser revisada por un encargado responsable, esto fue producido por que existen advertencias en tu reserva: '.$alertas['quantity'].' '.$alertas['classroom']['message'].': '.implode(',',$alertas['classroom']['list']);
-        echo 'abs';
         $reservation = $this->reservationRepository->updateReservationStatus(
             $reservation['reservation_id'],
             ReservationStatuses::accepted()
         );
-        echo 'zzz';
 
         $reservationSet = $this->reservationRepository->getReservations(
             [
@@ -318,7 +318,6 @@ class ReservationServiceImpl implements ReservationService
                 )
             ]
         );
-        echo 'find';
 
         foreach ($reservationSet as $reservationIterable)
             $this->reject(
@@ -333,7 +332,6 @@ class ReservationServiceImpl implements ReservationService
                 PersonRepository::system()
             )
         );
-        echo 'pipipi';
 
         return 'La reserva fue aceptada correctamente, se le fue asignadas las siguientes aulas: '.implode(',', array_map(
                 function ($classroom) {
@@ -741,7 +739,6 @@ class ReservationServiceImpl implements ReservationService
     {
         $now = Carbon::now();
         $requestedHour = Carbon::parse($reservation['date'].' '.$reservation['time_slot'][0])->addHours(4);
-        echo 'isExpired';
         return $now > $requestedHour;
     }
 
