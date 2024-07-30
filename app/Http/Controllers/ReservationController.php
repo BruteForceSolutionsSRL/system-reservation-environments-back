@@ -283,8 +283,25 @@ class ReservationController extends Controller
                 else $ok = 0;
                 break;
             }
+
+            if ($ok === -1) {
+                $roles = $this->personService->getRoles($personId);
+                foreach ($roles as $role) 
+                if ($role == 'ENCARGADO') {
+                    $ok = 1;
+                    break;
+                }
+            }
+
+            if ($ok === -1) {
+                return response()->json(
+                    ['message' => 'Usted no tiene lo permisos para cancelar esta reserva.'], 
+                    403
+                );
+            }
+
             $message = 
-                ($ok == 1) || ($ok == -1) ? 
+                ($ok == 1)? 
                 $this->reservationService->cancel(
                     $reservationId,
                     $ok==1? 
@@ -296,7 +313,6 @@ class ReservationController extends Controller
                     $reservationId
                 )
             ;    
-            echo $message;  
             
             $pos = strpos($message, 'No existe');
             if ($pos !== false) 
