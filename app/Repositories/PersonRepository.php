@@ -199,18 +199,17 @@ class PersonRepository extends Repository
     /**
      * Update all data of a person by ID
      * @param array $data
-     * @return array
+     * @return void
      */
-    public function changePassword(array $data): array
+    public function changePassword(array $data): void
     {   
-        $person = $this->model::find($data['session_id']);
+        $person = $this->model::find($data['person_id']);
 
         if (!empty($data['new_password'])) {
             $person->password = bcrypt($data['new_password']);
         }
 
         $person->save();
-        return $this->formatOutput($person);
     }   
     
     /**

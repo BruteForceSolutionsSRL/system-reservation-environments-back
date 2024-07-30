@@ -1,22 +1,13 @@
 <?php
 namespace App\Service\ServiceImplementation;
 
-use App\Repositories\PersonRepository;
+use App\Repositories\{
+    PersonRepository,
+    NotificationTypeRepository
+};
 use App\Service\AuthService;
 
 use Tymon\JWTAuth\Facades\JWTAuth;
-use Tymon\JWTAuth\Exceptions\{
-    JWTException,
-    TokenInvalidException,
-    TokenExpiredException
-};
-
-use Illuminate\Support\Facades\{
-    Auth,
-    Validator
-};
-
-use Exception;
 
 class AuthServiceImpl implements AuthService
 {
@@ -52,7 +43,11 @@ class AuthServiceImpl implements AuthService
     public function resetPassword(array $data): array
     {
         $person = $this->personService->getUserByEmail($data['email']);
-        $token = JWTAuth::claims(['type' => 'access'])->fromUser($person);
+        $claims = [
+            'type' => 'access',
+            'faculty_id' => -1
+        ];
+        $token = JWTAuth::claims($claims)->fromUser($person);
         $data['token'] = $token;
         $this->mailService->sendResetPassword($data);
         return ['message' => 'Se le envio un correo para que pueda recuperar su contraseña'];
@@ -65,6 +60,19 @@ class AuthServiceImpl implements AuthService
      */
     public function changePassword(array $data): array
     {
-        return $this->personRepository->changePassword($data);
+        $this->notificationService->store([
+			'title' => 'CAMBIO DE CONTRASEÑA',
+            'body' => 
+                "Se cambio la contraseña desde el siguiente dispositivo: "
+                .$data['agent']['device']
+                ." desde el navegador: "
+                .$data['agent']['browser'],
+            'type' => NotificationTypeRepository::warning(),
+            'sendBy' => personRepository::system(),
+            'to' => [$data['person_id']],
+			'sended' => 1,
+		]);
+        $this->personRepository->changePassword($data);
+        return ['message' => 'La contraseña fue cambiada con exito'];
     }
 }

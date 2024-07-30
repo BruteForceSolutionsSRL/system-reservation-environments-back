@@ -17,9 +17,9 @@ Route::get('/{any}', function () {
     return view('index');
 })->where('any', '^(?!api/).*$');
 
-Route::get('/password/reset/{token}', function ($token) {
-  return redirect()->to(env('FRONTEND_URL')."/password-reset".$token);
-})->name('password.reset');
+/* Route::get('/password/reset/{token}', function ($token) {
+  return redirect()->to(env('FRONTEND_URL') . "password-reset/" . $token);
+})->name('password.reset'); */
 
 /*
 Route::fallback(function ($request) {

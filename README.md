@@ -70,3 +70,18 @@ Primero se ejecuta este comando para rellenar los usuarios.
 1. php artisan migrate --seed
 ```
 Luego solo ejecuart el archivo SQL.
+
+## Ejecutar el proyecto en laravel 11
+Para esto primero se tiene que descargar la ultima version de xampp, con php 8.2 para arriba
+Luego ejecutamos el siguiente comando
+```bash
+1. composer update
+```
+No se tiene que realizar mas cambios ya que estos ya fueron adaptados en el proyecto de backend.
+
+## Nueva dependencia solo ejecutar en caso de que se lo requiera
+Esta dependencia nos permite obtener informacion sobre el dispositivo que hace peticiones el servidor
+backend.
+```bash
+1. composer require jenssegers/agent
+```

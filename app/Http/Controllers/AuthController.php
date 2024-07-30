@@ -23,15 +23,19 @@ use App\Service\ServiceImplementation\{
 
 use Exception;
 
+use Jenssegers\Agent\Agent;
+
 class AuthController extends Controller
 {
     private $personService;
     private $authService;
+    private $agent;
 
     public function __construct()
     {
         $this->personService = new PersonServiceImpl();
         $this->authService = new AuthServiceImpl();
+        $this->agent = new Agent();
     }
 
     /**
@@ -90,7 +94,7 @@ class AuthController extends Controller
             'user_name' => 'required|string|unique:people',
             'email' => 'required|email|unique:people',
             'password' => 'required|string|min:8|max:50',
-        ],[
+        ], [
             'name.required' => 'El/Los nombre/s del usuario es obligatorio',
 
             'last_name.required' => 'El/Los apellido/s del usuario es obligatorio',
@@ -127,7 +131,7 @@ class AuthController extends Controller
 
         $data = $validator->validated();
 
-        $login = filter_var($data['login'], FILTER_VALIDATE_EMAIL) ? 'email':'user_name';
+        $login = filter_var($data['login'], FILTER_VALIDATE_EMAIL) ? 'email' : 'user_name';
 
         $credentials = [
             $login => $data['login'],
@@ -146,7 +150,7 @@ class AuthController extends Controller
                     401
                 );
             }
-            
+
             $person = Auth::user();
 
             return response()->json(
@@ -191,7 +195,7 @@ class AuthController extends Controller
      * Handle a complete login request to the application
      * @param Request $request
      * @return Response
-    */
+     */
     public function completeLogin(Request $request): Response
     {
         $validator = $this->validateCompleteLoginData($request);
@@ -208,7 +212,7 @@ class AuthController extends Controller
         $data = $validator->validated();
         $token = JWTAuth::parseToken();
         $person = $token->authenticate();
-        
+
         try {
 
             $claims = [
@@ -232,7 +236,7 @@ class AuthController extends Controller
             }
 
             JWTAuth::invalidate($token);
-        
+
             return response()->json(
                 [
                     'person' => $this->personService->personToArray($person),
@@ -250,7 +254,6 @@ class AuthController extends Controller
                 500
             );
         }
-
     }
 
     /**
@@ -261,10 +264,10 @@ class AuthController extends Controller
     private function validateCompleteLoginData(Request $request)
     {
         return Validator::make($request->all(), [
-            'faculty_id' => 'required|Integer'/* |exists:,id' */,
+            'faculty_id' => 'required|Integer|exists:faculties,id',
         ], [
             'faculty_id.required' => 'Seleccione una facultad',
-            /* 'faculty_id.exists' => 'La faculta selecciona no existe' */
+            'faculty_id.exists' => 'La faculta selecciona no existe'
         ]);
     }
 
@@ -277,10 +280,10 @@ class AuthController extends Controller
     {
         try {
             $validator = $this->validateResetPasswordData($request);
-    
-            if ($validator->fails()) 
+
+            if ($validator->fails())
                 return response()->json(
-                    ['message' => implode('.',$validator->errors()->all())], 
+                    ['message' => implode('.', $validator->errors()->all())],
                     400
                 );
 
@@ -290,7 +293,6 @@ class AuthController extends Controller
                 $this->authService->resetPassword($data),
                 200
             );
-
         } catch (Exception $e) {
             return response()->json(
                 [
@@ -309,15 +311,15 @@ class AuthController extends Controller
      */
     private function validateResetPasswordData(Request $request)
     {
-        return Validator::make($request->all(),[
+        return Validator::make($request->all(), [
             'email' => '
                 required|
                 email|
                 exists:people,email'
-        ],[
-            'email.required'=> 'Debe ingresar un correo',
-            'email.email'=> 'Debe ingresar un correo valido',
-            'email.exists'=> 'El correo ingresado no se encuentra registrado'
+        ], [
+            'email.required' => 'Debe ingresar un correo',
+            'email.email' => 'Debe ingresar un correo valido',
+            'email.exists' => 'El correo ingresado no se encuentra registrado'
         ]);
     }
 
@@ -328,69 +330,46 @@ class AuthController extends Controller
      */
     public function changePassword(Request $request): Response
     {
-        try {
-            $validator = $this->validatChangePasswordData($request);
-    
-            if ($validator->fails()) 
-                return response()->json(
-                    ['message' => implode('.',$validator->errors()->all())], 
-                    400
-                );
 
-            $data = $validator->validated();
+        $validator = $this->validatChangePasswordData($request);
 
-            $data['session_id'] = $request['session_id'];
-
-            $person = $this->authService->changePassword($data);
-            
-            $credentials = [
-                'email' => $person['person_email'],
-                'password' => $data['new_password']
-            ]; 
-
-            try {
-                if (!$accessToken = JWTAuth::claims(['type' => 'access'])->attempt($credentials)) {
-                    return response()->json(
-                        ['message' => 'Autenticacion fallida'],
-                        401
-                    );
-                }
-                JWTAuth::factory()->setTTL(config('jwt.refresh_ttl'));
-                if (!$refreshToken = JWTAuth::claims(['type' => 'refresh'])->fromUser(Auth::user())) {
-                    return response()->json(
-                        ['message' => 'Autenticacion fallida'],
-                        401
-                    );
-                }
-    
-            } catch (JWTException $e) {
-                return response()->json(
-                    [
-                        'message' => 'Error en el servidor',
-                        'error' => $e->getMessage()
-                    ],
-                    500
-                );
-            }
-
+        if ($validator->fails())
             return response()->json(
-                [
-                    'access_token' => $accessToken,
-                    'refresh_token' => $refreshToken,
-                    'person' => $person
-                ],
-                200
+                ['message' => implode('.', $validator->errors()->all())],
+                400
             );
 
-        } catch (Exception $e) {
+        $data = $validator->validated();
+
+        try {
+
+            $token = JWTAuth::parseToken();
+            $person = $token->authenticate();
+            JWTAuth::invalidate($token);
+
+            $data['person_id'] = $person->id;
+            $data['email'] = $person->email;
+            $data['agent'] = [
+                'device'   => $this->agent->device()   ? $this->agent->device():"Desconocido",
+                'platform' => $this->agent->platform() ? $this->agent->platform():"Desconocido",
+                'browser'  => $this->agent->browser()  ? $this->agent->browser():"Desconocido"
+            ];
+
+            return response()->json(
+                $this->authService->changePassword($data),
+                200
+            );
+            
+        } catch (JWTException $e) {
             return response()->json(
                 [
-                    'message' => 'Hubo un error en el servidor',
+                    'message' => 'Error en el servidor',
                     'error' => $e->getMessage()
                 ],
                 500
             );
         }
+        
     }
 
     /**
@@ -403,7 +382,7 @@ class AuthController extends Controller
         return Validator::make($request->all(), [
             'new_password' => 'required|string|min:8|max:50',
             'confirmation_password' => 'required|string|min:8|max:50|same:new_password'
-        ],[
+        ], [
             'new_password.required' => 'La contraseña nueva es obligatoria',
             'new_password.string' => 'La contraseña nueva tiene que tener un formato valido',
             'new_password.min' => 'La cantidad de caracteres minima para la contraseña nueva es 8',
@@ -422,12 +401,12 @@ class AuthController extends Controller
      * @param Request $request
      * @return Response
      */
-    public function logout(Request $request):Response
+    public function logout(Request $request): Response
     {
 
         $accessToken = $request->bearerToken();
         $refreshToken = $request->header('Refresh_token');
-        
+
         if (!$accessToken) {
             return response()->json(
                 ['message' => 'Token de acceso no proporcionado'],
@@ -448,7 +427,7 @@ class AuthController extends Controller
                 JWTAuth::invalidate($accessToken);
             } else {
                 return response()->json(
-                    ['message' => 'Token de acceso inválido'], 
+                    ['message' => 'Token de acceso inválido'],
                     401
                 );
             }
@@ -457,11 +436,11 @@ class AuthController extends Controller
                 JWTAuth::invalidate($refreshToken);
             } else {
                 return response()->json(
-                    ['message' => 'Token de refresco inválido'], 
+                    ['message' => 'Token de refresco inválido'],
                     401
                 );
             }
-            
+
             return response()->json(
                 [
                     'success' => true,
@@ -496,30 +475,31 @@ class AuthController extends Controller
      * @param Request $request
      * @return Response
      */
-    public function tokenStatus(Request $request):Response
+    public function tokenStatus(Request $request): Response
     {
         try {
             JWTAuth::parseToken()->authenticate();
             return response()->json(
-                ['status' => 'Token valido'], 
+                ['status' => 'Token valido'],
                 200
             );
-            
         } catch (JWTException $e) {
             if ($e instanceof TokenInvalidException) {
                 return response()->json(
-                    ['status' => 'Token invalido'], 
+                    ['status' => 'Token invalido'],
                     401
                 );
             } else if ($e instanceof TokenExpiredException) {
                 return response()->json(
-                    ['status' => 'Token expirado'], 
+                    ['status' => 'Token expirado'],
                     401
                 );
             } else {
                 return response()->json(
-                    ['status' => 'Token no encontrado',
-                    'error' => $e->getMessage()], 
+                    [
+                        'status' => 'Token no encontrado',
+                        'error' => $e->getMessage()
+                    ],
                     401
                 );
             }
@@ -538,13 +518,13 @@ class AuthController extends Controller
             JWTAuth::setToken($refreshToken);
             if (JWTAuth::getPayload()->get('type') !== 'refresh') {
                 return response()->json(
-                    ['message' => 'Token de refresco inválido'], 
+                    ['message' => 'Token de refresco inválido'],
                     401
                 );
             }
             $newToken = JWTAuth::claims(['type' => 'access'])->refresh($refreshToken);
             return response()->json(
-                ['token' => $newToken], 
+                ['token' => $newToken],
                 200
             );
         } catch (TokenExpiredException $e) {
@@ -554,7 +534,7 @@ class AuthController extends Controller
             );
         } catch (TokenInvalidException $e) {
             return response()->json(
-                ['message' => 'Token de refresco inválido'], 
+                ['message' => 'Token de refresco inválido'],
                 401
             );
         } catch (JWTException $e) {
@@ -562,7 +542,7 @@ class AuthController extends Controller
                 [
                     'message' => 'Error al refrescar el token',
                     'error' => $e->getMessage()
-                ], 
+                ],
                 500
             );
         }

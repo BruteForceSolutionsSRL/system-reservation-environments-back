@@ -365,14 +365,13 @@ class MailerServiceImpl implements MailerService
 	public function sendResetPassword(array $data): array
 	{
 		$systemId = personRepository::system();
-		//$url = route('password.reset', ['token' => $data['token']]);
-		$url = env('FRONTEND_URL').$data['token'];
+		$url = env('FRONTEND_URL')."password-reset/".$data['token'];
 		$emailData = [
 			'title' => 'RECUPERACION DE CONTRASEÑA',
             'body' => 'Ingrese al siguiente link, para registrar una nueva contraseña',
 			'url' => $url,
             'type' => NotificationTypeRepository::warning(),
-            'sendBy' => $this->personRepository->getPerson($systemId)['person_name'],
+            'sendBy' => $this->personRepository->getPerson($systemId)['name'],
             'to' => [$data['email']],
 			'sended' => 1,
 		];

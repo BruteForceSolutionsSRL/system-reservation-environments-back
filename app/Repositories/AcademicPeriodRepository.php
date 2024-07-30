@@ -23,7 +23,7 @@ class AcademicPeriodRepository
         return $this->model::where('initial_date', '<=', $date)
             ->where('end_date', '>=', $date)
             ->get()->map(
-                function ($AcademicPeriod) 
+                function ($academicPeriod) 
                 {
                     return $this->formatOutput($academicPeriod);
                 }
