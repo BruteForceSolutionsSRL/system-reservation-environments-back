@@ -15,15 +15,15 @@ insert into constants(identifier, value) values
     roles
 */
 insert into roles(name, created_at, updated_at) values 
-('ENCARGADO', NOW(), NOW()),		/*ID 1*/
-('DOCENTE', NOW(), NOW())			/*ID 2*/
-;			
+('ENCARGADO', NOW(), NOW()),        /*ID 1*/
+('DOCENTE', NOW(), NOW())           /*ID 2*/
+;           
 /*
     permissions
-	request_reserve => solicitud de reserva o hacer una reserva (DOCENTE - ENCARGADO) 
-	reservation_handling => Atender solicitudes de reserva (ENCARGADO)
-	notify => Notificaciones (ENCARGADO)
-	report => Generar reportes de uso de ambiente (ENCARGADO) 
+    request_reserve => solicitud de reserva o hacer una reserva (DOCENTE - ENCARGADO) 
+    reservation_handling => Atender solicitudes de reserva (ENCARGADO)
+    notify => Notificaciones (ENCARGADO)
+    report => Generar reportes de uso de ambiente (ENCARGADO) 
     block_register => Registro de nuesvos bloques (ENCARGADO)
     block_update => Edicion de bloques (ENCARGADO)
     block_remove => Eliminar un bloque (ENCARGADO)
@@ -35,24 +35,24 @@ insert into roles(name, created_at, updated_at) values
     special_reservation => Realizar una reserva especial (ENCARGADO)
  */
 insert into permissions(name, created_at, updated_at) values
-('request_reserve', NOW(), NOW()),			/*ID 1*/
-('reservation_handling', NOW(), NOW()),		/*ID 2*/
-('notify', NOW(), NOW()),					/*ID 3*/
-('report', NOW(), NOW()),					/*ID 4*/
-('block_register', NOW(), NOW()),			/*ID 5*/
-('block_update', NOW(), NOW()),				/*ID 6*/
-('block_remove', NOW(), NOW()),				/*ID 7*/
-('environment_register', NOW(), NOW()),		/*ID 8*/
-('environment_update', NOW(), NOW()),		/*ID 9*/
-('environment_remove', NOW(), NOW()),		/*ID 10*/
-('reservation_cancel', NOW(), NOW()),		/*ID 11*/
-('history', NOW(), NOW()),		            /*ID 12*/
-('special_reservation', NOW(), NOW())		/*ID 13*/
-;			
+('request_reserve', NOW(), NOW()),          /*ID 1*/
+('reservation_handling', NOW(), NOW()),     /*ID 2*/
+('notify', NOW(), NOW()),                   /*ID 3*/
+('report', NOW(), NOW()),                   /*ID 4*/
+('block_register', NOW(), NOW()),           /*ID 5*/
+('block_update', NOW(), NOW()),             /*ID 6*/
+('block_remove', NOW(), NOW()),             /*ID 7*/
+('environment_register', NOW(), NOW()),     /*ID 8*/
+('environment_update', NOW(), NOW()),       /*ID 9*/
+('environment_remove', NOW(), NOW()),       /*ID 10*/
+('reservation_cancel', NOW(), NOW()),       /*ID 11*/
+('history', NOW(), NOW()),                  /*ID 12*/
+('special_reservation', NOW(), NOW())       /*ID 13*/
+;           
 /*
     role_permission
-    ENCARGADO 	-> ID 1
-    DOCENTE 	-> ID 2
+    ENCARGADO   -> ID 1
+    DOCENTE     -> ID 2
 */
 insert into role_permission(role_id, permission_id, created_at, updated_at) values
 (1,2,NOW(), NOW()),
@@ -229,10 +229,16 @@ insert into faculties(name, time_slot_id) values
     ('FACULTAD DE CIENCIAS Y TECNOLOGIA - FCYT', 2)
 ; 
 /*
+    academic_managements
+*/
+insert into academic_managements(name, initial_date, end_date) values 
+    ('Gestion 2024', '2024-04-01', '2024-09-01', 1, 1) /*ID 1 - I-2024*/
+;
+/*
     academic_periods
 */
-insert into academic_periods(name, initial_date, end_date, activated, faculty_id) values
-    ('I-2024', '2024-04-01', '2024-09-01', 1, 1) /*ID 1 - I-2024*/
+insert into academic_periods(name, initial_date, end_date, activated, faculty_id, academic_management_id) values
+    ('I-2024', '2024-04-01', '2024-09-01', 1, 1, 1) /*ID 1 - I-2024*/
 ;
 /*
     careers
@@ -2301,7 +2307,7 @@ values
     (259, 104, NOW(), NOW())             /*96  RESERVA ESPECIAL - EXAMEN DE INGRESO*/
 ; 
 /*
-	person_reservation
+    person_reservation
 */
 insert into person_reservation (reservation_id, person_id, created_at, updated_at)
 values 

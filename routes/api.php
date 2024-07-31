@@ -18,7 +18,8 @@ use App\Http\Controllers\{
     AuthController,
     UniversitySubjectController,
     FacultyController,
-    ConstantController
+    ConstantController, 
+    AcademicManagementController
 };
 
 /*
@@ -214,5 +215,15 @@ Route::controller(ConstantController::class)->group(function() {
         Route::post('/constants/automatic-reservation', 'updateAutomaticReservationConstant'); 
         Route::post('/constants/maximal-reservations-per-group', 'updateMaximalReservationPerGroup');        
     });
+});
+
+Route::controller(AcademicManagementController::class)->group(function() {
+    //Route::group(['middleware' => ['jwt.verify']], function () {
+        Route::get('/academic-managements', 'list');
+        Route::get('/academic-managements/{academicManagementId}', 'index');
+
+        Route::post('/academic-managements/{academicManagementId}/store', 'store'); 
+        Route::post('/academic-managements/{academicManagementId}/update', 'update');        
+    //});
 });
 

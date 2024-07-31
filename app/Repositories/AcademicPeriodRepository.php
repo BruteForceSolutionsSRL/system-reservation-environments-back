@@ -50,15 +50,9 @@ class AcademicPeriodRepository
         );
     }
 
-    private function formatOutputSpecial($academicPeriod): array 
-    {
-        return [
-            'falta hacer'
-        ];
-    }
-
     public function formatOutput($academicPeriod) 
     {
+        $studyPlans = '1';
         return [
             'academic_period_id' => $academicPeriod->id,
             'name' => $academicPeriod->name,
