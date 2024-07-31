@@ -251,9 +251,9 @@ class ClassroomRepository extends Repository
         $block = $classroom->block;
         return [
             'classroom_id' => $classroom->id,
-            'classroom_name' => $classroom->name,
-            'classroom_type_id' => $classroom->classroom_type_id,
-            'classroom_type_name' => $classroomType['name'],
+            'name' => $classroom->name,
+            'type_id' => $classroom->classroom_type_id,
+            'type_name' => $classroomType['name'],
             'classroom_status_id' => $classroom->classroom_status_id,
             'classroom_status_name' => $classroomStatus['name'],
             'capacity' => $classroom->capacity,

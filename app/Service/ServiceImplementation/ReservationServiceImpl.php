@@ -172,7 +172,6 @@ class ReservationServiceImpl implements ReservationService
      */
     public function cancel(int $reservationId, string $message): string
     {
-        echo 'a';
         $reservation = Reservation::find($reservationId);
 
         if ($reservation === null) {
@@ -187,11 +186,9 @@ class ReservationServiceImpl implements ReservationService
         if ($reservationStatusId == ReservationStatuses::rejected()) {
             return 'Esta solicitud ya fue rechazada en fecha: '.$reservationAux['updated_at'];
         }
-        echo 'b';
 
         $reservation->reservation_status_id = ReservationStatuses::cancelled();
         $reservation->save();
-        echo 'f';
         $this->notificationService->store(
             $this->mailService->cancelReservation(
                 $this->reservationRepository->formatOutput($reservation),
@@ -199,7 +196,6 @@ class ReservationServiceImpl implements ReservationService
                 $message
             )
         );
-        echo 'c';
 
         $reservation = $this->reservationRepository->getReservation($reservation->id);
 
@@ -210,7 +206,6 @@ class ReservationServiceImpl implements ReservationService
                 'classrooms' => $reservation['classrooms']
             ]
         );
-        echo 'd';
 
         return 'La solicitud de reserva fue cancelada correctamente.';
     }
@@ -246,9 +241,7 @@ class ReservationServiceImpl implements ReservationService
         }
 
         $administratorRol = [$this->roleRepository->administrator()];
-
-        array_push($specialReservationsFormat[0]['groups'], $this->personRepository->getUsersByRole($administratorRol));
-
+        array_merge($specialReservationsFormat[0]['persons'], $this->personRepository->getUsersByRole($administratorRol));
         $this->notificationService->store(
             $this->mailService->specialCancelReservation(
                 $specialReservationsFormat[0],
@@ -376,12 +369,11 @@ class ReservationServiceImpl implements ReservationService
      */
     public function store(array $data): string
     {
-        echo 'entre';
         if (!array_key_exists('classroom_ids', $data) || count($data['classroom_ids']) == 0) {
             $data['classroom_ids'] = $this->classroomService
                 ->suggestClassrooms($data);
-            if (empty($data['classroom_id']) || 
-                ($data['classroom_id'] == ['No existe una sugerencia apropiada'])) {
+            if ((count($data['classroom_ids']) === 0) || 
+                ($data['classroom_ids'] == ['No existe una sugerencia apropiada'])) {
                     return 'No existen ambientes disponibles que cumplan con los requerimientos de la solicitud, por favor elija otros periodos/fecha.';
                 }
             $data['classroom_ids'] = array_map(
@@ -390,41 +382,31 @@ class ReservationServiceImpl implements ReservationService
                 }, $data['classroom_ids']
             );
         }
-        echo 'pp';
 
         if (!$this->classroomService->sameBlock($data['classroom_ids'])) {
             return 'Los ambientes no pertenecen al bloque, vuelva a seleccionar los ambientes disponibles del bloque seleccionado.';            
         } 
-        echo 'a';
 
         if (!array_key_exists('repeat', $data)) {
             $data['repeat'] = 0;
         }
-        echo 'b';
         if (!array_key_exists('priority', $data)) {
             $data['priority'] = 0;
         }
-        echo 'c';
 
         if (!$this->teacherSubjectRepository->sameSubject($data['teacher_subject_ids'])) {
             return 'No se puede realizar la reserva, los grupos seleccionados no son de la misma materia.'; 
         } 
-        echo 'd';
 
         $data['persons'] = $this->personRepository->getTeachersBySubjectGroups(
             $data['teacher_subject_ids']
         );
-        echo 'e';
         if (!$this->isResposible($data['persons'], $data['person_id'])) {
             return 'No eres responsable de ninguno de los grupos seleccionados, debe seleccionar al menos un grupo a su nombre.';
         }
-        echo 'f';
-        echo $data['faculty_id'];
         $data['academic_period'] = $this->academicPeriodRepository
             ->getActualAcademicPeriod($data['faculty_id']);
-        echo 'g';
         $reservation = $this->reservationRepository->save($data);
-        echo 'h';
         $this->notificationService->store(
             $this->mailService->createReservation(
                 $reservation,
@@ -795,6 +777,10 @@ class ReservationServiceImpl implements ReservationService
                 }, $this->blockService->suggestBlocks($data)
             );
         }
+        $data['reservation_reason_id'] = $data['reason_id'];
+        $data['academic_period'] = $this->academicPeriodRepository
+            ->getActualAcademicPeriod($data['faculty_id']);
+
         $classrooms = $data['classroom_ids'];
         if (empty($classrooms)) {
             foreach ($data['block_id'] as $blockId) {
@@ -851,9 +837,8 @@ class ReservationServiceImpl implements ReservationService
         $reservation = $this->reservationRepository->getSpecialReservation($data['parent_id']);
 
         $administratorRol = [$this->roleRepository->administrator()];
-
-        array_push($reservation['groups'], $this->personRepository->getUsersByRole($administratorRol));
-
+        $reservation['persons'] = $this->personRepository->getUsersByRole($administratorRol);
+        $data['persons'] = $reservation['persons'];
         $this->notificationService->store(
             $this->mailService->specialAcceptReservation(
                 $reservation,

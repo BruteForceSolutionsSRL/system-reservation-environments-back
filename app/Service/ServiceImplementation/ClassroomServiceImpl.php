@@ -326,7 +326,6 @@ class ClassroomServiceImpl implements ClassroomService
      */
     public function suggestClassrooms(array $data): array
     {
-        echo 'a';
         $classroomSet = $this->getClassroomsByDisponibility($data); 
 	    $classroomSets = []; 
         $maxFloor = $this->blockRepository
@@ -336,8 +335,6 @@ class ClassroomServiceImpl implements ClassroomService
                 'quantity' => 0,
                 'list' => array()
             ];
-            echo 'b';
-
         for ($i = 0; $i < count($classroomSet); $i++) {
 
             $classroom = $classroomSet[$i];
@@ -362,7 +359,6 @@ class ClassroomServiceImpl implements ClassroomService
                         $pointerDp[$index] = $i;
                     }
                 }
-        echo 'c';
         $bestSuggest = -1;
         for (
             $i = $data['quantity']; 
@@ -378,7 +374,6 @@ class ClassroomServiceImpl implements ClassroomService
                     $bestSuggest = $i;
             }
         }
-        echo 'd';
 
         if (($bestSuggest == -1) || ($pointerDp[$bestSuggest] == -1)) {
             return ['No existe una sugerencia apropiada'];
@@ -396,8 +391,8 @@ class ClassroomServiceImpl implements ClassroomService
         $dp = array_fill(0, $MAX_LEN + 1, -1);
         $pointerDp = array_fill(0, $MAX_LEN, -1);
         $dp[0] = 0;
-        foreach ($classrooms as $classroom)
-            for ($j = $MAX_LEN; $j > -1; $j--)
+        foreach ($classrooms as $classroom) {
+            for ($j = $MAX_LEN; $j > -1; $j--) 
                 if ($dp[$j] != -1) {
                     $index = $j + ($classroom['capacity']);
                     if ($index > $MAX_LEN) continue;
@@ -407,6 +402,7 @@ class ClassroomServiceImpl implements ClassroomService
                         $pointerDp[$index] = $classroom['classroom_id'];
                     }
                 }
+        }
 
         $bestSuggest = $data['quantity'];
         for ($i = $data['quantity']; $i <= $MAX_LEN; $i++)
@@ -419,8 +415,9 @@ class ClassroomServiceImpl implements ClassroomService
         if (($dp[$piv] == -1) || 
             ($piv > 1.5*$data['quantity']) || 
             ($piv < 0.5*$data['quantity'])
-        )
+        ) {
             return ['No existe una sugerencia apropiada'];
+        }
 
         while ($piv != 0) {
             $classroom = $this->classroomRepository
@@ -462,7 +459,6 @@ class ClassroomServiceImpl implements ClassroomService
             $classroomId
         );
         $classroom = $this->classroomRepository->deleteByClassroomId($classroomId); 
-
         $data = [];
         $data['title'] = 'ELIMINACION DE AMBIENTE '.$classroom['name'].'#'.$classroom['classroom_id'];
         $data['sended'] = 1;

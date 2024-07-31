@@ -368,7 +368,6 @@ class ReservationController extends Controller
                 );
             }
             $data['faculty_id'] = 1;
-            echo 'z';
 
             $data['person_id']  = $request['session_id'];
 

@@ -232,7 +232,7 @@ insert into faculties(name, time_slot_id) values
     academic_managements
 */
 insert into academic_managements(name, initial_date, end_date) values 
-    ('Gestion 2024', '2024-04-01', '2024-09-01', 1, 1) /*ID 1 - I-2024*/
+    ('Gestion 2024', '2024-04-01', '2024-09-01') /*ID 1 - I-2024*/
 ;
 /*
     academic_periods
@@ -551,7 +551,7 @@ values
     (19, 'SECTOR LABORATORIOS MECANICA',        3, 1, 20, 1),     /*ID F*/    
     (20, 'EDIFICIO CAD - CAM',                  0, 1, 20, 1),     /*ID F*/    
     (1,  'BLOQUE CENTRAL EDIFICIO DECANATURA',  2, 1, 20, 1),     /*ID F*/    
-    (16, 'EDIFICIO ACADEMICO 2',                0, 1, 20, 1),     /*ID F*/
+    (16, 'EDIFICIO ACADEMICO 2',                3, 1, 20, 1),     /*ID F*/
     (65, 'BLOQUE TRENCITO',                     2, 1, 20, 1),     /*ID F*/       
     (63, 'AULAS INF - LAB',                     3, 1, 20, 1),     /*ID F*/    
     (64, 'EDIFICIO MEMI',                       2, 1, 20, 1),     /*ID F*/    

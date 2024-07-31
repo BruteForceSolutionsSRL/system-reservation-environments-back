@@ -206,7 +206,7 @@ class ReservationRepository extends Repository
             'classrooms:id,name,capacity,block_id',
             'classrooms.block:id,name',
             'classrooms.classroomType:id,description'
-        ])->whereHas('personReservation', function ($query) use ($teacherId) {
+        ])->whereHas('personReservations', function ($query) use ($teacherId) {
             $query->where('person_reservation.person_id', $teacherId);
         })->orderBy('date')->get()->map(
             function ($reservation) {
@@ -235,7 +235,7 @@ class ReservationRepository extends Repository
             'classrooms:id,name,capacity,block_id',
             'classrooms.block:id,name',
             'classrooms.classroomType:id,description'
-        ])->whereHas('personReservation', function ($query) use ($personId) {
+        ])->whereHas('personReservations', function ($query) use ($personId) {
             $query->where('person_reservation.person_id', $personId);
         })->where(
             function ($query) use ($date, $hourTime)
@@ -277,8 +277,8 @@ class ReservationRepository extends Repository
             'classrooms.block:id,name',
             'classrooms.classroomType:id,description'
         ])->where('reservation_status_id', '!=', ReservationStatuses::pending())
-           ->whereHas('teacherSubjects', function ($query) use ($teacherId) {
-               $query->where('person_id', $teacherId);
+           ->whereHas('personReservations', function ($query) use ($teacherId) {
+               $query->where('person_reservation.person_id', $teacherId);
            })
         ->orderBy('date')->get()->map(
                 function ($reservation) {
