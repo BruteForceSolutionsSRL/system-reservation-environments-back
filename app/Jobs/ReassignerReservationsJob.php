@@ -60,7 +60,7 @@ class ReassignerReservationsJob implements ShouldQueue
                         'block_id' => $block['block_id'],
                         'quantity' => $reservation['quantity'],
                         'date' => $reservation['date'],
-                        'time_slot_id' => $timeSlots,
+                        'time_slot_ids' => $timeSlots,
                     ]
                 );
                 if (!empty($possibleAssignation) && is_array($possibleAssignation[0])) {

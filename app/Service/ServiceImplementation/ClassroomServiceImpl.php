@@ -212,8 +212,8 @@ class ClassroomServiceImpl implements ClassroomService
                     ReservationStatuses::pending(), 
                     ReservationStatuses::accepted()
                 ],
-                'time_slots' => $data['time_slot_id'],
-                'classrooms' => $data['classroom_id']
+                'time_slots' => $data['time_slot_ids'],
+                'classrooms' => $data['classroom_ids']
             ]
         );
         $dp = [];
@@ -237,7 +237,7 @@ class ClassroomServiceImpl implements ClassroomService
             $classroom = $this->classroomRepository->getClassroomById($classroomId); 
             $element = ['name' => $classroom['name']]; 
 
-            for ($id = $data['time_slot_id'][0]; $id <= $data['time_slot_id'][1]; $id++) {
+            for ($id = $data['time_slot_ids'][0]; $id <= $data['time_slot_ids'][1]; $id++) {
                 $index = $this->timeSlotRepository->getTimeSlotById($id)['time']; 
                 if ((!array_key_exists($classroom['classroom_id'], $dp)) || 
                 (!array_key_exists($index, $dp[$classroom['classroom_id']]))) {
@@ -285,10 +285,10 @@ class ClassroomServiceImpl implements ClassroomService
                         return $classroom['classroom_id'];
                     },
                     $classrooms
-		),
-		'priorities' => [1],
+		        ),
+		        'priorities' => [1],
             ]
-	);
+	    );
         if (array_key_exists('endpoint', $data)) {
             foreach ($reservations as $reservation) 
             foreach ($reservation['classrooms'] as $classroom) {
@@ -326,15 +326,17 @@ class ClassroomServiceImpl implements ClassroomService
      */
     public function suggestClassrooms(array $data): array
     {
+        echo 'a';
         $classroomSet = $this->getClassroomsByDisponibility($data); 
-	$classroomSets = []; 
+	    $classroomSets = []; 
         $maxFloor = $this->blockRepository
-            ->getBlock($data['block_id'])['block_maxfloor'];
+            ->getBlock($data['block_id'])['maxfloor'];
         for ($i = 0; $i <= $maxFloor; $i++) 
             $classroomSets[$i] = [
                 'quantity' => 0,
                 'list' => array()
             ];
+            echo 'b';
 
         for ($i = 0; $i < count($classroomSet); $i++) {
 
@@ -360,6 +362,7 @@ class ClassroomServiceImpl implements ClassroomService
                         $pointerDp[$index] = $i;
                     }
                 }
+        echo 'c';
         $bestSuggest = -1;
         for (
             $i = $data['quantity']; 
@@ -375,6 +378,7 @@ class ClassroomServiceImpl implements ClassroomService
                     $bestSuggest = $i;
             }
         }
+        echo 'd';
 
         if (($bestSuggest == -1) || ($pointerDp[$bestSuggest] == -1)) {
             return ['No existe una sugerencia apropiada'];

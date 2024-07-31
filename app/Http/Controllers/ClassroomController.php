@@ -454,12 +454,12 @@ class ClassroomController extends Controller
                     $query->where('block_id', $request->input('block_id'));
                 }),
             ],
-            'time_slot_id' => 'array',
-            'time_slot_id.*' => '
+            'time_slot_ids' => 'array',
+            'time_slot_ids.*' => '
                 required|
                 integer|
                 exists:time_slots,id',
-            'time_slot_id' => [
+            'time_slot_ids' => [
                 function ($attribute, $value, $fail) {
                     if (count($value) !== 2) {
                         $fail('Debe seleccionar exactamente dos periodos de tiempo.');

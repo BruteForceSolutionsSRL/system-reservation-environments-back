@@ -88,8 +88,8 @@ class BlockController extends Controller
         return Validator::make($request->all(), [
             'date_start' => 'required|date',
             'date_end' => 'required|date',
-            'time_slot_id.*' => 'required|exists:time_slots,id',
-            'time_slot_id' => [
+            'time_slot_ids.*' => 'required|exists:time_slots,id',
+            'time_slot_ids' => [
                 'required',
                 'array',
                 function ($attribute, $value, $fail) {

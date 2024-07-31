@@ -367,6 +367,8 @@ class ReservationController extends Controller
                     400
                 );
             }
+            $data['faculty_id'] = 1;
+            echo 'z';
 
             $data['person_id']  = $request['session_id'];
 
@@ -423,7 +425,7 @@ class ReservationController extends Controller
                 }
             ],
             'block_id' => 'required|int|exists:blocks,id',
-            'faculty_id' => 'int|exists:faculty,id',
+            'faculty_id' => 'int|exists:faculties,id',
         ], [
             'quantity.required' => 'El número de estudiantes es obligatorio.',
             'quantity.integer' => 'El número de estudiantes debe ser un valor entero.',
@@ -721,7 +723,7 @@ class ReservationController extends Controller
             ],
             'block_id' => 'array',
             'block_id.*' => 'nullable|int|exists:blocks,id',
-            'faculty_id' => 'required|int|exists:faculty,id',
+            'faculty_id' => 'required|int|exists:faculties,id',
         ], [
             'quantity.required' => 'El número de estudiantes es obligatorio.',
             'quantity.integer' => 'El número de estudiantes debe ser un valor entero.',
