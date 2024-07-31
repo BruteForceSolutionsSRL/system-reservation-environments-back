@@ -446,8 +446,8 @@ class ClassroomController extends Controller
                 required|
                 integer|
                 exists:blocks,id',
-            'classroom_id' => 'array',
-            'classroom_id.*' => [
+            'classroom_ids' => 'array',
+            'classroom_ids.*' => [
                 'required',
                 'integer',
                 Rule::exists('classrooms', 'id')->where(function ($query) use ($request) {

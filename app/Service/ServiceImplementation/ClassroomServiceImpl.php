@@ -233,7 +233,7 @@ class ClassroomServiceImpl implements ClassroomService
                 }
             }
         }
-        foreach ($data['classroom_id'] as $classroomId) {
+        foreach ($data['classroom_ids'] as $classroomId) {
             $classroom = $this->classroomRepository->getClassroomById($classroomId); 
             $element = ['name' => $classroom['name']]; 
 
