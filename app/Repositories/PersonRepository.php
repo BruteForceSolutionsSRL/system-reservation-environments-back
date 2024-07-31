@@ -226,7 +226,8 @@ class PersonRepository extends Repository
             'name' => $person->name, 
             'lastname' => $person->last_name, 
             'email' => $person->email, 
-            'fullname' => $person->name.' '.$person->last_name
+            'fullname' => $person->name.' '.$person->last_name,
+            'roles' => $this->getRoles($person->id)
         ]; 
     }
 }

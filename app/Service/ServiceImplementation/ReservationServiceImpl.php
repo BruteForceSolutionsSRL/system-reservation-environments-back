@@ -378,6 +378,7 @@ class ReservationServiceImpl implements ReservationService
      */
     public function store(array $data): string
     {
+        echo 'entre';
         if (!array_key_exists('classroom_ids', $data) || count($data['classroom_ids']) == 0) {
             $data['classroom_ids'] = $this->classroomService
                 ->suggestClassrooms($data);
@@ -391,34 +392,41 @@ class ReservationServiceImpl implements ReservationService
                 }, $data['classroom_ids']
             );
         }
+        echo 'pp';
 
         if (!$this->classroomService->sameBlock($data['classroom_ids'])) {
             return 'Los ambientes no pertenecen al bloque, vuelva a seleccionar los ambientes disponibles del bloque seleccionado.';            
         } 
+        echo 'a';
 
         if (!array_key_exists('repeat', $data)) {
             $data['repeat'] = 0;
         }
+        echo 'b';
         if (!array_key_exists('priority', $data)) {
             $data['priority'] = 0;
         }
+        echo 'c';
 
         if (!$this->teacherSubjectRepository->sameSubject($data['teacher_subject_ids'])) {
             return 'No se puede realizar la reserva, los grupos seleccionados no son de la misma materia.'; 
         } 
+        echo 'd';
 
         $data['persons'] = $this->personRepository->getTeachersBySubjectGroups(
             $data['teacher_subject_ids']
         );
+        echo 'e';
         if (!$this->isResposible($data['persons'], $data['person_id'])) {
             return 'No eres responsable de ninguno de los grupos seleccionados, debe seleccionar al menos un grupo a su nombre.';
         }
-
+        echo 'f';
+        echo $data['faculty_id'];
         $data['academic_period'] = $this->academicPeriodRepository
             ->getActualAcademicPeriod($data['faculty_id']);
-
+        echo 'g';
         $reservation = $this->reservationRepository->save($data);
-
+        echo 'h';
         $this->notificationService->store(
             $this->mailService->createReservation(
                 $reservation,
