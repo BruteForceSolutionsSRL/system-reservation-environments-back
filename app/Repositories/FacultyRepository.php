@@ -53,7 +53,7 @@ class FacultyRepository
         return [
             'faculty_id' => $faculty->id,
             'name' => $faculty->name,
-            //'time_slot' => $faculty->timeSlot->id,
+            'time_slot_id' => $faculty->time_slot_id,
         ];
     }
 }

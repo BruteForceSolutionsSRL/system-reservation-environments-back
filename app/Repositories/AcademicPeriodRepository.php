@@ -42,8 +42,17 @@ class AcademicPeriodRepository
         );
     }
 
+
+    public function getAcademicPeriodById(int $academicPeriodId): array 
+    {
+        return $this->formatOutput(
+            $this->model::find($academicPeriodId)
+        );
+    }
+
     public function formatOutput($academicPeriod) 
     {
+        $studyPlans = '1';
         return [
             'academic_period_id' => $academicPeriod->id,
             'name' => $academicPeriod->name,

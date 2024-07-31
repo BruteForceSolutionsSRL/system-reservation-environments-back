@@ -276,23 +276,43 @@ class ReservationController extends Controller
             $personId = $request['session_id'];
             $person = $this->personService->getUser($personId);
             $reservation = $this->reservationService->getReservation($reservationId);
-            $ok = 0; 
+            $ok = -1;
             foreach ($reservation['persons'] as $person) 
-            if ($person['id'] === $personId) {
+            if ($person['person_id'] === $personId) {
                 if ($person['created_by_me'] == 1) $ok = 1;
+                else $ok = 0;
                 break;
             }
+
+            if ($ok === -1) {
+                $roles = $this->personService->getRoles($personId);
+                foreach ($roles as $role) 
+                if ($role == 'ENCARGADO') {
+                    $ok = 1;
+                    break;
+                }
+            }
+
+            if ($ok === -1) {
+                return response()->json(
+                    ['message' => 'Usted no tiene lo permisos para cancelar esta reserva.'], 
+                    403
+                );
+            }
+
             $message = 
-                $ok==1? 
+                ($ok == 1)? 
                 $this->reservationService->cancel(
                     $reservationId,
-                    'Razon de la cancelacion es: El usuario: '.$person['fullname'].' cancelo la reserva'
+                    $ok==1? 
+                    'Razon de la cancelacion es: El usuario: '.$person['fullname'].' cancelo la reserva': 
+                    'Razon de la cancelacion es: El administrador '.$person['fullname'].' cancelo su reserva, pongase en contacto para mayor informacion.'
                 ): 
                 $this->reservationService->detachPersonFromRequest(
                     $personId, 
                     $reservationId
                 )
-            ;     
+            ;    
             
             $pos = strpos($message, 'No existe');
             if ($pos !== false) 
@@ -348,7 +368,6 @@ class ReservationController extends Controller
                 );
             }
             $data['faculty_id'] = 1;
-            echo 'z';
 
             $data['person_id']  = $request['session_id'];
 

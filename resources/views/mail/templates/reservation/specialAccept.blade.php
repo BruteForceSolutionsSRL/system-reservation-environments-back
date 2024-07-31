@@ -116,9 +116,9 @@
         <p><b>Organiza:</b> {{ $details['groups']['teacher_name'] }} </p>
         <p><b>Bloques:</b></p>
         <ul>
-            @for ($i = 0; $i<count($details['block_name']); $i++)
+            @for ($i = 0; $i<count($details['block_names']); $i++)
                 <li>
-                    {{ $details['block_name'][$i] }}
+                    {{ $details['block_names'][$i] }}
                 </li>
             @endfor
         </ul>

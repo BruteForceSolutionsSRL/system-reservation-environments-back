@@ -17,13 +17,18 @@ return new class extends Migration
             $table->date('initial_date');
             $table->date('end_date');
             $table->boolean('activated');
-            $table->unsignedBigInteger('faculty_id'); 
+            $table->unsignedBigInteger('faculty_id');
+            $table->unsignedBigInteger('academic_management_id'); 
             $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
             $table->timestamp('updated_at')->default(DB::raw('CURRENT_TIMESTAMP'));
         
             $table->foreign('faculty_id')
                     ->references('id')
                     ->on('faculties')
+                    ->cascadeOnDelete();
+            $table->foreign('academic_management_id')
+                    ->references('id')
+                    ->on('academic_managements')
                     ->cascadeOnDelete();
         });
     }

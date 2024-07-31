@@ -5,13 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Action extends Model
+class AcademicManagement extends Model
 {
     use HasFactory;
-    protected $table = 'actions';
 
-    public function session()
-    {
-        return $this->belongsTo(Sesion::class);
-    }
+    protected $table = 'academic_managements';
 }

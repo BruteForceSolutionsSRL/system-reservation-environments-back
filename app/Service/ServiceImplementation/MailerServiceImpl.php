@@ -38,6 +38,7 @@ class MailerServiceImpl implements MailerService
 	public function sendMail(Mailable $mail, array $addresses): void
 	{
 		MailSenderJob::dispatch($addresses, $mail);//->withTags(['mail']);
+		//\Mail::to($addresses)->send($mail);	
 	}
 
 	/**
@@ -177,7 +178,6 @@ class MailerServiceImpl implements MailerService
 		];
 
 		$this->getPersonsByReservation($emailData, $reservation);
-
         $emailData = array_merge($emailData, $reservation);
 		$addresses = $this->getAddresses($emailData['to']);
 		$emailData['to'] = array_unique(array_map(
@@ -501,8 +501,9 @@ class MailerServiceImpl implements MailerService
 	{
 		$addresses = [];
 
-		for ($i = 0; $i<count($data); $i++)
+		for ($i = 0; $i<count($data); $i++){
 			array_push($addresses, $data[$i]['email']);
+		}
 
 		return array_unique($addresses);
 	}

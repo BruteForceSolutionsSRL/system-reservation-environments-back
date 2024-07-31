@@ -74,7 +74,7 @@ class Person extends Authenticatable implements JWTSubject
         return $this->belongsToMany(Reservation::class);
     }
 
-    public function personReservation()
+    public function personReservations()
     {
         return $this->hasMany(PersonReservation::class);
     }

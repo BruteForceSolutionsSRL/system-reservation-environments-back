@@ -23,4 +23,21 @@ class ConstantRepository
         return Constant::where('identifier', 'MAXIMAL_RESERVATIONS_PER_GROUP')
             ->get()->first()->value;
     }
+
+    public function updateAutomaticReservation()
+    {
+        $constant = $this->model::where('identifier', 'AUTOMATIC_RESERVATION')
+            ->get()->first();
+        $constant->value = $constant->value === '1'? '0': '1'; 
+        $constant->save();
+    }
+
+    public function updateMaximalReservationPerGroup(array &$data)
+    {
+        $constant = $this->model::where('identifier', 'MAXIMAL_RESERVATIONS_PER_GROUP')
+            ->get()->first();
+        $constant->value = strval($data['quantity']);
+        $constant->save(); 
+    }
+
 }
