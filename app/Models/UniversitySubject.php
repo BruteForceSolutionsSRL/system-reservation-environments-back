@@ -15,7 +15,7 @@ class UniversitySubject extends Model
         return $this->hasMany(TeacherSubject::class);
     }
 
-    public function studyPlan()
+    public function studyPlans()
     {
         return $this->belongsToMany(StudyPlan::class);
     }
@@ -25,7 +25,7 @@ class UniversitySubject extends Model
         return $this->belongsTo(Department::class);
     }
 
-    public function studyPlanUniversitySubject()
+    public function studyPlanUniversitySubjects()
     {
         return $this->hasMany(StudyPlanUniversitySubject::class);
     }

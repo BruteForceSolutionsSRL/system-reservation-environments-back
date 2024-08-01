@@ -47,7 +47,10 @@ insert into permissions(name, created_at, updated_at) values
 ('environment_remove', NOW(), NOW()),       /*ID 10*/
 ('reservation_cancel', NOW(), NOW()),       /*ID 11*/
 ('history', NOW(), NOW()),                  /*ID 12*/
-('special_reservation', NOW(), NOW())       /*ID 13*/
+('special_reservation', NOW(), NOW()),       /*ID 13*/
+('switch_constants', NOW(), NOW()),         /*ID 14*/
+('academic_management', NOW(), NOW()),       /*ID 15*/
+('academic_periods', NOW(), NOW())       /*ID 16*/
 ;           
 /*
     role_permission
@@ -66,6 +69,9 @@ insert into role_permission(role_id, permission_id, created_at, updated_at) valu
 (1,10,NOW(), NOW()),
 (1,13,NOW(), NOW()),
 (1,1,NOW(), NOW()),
+(1,14,NOW(),NOW()),
+(1,15,NOW(),NOW()),
+(1,16,NOW(),NOW()),
 (2,1,NOW(), NOW()),
 (2,11,NOW(), NOW()),
 (2,12,NOW(), NOW())
@@ -190,37 +196,38 @@ values
     ('14:15:00', NOW(), NOW()), /*ID 32*/
     ('14:30:00', NOW(), NOW()), /*ID 33*/
     ('14:45:00', NOW(), NOW()), /*ID 34*/
-    ('15:15:00', NOW(), NOW()), /*ID 35*/
-    ('15:30:00', NOW(), NOW()), /*ID 36*/
-    ('15:45:00', NOW(), NOW()), /*ID 37*/
-    ('16:00:00', NOW(), NOW()), /*ID 38*/
-    ('16:15:00', NOW(), NOW()), /*ID 39*/
-    ('16:30:00', NOW(), NOW()), /*ID 40*/
-    ('16:45:00', NOW(), NOW()), /*ID 41*/
-    ('17:00:00', NOW(), NOW()), /*ID 42*/
-    ('17:15:00', NOW(), NOW()), /*ID 43*/
-    ('17:30:00', NOW(), NOW()), /*ID 44*/
-    ('17:45:00', NOW(), NOW()), /*ID 45*/
-    ('18:00:00', NOW(), NOW()), /*ID 46*/
-    ('18:15:00', NOW(), NOW()), /*ID 47*/
-    ('18:30:00', NOW(), NOW()), /*ID 48*/
-    ('18:45:00', NOW(), NOW()), /*ID 49*/
-    ('19:00:00', NOW(), NOW()), /*ID 50*/
-    ('19:15:00', NOW(), NOW()), /*ID 51*/
-    ('19:30:00', NOW(), NOW()), /*ID 52*/
-    ('19:45:00', NOW(), NOW()), /*ID 53*/
-    ('20:00:00', NOW(), NOW()), /*ID 54*/
-    ('20:15:00', NOW(), NOW()), /*ID 55*/
-    ('20:30:00', NOW(), NOW()), /*ID 56*/
-    ('20:45:00', NOW(), NOW()), /*ID 57*/
-    ('21:00:00', NOW(), NOW()), /*ID 58*/
-    ('21:15:00', NOW(), NOW()), /*ID 59*/
-    ('21:30:00', NOW(), NOW()), /*ID 60*/
-    ('21:45:00', NOW(), NOW()), /*ID 61*/
-    ('22:00:00', NOW(), NOW()), /*ID 62*/
-    ('22:15:00', NOW(), NOW()), /*ID 63*/
-    ('22:30:00', NOW(), NOW()), /*ID 64*/
-    ('22:45:00', NOW(), NOW())  /*ID 65*/
+    ('15:00:00', NOW(), NOW()), /*ID 35*/
+    ('15:15:00', NOW(), NOW()), /*ID 36*/
+    ('15:30:00', NOW(), NOW()), /*ID 37*/
+    ('15:45:00', NOW(), NOW()), /*ID 38*/
+    ('16:00:00', NOW(), NOW()), /*ID 39*/
+    ('16:15:00', NOW(), NOW()), /*ID 40*/
+    ('16:30:00', NOW(), NOW()), /*ID 41*/
+    ('16:45:00', NOW(), NOW()), /*ID 42*/
+    ('17:00:00', NOW(), NOW()), /*ID 43*/
+    ('17:15:00', NOW(), NOW()), /*ID 44*/
+    ('17:30:00', NOW(), NOW()), /*ID 45*/
+    ('17:45:00', NOW(), NOW()), /*ID 46*/
+    ('18:00:00', NOW(), NOW()), /*ID 47*/
+    ('18:15:00', NOW(), NOW()), /*ID 48*/
+    ('18:30:00', NOW(), NOW()), /*ID 49*/
+    ('18:45:00', NOW(), NOW()), /*ID 50*/
+    ('19:00:00', NOW(), NOW()), /*ID 51*/
+    ('19:15:00', NOW(), NOW()), /*ID 52*/
+    ('19:30:00', NOW(), NOW()), /*ID 53*/
+    ('19:45:00', NOW(), NOW()), /*ID 54*/
+    ('20:00:00', NOW(), NOW()), /*ID 55*/
+    ('20:15:00', NOW(), NOW()), /*ID 56*/
+    ('20:30:00', NOW(), NOW()), /*ID 57*/
+    ('20:45:00', NOW(), NOW()), /*ID 58*/
+    ('21:00:00', NOW(), NOW()), /*ID 59*/
+    ('21:15:00', NOW(), NOW()), /*ID 60*/
+    ('21:30:00', NOW(), NOW()), /*ID 61*/
+    ('21:45:00', NOW(), NOW()), /*ID 62*/
+    ('22:00:00', NOW(), NOW()), /*ID 63*/
+    ('22:15:00', NOW(), NOW()), /*ID 64*/
+    ('22:30:00', NOW(), NOW()), /*ID 65*/
+    ('22:45:00', NOW(), NOW())  /*ID 66*/
 ;
 /*
     faculties
@@ -237,8 +244,8 @@ insert into academic_managements(name, initial_date, end_date) values
 /*
     academic_periods
 */
-insert into academic_periods(name, initial_date, end_date, activated, faculty_id, academic_management_id) values
-    ('I-2024', '2024-04-01', '2024-09-01', 1, 1, 1) /*ID 1 - I-2024*/
+insert into academic_periods(name, initial_date, end_date, activated, faculty_id, academic_management_id, initial_date_reservations) values
+    ('I-2024', '2024-04-01', '2024-09-01', 1, 1, 1, '2024-04-01') /*ID 1 - I-2024*/
 ;
 /*
     careers

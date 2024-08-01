@@ -20,7 +20,7 @@ class StudyPlan extends Model
         return $this->belongsTo(AcademicPeriod::class);
     }
 
-    public function studyPlanUniversityPlan()
+    public function studyPlanUniversityPlans()
     {
         return $this->hasMany(StudyPlanUniversitySubject::class);
     }
