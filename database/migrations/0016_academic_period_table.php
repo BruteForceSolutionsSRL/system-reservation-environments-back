@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->date('initial_date');
             $table->date('end_date');
+            $table->date('initial_date_reservations');
             $table->boolean('activated');
             $table->unsignedBigInteger('faculty_id');
             $table->unsignedBigInteger('academic_management_id'); 

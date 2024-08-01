@@ -10,4 +10,9 @@ class AcademicManagement extends Model
     use HasFactory;
 
     protected $table = 'academic_managements';
+
+    public function academicPeriods()
+    {
+        return $this->hasMany(AcademicPeriod::class);
+    }
 }

@@ -19,7 +19,8 @@ use App\Http\Controllers\{
     UniversitySubjectController,
     FacultyController,
     ConstantController, 
-    AcademicManagementController
+    AcademicManagementController,
+    AcademicPeriodController
 };
 
 /*
@@ -206,9 +207,9 @@ Route::controller(FacultyController::class)->group(function() {
     });
 });
 
-// necesito que este endpoint sea solo para el administrador, nadie mas puede verlo, necesario
+// necesito que este endpoint sea solo para el administrador, nadie mas puede verlo, necesario: switch 
 Route::controller(ConstantController::class)->group(function() {
-    Route::group(['middleware' => ['jwt.verify']], function () {
+    Route::group(['middleware' => ['jwt.verify', 'permissions:switch_constants']], function () {
         Route::get('/constants/automatic-reservation', 'getAutomaticReservationConstant');
         Route::get('/constants/maximal-reservations-per-group', 'getMaximalReservationPerGroup');
 
@@ -217,13 +218,24 @@ Route::controller(ConstantController::class)->group(function() {
     });
 });
 
+// necesito permisos para esta parte igual
 Route::controller(AcademicManagementController::class)->group(function() {
-    //Route::group(['middleware' => ['jwt.verify']], function () {
+    Route::group(['middleware' => ['jwt.verify', 'permissions:academic_management']], function () {
         Route::get('/academic-managements', 'list');
         Route::get('/academic-managements/{academicManagementId}', 'index');
 
-        Route::post('/academic-managements/{academicManagementId}/store', 'store'); 
+        Route::post('/academic-managements/store', 'store'); 
         Route::post('/academic-managements/{academicManagementId}/update', 'update');        
-    //});
+    });
 });
 
+// necesito nuevos permisos para esta parte
+Route::controller(AcademicPeriodController::class)->group(function() {
+    Route::group(['middleware' => ['jwt.verify', 'permissions:academic_periods']], function () {
+        Route::get('/academic-periods', 'list');
+        Route::get('/academic-periods/{academicManagementId}', 'index');
+
+        Route::post('/academic-periods/store', 'store'); 
+        Route::post('/academic-periods/{academicManagementId}/update', 'update');        
+    });
+});

@@ -13,9 +13,9 @@ class AcademicPeriodRepository
         $this->model = AcademicPeriod::class;
     }
 
-    public function getAcademicPeriod(string $date): array 
+    public function getAcademicPeriod(int $academicPeriodId): array 
     {
-        return [];
+        return $this->formatOutput($this->model::find($academicPeriodId));
     }
 
     public function getActiveAcademicPeriods(string $date): array 
@@ -50,9 +50,87 @@ class AcademicPeriodRepository
         );
     }
 
+    public function store(array $data): array 
+    {
+        $academicPeriod = new $this->model(); 
+        $academicPeriod->name = $data['name'];
+        $academicPeriod->initial_date = $data['date_start'];
+        $academicPeriod->end_date = $data['date_end'];
+        $academicPeriod->initial_date_reservations = $data['initial_date_reservations'];
+        $academicPeriod->faculty_id = $data['faculty_id'];
+        $academicPeriod->academic_management_id = $data['academic_management_id'];
+        $academicPeriod->activated = 1;
+
+        $academicPeriod->save();
+        return $this->formatOutput($academicPeriod);
+    }
+
+    public function update(array $data, int $academicPeriodId): array 
+    {
+        $academicPeriod = $this->model::find($academicPeriodId);
+        
+        if (array_key_exists('date_start', $data)) {
+            $academicPeriod->initial_date = $data['date_start'];            
+        } 
+        
+        if (array_key_exists('date_end', $data)) {
+            $academicPeriod->end_date = $data['date_end'];
+        }
+        
+        if (array_key_exists('initial_date_reservations', $data)) {
+            $academicPeriod->initial_date_reservations = $data['initial_date_reservations'];
+        }
+        
+        if (array_key_exists('faculty_id', $data)) {
+            $academicPeriod->faculty_id = $data['faculty_id'];
+        }
+        
+        if (array_key_exists('academic_management_id', $data)) {
+            $academicPeriod->academic_management_id = $data['academic_management_id'];
+        }
+
+        if (array_key_exists('activated', $data)) {
+            $academicPeriod->activated = $data['activated'];
+        }
+
+        $academicPeriod->save();
+        return $this->formatOutput($academicPeriod);
+    }
+
+
+    public function getAcademicPeriods(array $data): array 
+    {
+        $query = AcademicPeriod::with([
+            'studyPlans:id,name',
+            'reservations:id',
+            'faculty:id,name', 
+            'academicManagement:id,name'
+        ]); 
+
+        if (array_key_exists('date', $data)) {
+            $query->where(
+                function ($query) use ($data){
+                    $query->where('initial_date', '<=', $data['date'])
+                        ->where('end_date', '>=', $data['date']);
+                }
+            );
+        }
+
+        if (array_key_exists('facultyId', $data)) {
+            $query->where('faculty_id', $data['facultyId']);
+        }
+
+        return $query->get()->map(
+            function ($academicPeriod) {
+                return $this->formatOutput($academicPeriod);
+            }
+        )->toArray();
+        
+    }
+
     public function formatOutput($academicPeriod) 
     {
-        $studyPlans = '1';
+        if ($academicPeriod === null) return [];
         return [
             'academic_period_id' => $academicPeriod->id,
             'name' => $academicPeriod->name,

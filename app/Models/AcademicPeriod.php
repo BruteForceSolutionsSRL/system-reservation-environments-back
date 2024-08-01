@@ -24,4 +24,9 @@ class AcademicPeriod extends Model
     {
         return $this->belongsTo(Faculty::class);
     }
+
+    public function academicManagement()
+    {
+        return $this->belongsTo(AcademicManagement::class);
+    }
 }
