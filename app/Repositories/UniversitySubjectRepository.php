@@ -28,12 +28,35 @@ class UniversitySubjectRepository
         )->toArray();
     }
 
+    public function store(array $data): array 
+    {
+        $universitySubject = new $this->model();
+
+        $universitySubject->id = $data['cod_sis']; 
+        $universitySubject->name = $data['name']; 
+        $universitySubject->department_id = $data['department_id']; 
+        $universitySubject->save();
+
+        $aux = []; 
+        for ($i = 0; $i < count($data['levels']); $i++) {
+            array_push(
+                $aux, 
+                [
+                    'study_plan_id' => $data['study_plan_ids'][$i], 
+                    'grade' => $data['levels'][$i]
+                ]
+            );
+        }
+        $universitySubject->studyPlans()->attach($aux);
+
+        return $this->formatOutput($universitySubject);
+    }
+
     private function formatOutput($universitySubject)
     {
         return [
             'university_subject_id' => $universitySubject->id,
             'name' => $universitySubject->name,
-            'grade' => $universitySubject->grade,
         ];
     }
 }

@@ -41,9 +41,15 @@ class AcademicPeriodServiceImpl implements AcademicPeriodService
 		$academicPeriod = $this->academicPeriodRepository->update($data, $academicPeriodId); 
 		return 'Se actualizo correctamente el periodo academico '.$academicPeriod['name'].'.';
 	}  
-
-	public function copyAcademicPeriod(array $data): string 
+	// en el data debe llevar el nuevo nombre, y fechas, todo completo, lo que no interesa que me da el anterior son: .
+	/**
+	 * 1. reservations de configuracion
+	 * 2. grupos de materias y profesores posibles + carreras (si es que aplica) 
+	 */ 
+	public function copyAcademicPeriod(array $data, int $academicPeriodId): string 
 	{
+		$academicPeriod = $this->academicPeriodRepository->getAcademicPeriod($academicPeriodId);
+
 		return '';
 	}
 }

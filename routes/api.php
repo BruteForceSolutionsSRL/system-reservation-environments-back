@@ -20,7 +20,8 @@ use App\Http\Controllers\{
     FacultyController,
     ConstantController, 
     AcademicManagementController,
-    AcademicPeriodController
+    AcademicPeriodController,
+    DepartmentController
 };
 
 /*
@@ -197,6 +198,8 @@ Route::controller(PersonController::class)->group(function() {
 Route::controller(UniversitySubjectController::class)->group(function() {
     Route::group(['middleware' => ['jwt.verify']], function () {
         Route::middleware('permissions:report')->get('/university-subjects', 'list');
+
+        Route::post('/university-subjects/store', 'store');
     });
 });
 
@@ -239,3 +242,10 @@ Route::controller(AcademicPeriodController::class)->group(function() {
         Route::post('/academic-periods/{academicManagementId}/update', 'update');        
     });
 });
+
+Route::controller(DepartmentController::class)->group(function() {
+    Route::group(['middleware' => ['jwt.verify', 'permissions:academic_management']], function () {
+        Route::get('/departments', 'list');
+    });
+});
+

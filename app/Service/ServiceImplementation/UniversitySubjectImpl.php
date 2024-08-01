@@ -23,5 +23,11 @@ class UniversitySubjectImpl implements UniversitySubjectService
     {
         return $this->universitySubjectRepository->getAllUniversitySubjects();
     }
+
+    public function store(array $data): string 
+    {
+        $universitySubject = $this->universitySubjectRepository->store($data); 
+        return 'Se realizo el registro correctamente del la materia '.$universitySubject['name'].'('.$universitySubject['university_subject_id'].')';
+    }
 }
 
