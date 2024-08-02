@@ -251,7 +251,7 @@ Route::controller(DepartmentController::class)->group(function() {
 });
 
 Route::controller(StudyPlanController::class)->group(function() {
-    //Route::group(['middleware' => ['jwt.verify', 'permissions:academic_management']], function () {
+    Route::group(['middleware' => ['jwt.verify']], function () {
         Route::post('/study-plans/filter-by-departments', 'getStudyPlansByDepartments');
-    //});
+    });
 });
