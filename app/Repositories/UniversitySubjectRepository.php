@@ -28,6 +28,17 @@ class UniversitySubjectRepository
         )->toArray();
     }
 
+    public function getUniversitySubject(int $universitySubjectId): array 
+    {
+        return $this->formatOutput($this->model::find($universitySubjectId));
+    }
+
+    public function delete(int $universitySubjectId): void 
+    {
+        $universitySubject = UniversitySubject::find($universitySubjectId); 
+        $universitySubject->delete();
+    }
+
     public function store(array $data): array 
     {
         $universitySubject = new $this->model();

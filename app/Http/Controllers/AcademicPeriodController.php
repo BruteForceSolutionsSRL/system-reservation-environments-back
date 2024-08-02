@@ -9,6 +9,8 @@ use Illuminate\Http\{
     JsonResponse as Response
 };
 
+use Exception;
+
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 
@@ -25,7 +27,7 @@ class AcademicPeriodController extends Controller
     {
         try {
             return response()->json($this->academicPeriodService->getAllAcademicPeriods(), 200); 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json(
                 [
                     'message' => 'Se ha producido un error en el servidor.', 
@@ -48,7 +50,7 @@ class AcademicPeriodController extends Controller
                 );
             }
             return response()->json($academicPeriod, 200); 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json(
                 [
                     'message' => 'Se ha producido un error en el servidor.', 
@@ -57,6 +59,30 @@ class AcademicPeriodController extends Controller
                 500
             );
         }        
+    }
+
+    public function getAcademicPeriodByFaculty(Request $request): Response
+    {
+        try {
+            $facultyId = \JWTAuth::parseToken($request->bearerToken())->getClaim('faculty_id');
+            $academicPeriod = $this->academicPeriodService
+                ->getActualAcademicPeriodByFaculty($facultyId);
+            if (empty($academicPeriod)) {
+                return response()->json(
+                    ['message' => 'No existe el periodo academica seleccionado, por favor seleccione otro.'], 
+                    404
+                );
+            }
+            return response()->json($academicPeriod, 200); 
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'message' => 'Se ha producido un error en el servidor.', 
+                    'error' => $e->getMessage()
+                ], 
+                500
+            );
+        }
     }
 
     public function store(Request $request): Response 
@@ -95,7 +121,7 @@ class AcademicPeriodController extends Controller
                 ['message' => $this->academicPeriodService->store($data)], 
                 200
             ); 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json(
                 [
                     'message' => 'Se ha producido un error en el servidor.', 
@@ -139,7 +165,7 @@ class AcademicPeriodController extends Controller
         ]);
     }
 
-    public function update(Request $request, int $academicManagementId): Response 
+    public function update(Request $request, int $academicPeriodId): Response 
     {
         try {
             $validator = $this->validateAcademicPeriodUpdateData($request); 
@@ -159,10 +185,10 @@ class AcademicPeriodController extends Controller
             }
 
             return response()->json(
-                ['message' => $this->academicPeriodService->update($data, $academicManagementId)], 
+                ['message' => $this->academicPeriodService->update($data, $academicPeriodId)], 
                 200
             ); 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json(
                 [
                     'message' => 'Se ha producido un error en el servidor.', 

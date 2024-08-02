@@ -23,7 +23,7 @@ class AcademicPeriodRepository
         return $this->model::where('initial_date', '<=', $date)
             ->where('end_date', '>=', $date)
             ->get()->map(
-                function ($AcademicPeriod) 
+                function ($academicPeriod) 
                 {
                     return $this->formatOutput($academicPeriod);
                 }
@@ -97,7 +97,6 @@ class AcademicPeriodRepository
         return $this->formatOutput($academicPeriod);
     }
 
-
     public function getAcademicPeriods(array $data): array 
     {
         $query = AcademicPeriod::with([
@@ -125,7 +124,6 @@ class AcademicPeriodRepository
                 return $this->formatOutput($academicPeriod);
             }
         )->toArray();
-        
     }
 
     public function formatOutput($academicPeriod) 

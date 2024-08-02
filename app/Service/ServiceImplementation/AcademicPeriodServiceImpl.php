@@ -5,6 +5,8 @@ use App\Service\AcademicPeriodService;
 
 use App\Repositories\AcademicPeriodRepository;
 
+use Carbon\Carbon;
+
 class AcademicPeriodServiceImpl implements AcademicPeriodService
 {
 	private $academicPeriodRepository; 
@@ -24,6 +26,21 @@ class AcademicPeriodServiceImpl implements AcademicPeriodService
 			$data
 		);
 	} 
+
+	public function getActualAcademicPeriodByFaculty(int $factultyId): array 
+	{
+		$now = Carbon::now()->setTimeZone('America/New_York')->format('Y-m-d');
+		$result = $this->academicPeriodRepository->getAcademicPeriods(
+			[
+				'facultyId' => $factultyId, 
+				'date' => $now,
+			]
+		);
+		if (empty($result)) {
+			return [];
+		}
+		return $result[0];
+	}
 
 	public function getAcademicPeriod(int $academicPeriodId): array
 	{

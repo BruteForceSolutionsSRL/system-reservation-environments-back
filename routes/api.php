@@ -21,7 +21,8 @@ use App\Http\Controllers\{
     ConstantController, 
     AcademicManagementController,
     AcademicPeriodController,
-    DepartmentController
+    DepartmentController,
+    StudyPlanController
 };
 
 /*
@@ -198,19 +199,20 @@ Route::controller(PersonController::class)->group(function() {
 Route::controller(UniversitySubjectController::class)->group(function() {
     Route::group(['middleware' => ['jwt.verify']], function () {
         Route::middleware('permissions:report')->get('/university-subjects', 'list');
-
-        Route::post('/university-subjects/store', 'store');
+    });
+    Route::group(['middleware' => ['sanitize:api','jwt.verify']], function () {
+        Route::middleware('permissions:academic_management')->post('/university-subjects/store', 'store');
+        Route::middleware('permissions:academic_management')->delete('/university-subjects/{universitySubjectId}', 'destroy');
     });
 });
 
 Route::controller(FacultyController::class)->group(function() {
     Route::get('/faculties', 'list');
     Route::group(['middleware' => ['jwt.verify']], function () {
-        Route::get('/faculties/user', 'list');
+        Route::get('/faculties/user', 'getFacultiesByUser');
     });
 });
 
-// necesito que este endpoint sea solo para el administrador, nadie mas puede verlo, necesario: switch 
 Route::controller(ConstantController::class)->group(function() {
     Route::group(['middleware' => ['jwt.verify', 'permissions:switch_constants']], function () {
         Route::get('/constants/automatic-reservation', 'getAutomaticReservationConstant');
@@ -221,7 +223,6 @@ Route::controller(ConstantController::class)->group(function() {
     });
 });
 
-// necesito permisos para esta parte igual
 Route::controller(AcademicManagementController::class)->group(function() {
     Route::group(['middleware' => ['jwt.verify', 'permissions:academic_management']], function () {
         Route::get('/academic-managements', 'list');
@@ -232,10 +233,10 @@ Route::controller(AcademicManagementController::class)->group(function() {
     });
 });
 
-// necesito nuevos permisos para esta parte
 Route::controller(AcademicPeriodController::class)->group(function() {
     Route::group(['middleware' => ['jwt.verify', 'permissions:academic_periods']], function () {
         Route::get('/academic-periods', 'list');
+        Route::get('/academic-periods/actual-period', 'getAcademicPeriodByFaculty');
         Route::get('/academic-periods/{academicManagementId}', 'index');
 
         Route::post('/academic-periods/store', 'store'); 
@@ -249,3 +250,8 @@ Route::controller(DepartmentController::class)->group(function() {
     });
 });
 
+Route::controller(StudyPlanController::class)->group(function() {
+    //Route::group(['middleware' => ['jwt.verify', 'permissions:academic_management']], function () {
+        Route::post('/study-plans/filter-by-departments', 'getStudyPlansByDepartments');
+    //});
+});
