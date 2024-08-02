@@ -8,6 +8,7 @@ use Illuminate\Http\{
 };
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 use App\Service\ServiceImplementation\{
     ReservationServiceImpl,
@@ -359,8 +360,8 @@ class ReservationController extends Controller
                     404
                 );
             
-            if (\JWTAuth::parseToken($request->bearerToken())->getClaim('faculty_id') !== null) {
-                $data['faculty_id'] = \JWTAuth::parseToken($request->bearerToken())->getClaim('faculty_id'); 
+            if (JWTAuth::parseToken($request->bearerToken())->getClaim('faculty_id') !== null) {
+                $data['faculty_id'] = JWTAuth::parseToken($request->bearerToken())->getClaim('faculty_id'); 
             } else {
                 return response()->json(
                     ['message' => 'Existe un error con su token de acceso, por favor cierre sesion e ingrese nuevamente.'], 

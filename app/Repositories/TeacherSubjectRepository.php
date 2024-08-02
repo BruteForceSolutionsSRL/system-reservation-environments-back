@@ -70,9 +70,9 @@ class TeacherSubjectRepository
         if (empty($teacherSubjectIds)) {
             return true;
         }
-        $subjectId = $this->model::find($teacherSubjectIds[0])->university_subject_id;
+        $subjectId = $this->model::find($teacherSubjectIds[0])->first()->university_subject_id;
         foreach ($teacherSubjectIds as $teacherSubjectId) {
-            $auxSubjectId = $this->model::find($teacherSubjectId)->university_subject_id; 
+            $auxSubjectId = $this->model::find($teacherSubjectId)->first()->university_subject_id; 
             if ($auxSubjectId !== $subjectId) return false;
         }
         return true;
@@ -89,6 +89,22 @@ class TeacherSubjectRepository
             'subject_id' => $universitySubject->university_subject_id,
             'subject_name' => $universitySubject->universitySubject->name,
         ];
+    }
+
+    /**
+     * 
+     * @param array $data
+     * @return array
+     */
+    public function saveGroup(array $data):array
+    {
+        $teacherSubject = new TeacherSubject();
+        $teacherSubject->group_number = $data['group_number'];
+        $teacherSubject->person_id = $data['person_id'];  
+        $teacherSubject->university_subject_id = $data['university_subject_id'];
+        $teacherSubject->save();
+
+        return ['teacher_subject_id' => $teacherSubject->id];
     }
 
     /**

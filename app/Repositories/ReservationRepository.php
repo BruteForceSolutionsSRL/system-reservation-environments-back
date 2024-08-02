@@ -375,11 +375,21 @@ class ReservationRepository extends Repository
         $reservation->repeat = $data['repeat'];
         $reservation->date = $data['date'];
         $reservation->reservation_reason_id = $data['reservation_reason_id'];
-        $reservation->reservation_status_id = ReservationStatuses::pending();
+
+        if (array_key_exists('verified', $data)) {
+            $reservation->reservation_status_id = $data['reservation_status_id'];
+        } else {
+            $reservation->reservation_status_id = ReservationStatuses::pending();
+        }
+        
         $reservation->priority = $data['priority'];
         $reservation->verified = 0;
         $reservation->observation = (array_key_exists('observation', $data))? $data['observation']: 'Ninguna';
         $reservation->academic_period_id = $data['academic_period']['academic_period_id'];
+
+        if (array_key_exists('verified', $data)) {
+            $reservation->parent_id = $data['verified'];
+        }
 
         if (array_key_exists('parent_id', $data)) {
             $reservation->parent_id = $data['parent_id'];
@@ -396,7 +406,7 @@ class ReservationRepository extends Repository
             $reservation->parent_id = $reservation->id;
             $reservation->save();
         }
-        
+
         if (!empty($data['persons'])) {
             $reservation->persons()->attach(
                 array_map(
@@ -416,7 +426,6 @@ class ReservationRepository extends Repository
                 }
             }
         }
-        
         if (!empty($data['classroom_ids'])) {
             $reservation->classrooms()->attach($data['classroom_ids']);
         }

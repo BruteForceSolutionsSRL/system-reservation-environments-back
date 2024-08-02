@@ -95,7 +95,11 @@ class AcademicPeriodRepository
 
         $academicPeriod->save();
         return $this->formatOutput($academicPeriod);
+        /* return $this->formatOutput(
+            $this->model::find($id)
+        ); */
     }
+
 
 
     public function getAcademicPeriods(array $data): array 

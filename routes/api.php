@@ -146,6 +146,7 @@ Route::controller(ClassroomController::class)->group(function() {
 });
 
 Route::controller(TeacherSubjectController::class)->group(function() {
+    Route::post('/teacher-subjects/store/group','saveGroup');
     Route::group(['middleware' => ['jwt.verify','permissions:request_reserve,report']], function () {
         Route::get('/teacher-subjects/teacher/{teacherId}', 'subjectsByTeacher');
         Route::get('/teacher-subjects/subject/{universitySubjectID}', 'teachersBySubject');
