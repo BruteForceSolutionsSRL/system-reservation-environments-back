@@ -250,11 +250,19 @@ insert into academic_periods(name, initial_date, end_date, activated, faculty_id
 /*
     careers
 */
-insert into   study_plans (academic_period_id, name, created_at, updated_at) 
+insert into   study_plans (name, created_at, updated_at) 
 values 
-    (1, 'LICENCIATURA EN INGENIERIA INFORMATICA', NOW(), NOW()), 
-    (1, 'LICENCIATURA EN INGENIERIA DE SISTEMAS', NOW(), NOW()), 
-    (1, 'LICENCIATURA EN ELECTROMECANICA'       , NOW(), NOW())
+    ('LICENCIATURA EN INGENIERIA INFORMATICA', NOW(), NOW()), 
+    ('LICENCIATURA EN INGENIERIA DE SISTEMAS', NOW(), NOW()), 
+    ('LICENCIATURA EN ELECTROMECANICA'       , NOW(), NOW())
+;
+/*
+    study_plans_academic_period
+*/
+insert into study_plan_academic_period (study_plan_id, academic_period_id) values 
+    (1, 1), 
+    (2, 1), 
+    (3, 1)
 ;
 /*
     university_subjects
@@ -546,7 +554,7 @@ values
     (29, 'BLOQUE 29',                           0, 1, 20, 1),     /*ID F*/
     (9,  'DEPARTAMENTO DE BIOLOGIA',            2, 1, 20, 1),     /*ID F*/       
     (27, 'BLOQUE 27',                           3, 1, 20, 1),     /*ID F*/    
-    (7,  'DEPARTAMENTO DE QUIMICA',             0, 1, 20, 1),     /*ID F*/    
+    (7,  'DEPARTAMENTO DE QUIMICA',             1, 1, 20, 1),     /*ID F*/    
     (28, 'BLOQUE 28',                           2, 1, 20, 1),     /*ID F*/    
     (4,  'DEPARTAMENTO DE FISICA',              0, 1, 20, 1),     /*ID F*/
     (12, 'BLOQUE 12',                           2, 1, 20, 1),     /*ID F*/       
@@ -556,7 +564,7 @@ values
     (22, 'DEPARTAMENTO INDUSTRIAL',             0, 1, 20, 1),     /*ID F*/
     (17, 'PLANTA DE PROCESOS INDUSTRIALES',     2, 1, 20, 1),     /*ID F*/       
     (19, 'SECTOR LABORATORIOS MECANICA',        3, 1, 20, 1),     /*ID F*/    
-    (20, 'EDIFICIO CAD - CAM',                  0, 1, 20, 1),     /*ID F*/    
+    (20, 'EDIFICIO CAD - CAM',                  1, 1, 20, 1),     /*ID F*/    
     (1,  'BLOQUE CENTRAL EDIFICIO DECANATURA',  2, 1, 20, 1),     /*ID F*/    
     (16, 'EDIFICIO ACADEMICO 2',                3, 1, 20, 1),     /*ID F*/
     (65, 'BLOQUE TRENCITO',                     2, 1, 20, 1),     /*ID F*/       

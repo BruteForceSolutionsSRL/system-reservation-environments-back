@@ -53,6 +53,7 @@ return new class extends Migration
             from 
                 people as P, 
                 academic_periods as AP, 
+                study_plan_academic_period as SPAP,
                 university_subjects as US,
                 study_plans as SP,
                 study_plan_university_subject as SPUS
@@ -60,8 +61,10 @@ return new class extends Migration
                 new.person_id = P.id 
                 and SPUS.university_subject_id = new.university_subject_id
                 and SPUS.study_plan_id = SP.id
-                and AP.id = SP.academic_period_id
                 and new.university_subject_id = US.id
+                and SPAP.study_plan_id = SP.id 
+                and SPAP.academic_period_id = AP.id
+            order by AP.id desc
             limit 1
             ;
     
@@ -105,6 +108,7 @@ return new class extends Migration
             from 
                 people as P, 
                 academic_periods as AP, 
+                study_plan_academic_period as SPAP,
                 university_subjects as US,
                 study_plans as SP,
                 study_plan_university_subject as SPUS
@@ -112,8 +116,10 @@ return new class extends Migration
                 new.person_id = P.id 
                 and SPUS.university_subject_id = new.university_subject_id
                 and SPUS.study_plan_id = SP.id
-                and AP.id = SP.academic_period_id
                 and new.university_subject_id = US.id
+                and SPAP.study_plan_id = SP.id 
+                and SPAP.academic_period_id = AP.id
+            order by AP.id desc
             limit 1
             ;
     

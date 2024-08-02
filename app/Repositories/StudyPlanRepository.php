@@ -45,12 +45,27 @@ class StudyPlanRepository
     private function formatOutput($studyPlan): array 
     {
         if ($studyPlan == null) return [];
-        // aqui falta las materias de una carrera
         return [
             'study_plan_id' => $studyPlan->id, 
             'name' => $studyPlan->name, 
-            'academic_period_id' => $studyPlan->academic_period_id, 
-            'academic_period_name' => $studyPlan->academicPeriod->name,
+            'academic_periods' => $studyPlan->academicPeriods->map(
+                function ($academicPeriod)
+                {
+                    return [
+                        'academic_period_id' => $academicPeriod->id, 
+                        'name' => $academicPeriod->name
+                    ];
+                }
+            )->toArray(),
+            'university_subjects' => $studyPlan->universitySubjects->map(
+                function ($universitySubject) 
+                {
+                    return [
+                        'university_subject_id' => $universitySubject->id, 
+                        'name' => $universitySubject->name,
+                    ];
+                }
+            )->toArray(),
         ];
     }
 }

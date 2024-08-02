@@ -24,7 +24,6 @@ use App\Http\Controllers\{
     DepartmentController,
     StudyPlanController
 };
-
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -165,13 +164,13 @@ Route::controller(NotificationController::class)->group(function() {
 });
 
 Route::controller(BlockController::class)->group(function() {
-    Route::group(['middleware' => ['jwt.verify']], function () {
+    //Route::group(['middleware' => ['jwt.verify']], function () {
         Route::get('/blocks', 'list');
         Route::get('/blocks/{block_id}', 'show'); 
         Route::middleware('permissions:block_remove')->get('/blocks/{block_id}/statistics', 'getBlockStatistics');
         
         Route::middleware('permissions:block_remove')->delete('/blocks/{block_id}', 'destroy'); 
-    });
+    //});
 
     Route::group(['middleware' => ['sanitize:api','jwt.verify']], function () {
         Route::middleware('permissions:block_register')->post('/blocks', 'store'); 
@@ -252,6 +251,7 @@ Route::controller(DepartmentController::class)->group(function() {
 
 Route::controller(StudyPlanController::class)->group(function() {
     Route::group(['middleware' => ['jwt.verify']], function () {
+        Route::get('study-plans', 'list');
         Route::post('/study-plans/filter-by-departments', 'getStudyPlansByDepartments');
     });
 });
