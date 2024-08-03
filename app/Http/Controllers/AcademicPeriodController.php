@@ -85,6 +85,20 @@ class AcademicPeriodController extends Controller
         }
     }
 
+    public function copyAcademicPeriod(Request $request): Response 
+    {
+        try {
+            return response()->json([], 200);
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'message' => 'Se ha producido un error en el servidor.',
+                    'error' => $e->getMessage()
+                ]
+            );
+        }
+    }
+
     public function store(Request $request): Response 
     {
         try {
@@ -117,10 +131,13 @@ class AcademicPeriodController extends Controller
                 );
             }
 
-            return response()->json(
-                ['message' => $this->academicPeriodService->store($data)], 
-                200
-            ); 
+            $message = $this->academicPeriodService->store($data);
+            
+            $pos = strpos($message, 'registro'); 
+            if ($pos !== false) 
+                return response()->json(['message' => $message, 400]);
+
+            return response()->json(['message' => $message], 200); 
         } catch (Exception $e) {
             return response()->json(
                 [

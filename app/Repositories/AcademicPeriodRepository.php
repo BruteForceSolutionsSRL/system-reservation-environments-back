@@ -107,10 +107,13 @@ class AcademicPeriodRepository
         ]); 
 
         if (array_key_exists('date', $data)) {
+            if (!array_key_exists('date_end', $data)) {
+                $data['date_end'] = $data['date'];
+            }
             $query->where(
                 function ($query) use ($data){
                     $query->where('initial_date', '<=', $data['date'])
-                        ->where('end_date', '>=', $data['date']);
+                        ->where('end_date', '>=', $data['date_end']);
                 }
             );
         }

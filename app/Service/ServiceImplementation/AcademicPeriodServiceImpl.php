@@ -49,10 +49,22 @@ class AcademicPeriodServiceImpl implements AcademicPeriodService
 	
 	public function store(array $data): string 
 	{
+		if ($this->existsCollision($data)) {
+			return 'No se pudo realiza el registro del periodo academico, dado que existe un periodo academico ya registrado en dichas fechas, para la facultad seleccionada';
+		}
 		$academicPeriod = $this->academicPeriodRepository->store($data);
 		return 'Se registro correctamente el periodo academico '.$academicPeriod['name'].'.';
 	}
-	
+
+	public function existsCollision(array $data): bool 
+	{
+		return count($this->academicPeriodRepository->getAcademicPeriods([
+			'date' => $data['date_start'],
+			'date_end' => $data['date_end'], 
+			'facultyId' => $data['faculty_id']
+		])) !== 0;
+	}
+
 	public function update(array $data, int $academicPeriodId): string
 	{
 		$academicPeriod = $this->academicPeriodRepository->update($data, $academicPeriodId); 
