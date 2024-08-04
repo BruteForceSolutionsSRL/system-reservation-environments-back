@@ -71,19 +71,17 @@ class TeacherSubjectServiceImpl implements TeacherSubjectService
      */
     public function saveGroup(array $data): array
     {
-        $data['teacher_subject_ids'] = $this->teacherSubjectRepository->saveGroup($data)['group_id'];
+        $data['teacher_subject_ids'] = [$this->teacherSubjectRepository->saveGroup($data)['group_id']];
         $errors = [];
         $reservations = [];
         $academicPeriod = $this->academicPeriodRepository->getAcademicPeriodById($data['academic_period_id']);
-
         foreach ($data['class_schedules'] as $class) {
             $reservationData = [];
             $reservationData['time_slot_ids'] = $class['time_slot_ids'];
             $reservationData['quantity'] = 25;
             $reservationData['repeat'] = 7;
-            $reservationData['date'] = $academicPeriod['initial_date']; // esto esta mal 
             $reservationData['reservation_reason_id'] = 2;
-            $reservationData['reservation_statud_id'] = ReservationStatuses::pending();
+            $reservationData['reservation_status_id'] = ReservationStatuses::pending();
             $reservationData['priority'] = 0;
             $reservationData['academic_period_id'] = $data['academic_period_id'];
             $reservationData['configuration_flag'] = 1;
@@ -92,7 +90,7 @@ class TeacherSubjectServiceImpl implements TeacherSubjectService
             $reservationData['persons'] = $this->personRepository->getTeachersBySubjectGroups(
                 $data['teacher_subject_ids']
             );
-
+            $reservationData['date'] = Carbon::parse($academicPeriod['initial_date'])->next($class['day']+1); 
             $reservation = $this->reservationRepository->save($reservationData);
             $message = $this->reservationService->accept($reservation['reservation_id'], true);
             $pos = strpos($message, 'aceptada');
@@ -101,10 +99,19 @@ class TeacherSubjectServiceImpl implements TeacherSubjectService
             }
             array_push($reservations, $reservation['reservation_id']);
         }
+        if (!empty($errors)) {
+            foreach ($reservations as $reservationId) {
+                $this->reservationRepository
+                    ->updateReservationStatus($reservationId, ReservationStatuses::cancelled());
+            }
+            return ['message' => 'Existe error(es): '.implode(',', $errors)];
+        }
         return ['message' => 'Grupo creado con exito'];
     }
 
     public function test() {
-        return Carbon::MONDAY;
+        $date = Carbon::parse('2024-08-04');
+        $date->next(Carbon::MONDAY);
+        return Carbon::TUESDAY;
     }
 }

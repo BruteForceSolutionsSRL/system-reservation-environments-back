@@ -415,12 +415,19 @@ class ReservationRepository extends Repository
                     }, $data['persons']
                 )
             );
-            $reservation->persons()->updateExistingPivot($data['person_id'], ['created_by_me' => 1]);
+            if (array_key_exists('person_id', $data)) {
+                $reservation->persons()->updateExistingPivot(
+                    $data['person_id'], 
+                    ['created_by_me' => 1]
+                );
+            }
             if (array_key_exists('teacher_subject_ids', $data['persons'][0])) {
                 $dp = [];
+                echo 'x';
                 foreach ($data['persons'] as $person) {
                     $dp[$person['person_id']] = $person['teacher_subject_ids'];
                 }
+                echo 'z';
                 foreach ($reservation->personReservations as $personReservation) {
                     $personReservation->teacherSubjects()->attach($dp[$personReservation->person_id]);
                 }

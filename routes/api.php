@@ -108,7 +108,6 @@ Route::controller(ReservationController::class)->group(function() {
         Route::middleware('permissions:request_reserve')->post('/reservations', 'store');
         Route::middleware('permissions:special_reservation')->post('/reservations/special', 'storeSpecialRequest');
     }); 
-    Route::get('/test', 'test');
 });
 
 Route::controller(ClassroomStatusController::class)->group(function() {
@@ -152,6 +151,7 @@ Route::controller(TeacherSubjectController::class)->group(function() {
         Route::get('/teacher-subjects/teacher/{teacherId}', 'subjectsByTeacher');
         Route::get('/teacher-subjects/subject/{universitySubjectID}', 'teachersBySubject');
     });
+    Route::get('/test', 'test');
 });
 
 Route::controller(NotificationController::class)->group(function() {
