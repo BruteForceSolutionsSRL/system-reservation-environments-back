@@ -385,7 +385,7 @@ class ReservationRepository extends Repository
         $reservation->priority = $data['priority'];
         $reservation->verified = 0;
         $reservation->observation = (array_key_exists('observation', $data))? $data['observation']: 'Ninguna';
-        $reservation->academic_period_id = $data['academic_period']['academic_period_id'];
+        $reservation->academic_period_id = $data['academic_period_id'];
 
         if (array_key_exists('verified', $data)) {
             $reservation->parent_id = $data['verified'];

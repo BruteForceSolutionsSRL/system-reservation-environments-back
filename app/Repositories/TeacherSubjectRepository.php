@@ -91,18 +91,18 @@ class TeacherSubjectRepository
      * @param TeacherSubject $universitySubject
      * @return array
      */
-    private function formatOutputSubject(TeacherSubject $universitySubject): array
+    private function formatOutputSubject($teacherSubject): array
     {
         return [
-            'group_id' => $universitySubject->id, 
-            'group_number' => $universitySubject->group_number,
-            'subject_id' => $universitySubject->university_subject_id,
-            'subject_name' => $universitySubject->universitySubject->name,
+            'group_id' => $teacherSubject->id, 
+            'group_number' => $teacherSubject->group_number,
+            'subject_id' => $teacherSubject->university_subject_id,
+            'subject_name' => $teacherSubject->universitySubject->name,
             'person' => [
-                'person_id' => $universitySubject->person->id, 
-                'name' => $universitySubject->person->name, 
-                'last_name' => $universitySubject->person->last_name,
-                'fullname' => $universitySubject->person->name.' '.$universitySubject->person->last_name,
+                'person_id' => $teacherSubject->person->id, 
+                'name' => $teacherSubject->person->name, 
+                'last_name' => $teacherSubject->person->last_name,
+                'fullname' => $teacherSubject->person->name.' '.$teacherSubject->person->last_name,
             ],
         ];
     }

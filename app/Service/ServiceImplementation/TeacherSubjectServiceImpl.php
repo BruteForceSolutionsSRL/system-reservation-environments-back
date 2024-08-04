@@ -13,14 +13,18 @@ use App\Repositories\{
     AcademicPeriodRepository,
     TeacherSubjectRepository,
     ReservationStatusRepository as ReservationStatuses,
-    ReservationRepository
+    ReservationRepository,
+    PersonRepository
 };
+
+use Carbon\Carbon;
 
 class TeacherSubjectServiceImpl implements TeacherSubjectService
 {
     private $teacherSubjectRepository; 
     private $academicPeriodRepository;
     private $reservationRepository;
+    private $personRepository;
 
     private $reservationService;
 
@@ -29,6 +33,7 @@ class TeacherSubjectServiceImpl implements TeacherSubjectService
         $this->teacherSubjectRepository = new TeacherSubjectRepository();
         $this->academicPeriodRepository = new AcademicPeriodRepository();
         $this->reservationRepository = new ReservationRepository();
+        $this->personRepository = new PersonRepository();
 
         $this->reservationService = new ReservationServiceImpl();
     }
@@ -66,27 +71,40 @@ class TeacherSubjectServiceImpl implements TeacherSubjectService
      */
     public function saveGroup(array $data): array
     {
-        $data['teacher_subject_id'] = $this->teacherSubjectRepository->saveGroup($data);
-        
-        foreach ($data['class_schedules'] as $timeSlots ) {
-            $reservationData['time_slot_ids'][0] = $timeSlots[0];
-            $reservationData['time_slot_ids'][1] = $timeSlots[1];
+        $data['teacher_subject_ids'] = $this->teacherSubjectRepository->saveGroup($data)['group_id'];
+        $errors = [];
+        $reservations = [];
+        $academicPeriod = $this->academicPeriodRepository->getAcademicPeriodById($data['academic_period_id']);
+
+        foreach ($data['class_schedules'] as $class) {
+            $reservationData = [];
+            $reservationData['time_slot_ids'] = $class['time_slot_ids'];
             $reservationData['quantity'] = 25;
             $reservationData['repeat'] = 7;
-            $academicPeriod = $this->academicPeriodRepository->getAcademicPeriodById($data['academic_period_id']);
-            $reservationData['date'] = $academicPeriod['initial_date'];
+            $reservationData['date'] = $academicPeriod['initial_date']; // esto esta mal 
             $reservationData['reservation_reason_id'] = 2;
-            $reservationData['reservation_status_id'] = ReservationStatuses::pending();
+            $reservationData['reservation_statud_id'] = ReservationStatuses::pending();
             $reservationData['priority'] = 0;
-            $reservationData['academic_period']['academic_period_id'] = $data['academic_period_id'];
+            $reservationData['academic_period_id'] = $data['academic_period_id'];
             $reservationData['configuration_flag'] = 1;
-            $reservationData['persons'] = [['person_id' => $data['person_id'], 'teacher_subject_ids' => [$data['teacher_subject_id']]]];
-            $reservationData['person_id'] = $data['person_id'];
             $reservationData['verified'] = 1; 
-            $reservationData['classroom_ids'] = $data['classroom_ids'];
+            $reservationData['classroom_ids'] = [$class['classroom_id']];
+            $reservationData['persons'] = $this->personRepository->getTeachersBySubjectGroups(
+                $data['teacher_subject_ids']
+            );
+
             $reservation = $this->reservationRepository->save($reservationData);
-            $this->reservationService->accept($reservation['reservation_id'], true);
+            $message = $this->reservationService->accept($reservation['reservation_id'], true);
+            $pos = strpos($message, 'aceptada');
+            if ($pos === false) {
+                array_push($errors, $message);
+            }
+            array_push($reservations, $reservation['reservation_id']);
         }
         return ['message' => 'Grupo creado con exito'];
+    }
+
+    public function test() {
+        return Carbon::MONDAY;
     }
 }

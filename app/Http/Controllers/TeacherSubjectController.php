@@ -126,33 +126,11 @@ class TeacherSubjectController extends Controller
         'academic_period_id' => 'required|exists:academic_periods,id',
         'study_plan_ids' => 'array',
         'study_plan_ids.*' => 'required|exists:study_plans,id',
-        'classroom_ids' => 'array',
-        'classroom_ids.*' => 'required|exists:classrooms,id',
-        'class_schedules' => [
-            'required',
-            'array',
-            function ($attribute, $value, $fail) use ($validDays) {
-                foreach ($value as $day => $timeSlots) {
-                    if (!in_array($day, $validDays)) {
-                        $fail('El campo ' . $attribute . ' contiene un día inválido: ' . $day);
-                    } elseif (!is_array($timeSlots) || count($timeSlots) !== 2) {
-                        $fail('El campo ' . $attribute . '.' . $day . ' debe contener exactamente dos periodos de tiempo');
-                    } else {
-                        foreach ($timeSlots as $index => $timeSlot) {
-                            if (!is_int($timeSlot)) {
-                                $fail('El periodo de tiempo en ' . $attribute . '.' . $day . '[' . $index . '] debe ser un entero');
-                            } elseif (!DB::table('time_slots')->where('id', $timeSlot)->exists()) {
-                                $fail('El periodo de tiempo con ID ' . $timeSlot . ' en ' . $attribute . '.' . $day . ' no existe');
-                            }
-                        }
-
-                        if ($timeSlots[1] <= $timeSlots[0]) {
-                            $fail('El segundo periodo de tiempo para el día ' . $day . ' debe ser mayor que el primero');
-                        }
-                    }
-                }
-            },
-        ],
+        'class_schedules' => ['required','array'],
+        'class_schedules.day' => 'required|integer|min:0|max:6', 
+        'class_schedules.time_slot_ids' => 'required|array',
+        'class_schedules.time_slot_ids.*' => 'required|integer|exists:time_slots,id',
+        'class_schedules.classroom_id' => 'required|integer|exists:classrooms,id',
     ], [
         'university_subject_id.required' => 'El campo materia es obligatorio',
         'university_subject_id.exists' => 'El campo materia debe existir en la base de datos',

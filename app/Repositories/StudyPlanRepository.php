@@ -24,7 +24,7 @@ class StudyPlanRepository
 
     public function getStudyPlans(array $data): array  
     {
-        $query = StudyPlan::with(['academicPeriod:id,name']);
+        $query = StudyPlan::with(['academicPeriods:id,name']);
         
         if (array_key_exists('department_ids', $data)) {
             $query->whereHas(

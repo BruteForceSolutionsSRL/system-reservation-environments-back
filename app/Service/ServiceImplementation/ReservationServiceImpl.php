@@ -369,7 +369,7 @@ class ReservationServiceImpl implements ReservationService
      */
     public function store(array $data): string
     {
-        $config = array_key_exists('configuration', $data);
+        $config = array_key_exists('configuration_flag', $data);
         if (!array_key_exists('classroom_ids', $data) || count($data['classroom_ids']) == 0) {
             $data['classroom_ids'] = $this->classroomService
                 ->suggestClassrooms($data);
@@ -405,8 +405,8 @@ class ReservationServiceImpl implements ReservationService
         if (!$this->isResposible($data['persons'], $data['person_id']) && !$config) {
             return 'No eres responsable de ninguno de los grupos seleccionados, debe seleccionar al menos un grupo a su nombre.';
         }
-        $data['academic_period'] = $this->academicPeriodRepository
-            ->getActualAcademicPeriod($data['faculty_id']);
+        $data['academic_period_id'] = $this->academicPeriodRepository
+            ->getActualAcademicPeriod($data['faculty_id'])['academic_period_id'];
 
         if (!$config) {
             $now = Carbon::now()->setTimeZone('America/New_York')->format('Y-m-d');
@@ -417,18 +417,18 @@ class ReservationServiceImpl implements ReservationService
         } 
 
         $reservation = $this->reservationRepository->save($data);
-        $this->notificationService->store(
-            $this->mailService->createReservation(
-                $reservation,
-                PersonRepository::system()
-            )
-        );
-
-        if (ConstantRepository::getAutomaticReservation() == '0') {
-            return 'La solicitud de reserva se encuentra en estado pendiente, le llegara un correo de aceptacion/rechazo por parte del encargado.';
+        if (!$config) {
+            $this->notificationService->store(
+                $this->mailService->createReservation(
+                    $reservation,
+                    PersonRepository::system()
+                )
+            );    
+            if (ConstantRepository::getAutomaticReservation() == '0') {
+                return 'La solicitud de reserva se encuentra en estado pendiente, le llegara un correo de aceptacion/rechazo por parte del encargado.';
+            }
         }
-
-        return $this->accept($reservation['reservation_id'], false);
+        return $this->accept($reservation['reservation_id'], $config);
     }
 
     /**
@@ -788,8 +788,8 @@ class ReservationServiceImpl implements ReservationService
             );
         }
         $data['reservation_reason_id'] = $data['reason_id'];
-        $data['academic_period'] = $this->academicPeriodRepository
-            ->getActualAcademicPeriod($data['faculty_id']);
+        $data['academic_period_id'] = $this->academicPeriodRepository
+            ->getActualAcademicPeriod($data['faculty_id'])['academic_period_id'];
 
         $classrooms = $data['classroom_ids'];
         if (empty($classrooms)) {
