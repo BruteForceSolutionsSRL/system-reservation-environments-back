@@ -139,6 +139,10 @@ class AcademicPeriodRepository
             'end_date' => $academicPeriod->end_date,
             'activated' => $academicPeriod->activated,
             'initial_date_reservations' => $academicPeriod->initial_date_reservations,
+            'faculty_id' => $academicPeriod->faculty->id, 
+            'faculty_name' => $academicPeriod->faculty->name, 
+            'academic_management_id' => $academicPeriod->academicManagement->id, 
+            'academic_management_name' => $academicPeriod->academicManagement->name,
         ];
     }
 }

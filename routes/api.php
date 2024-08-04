@@ -230,19 +230,19 @@ Route::controller(AcademicManagementController::class)->group(function() {
         Route::get('/academic-managements/{academicManagementId}', 'index');
 
         Route::post('/academic-managements/store', 'store'); 
-        Route::post('/academic-managements/{academicManagementId}/update', 'update');        
+        Route::put('/academic-managements/{academicManagementId}/update', 'update');        
     });
 });
 
 Route::controller(AcademicPeriodController::class)->group(function() {
-    Route::group(['middleware' => ['jwt.verify', 'permissions:academic_periods']], function () {
+    //Route::group(['middleware' => ['jwt.verify', 'permissions:academic_periods']], function () {
         Route::get('/academic-periods', 'list');
         Route::get('/academic-periods/actual-period', 'getAcademicPeriodByFaculty');
-        Route::get('/academic-periods/{academicManagementId}', 'index');
+        Route::get('/academic-periods/{academicPeriodId}', 'index');
 
         Route::post('/academic-periods/store', 'store'); 
-        Route::post('/academic-periods/{academicManagementId}/update', 'update');        
-    });
+        Route::put('/academic-periods/{academicPeriodId}/update', 'update');        
+    //});
 });
 
 Route::controller(DepartmentController::class)->group(function() {
