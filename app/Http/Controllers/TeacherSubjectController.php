@@ -85,21 +85,18 @@ class TeacherSubjectController extends Controller
      */
     public function saveGroup(Request $request): Response
     {
-        $validator = $this->validateSaveGroupData($request);
-
-        if ($validator->fails()) {
-            $message = '';
-            foreach ($validator->errors()->all() as $value)
-                $message = $message . $value . '.';
-            return response()->json(
-                ['message' => $message],
-                400
-            );
-        }
-
-        $data = $validator->validated();
-
         try {
+            $validator = $this->validateSaveGroupData($request);
+
+            if ($validator->fails()) {
+                return response()->json(
+                    ['message' => (implode(',', $validator->errors()->all()))],
+                    400
+                );
+            }
+        
+            $data = $validator->validated();
+
             return response()->json([
                 $this->teacherSubjectService->saveGroup($data),
                 200
@@ -130,7 +127,7 @@ class TeacherSubjectController extends Controller
         'study_plan_ids' => 'array',
         'study_plan_ids.*' => 'required|exists:study_plans,id',
         'classroom_ids' => 'array',
-        'classroom_ids*' => 'required|exists:classrooms,id',
+        'classroom_ids.*' => 'required|exists:classrooms,id',
         'class_schedules' => [
             'required',
             'array',

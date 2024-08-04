@@ -65,6 +65,9 @@ class AcademicPeriodController extends Controller
     {
         try {
             $facultyId = \JWTAuth::parseToken($request->bearerToken())->getClaim('faculty_id');
+            if ($facultyId == -1) {
+                $facultyId = $request->input('faculty_id');
+            }
             $academicPeriod = $this->academicPeriodService
                 ->getActualAcademicPeriodByFaculty($facultyId);
             if (empty($academicPeriod)) {
@@ -220,7 +223,6 @@ class AcademicPeriodController extends Controller
         return Validator::make($request->all(), [
             'date_start' => 'date',
             'date_end' => 'date',
-            'name' => 'string|unique:academic_periods,name',
             'academic_management_id' => 'integer|exists:academic_managements,id',
             'initial_date_reservations' => 'date',
             'faculty_id' => 'integer|exists:faculties,id',

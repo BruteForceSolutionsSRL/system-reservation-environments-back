@@ -120,7 +120,7 @@ class TeacherSubjectRepository
         $teacherSubject->university_subject_id = $data['university_subject_id'];
         $teacherSubject->save();
 
-        return ['teacher_subject_id' => $teacherSubject->id];
+        return $this->formatOutputSubject($teacherSubject);
     }
 
     /**

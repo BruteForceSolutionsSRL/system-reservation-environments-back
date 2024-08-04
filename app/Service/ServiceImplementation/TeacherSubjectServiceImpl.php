@@ -82,7 +82,7 @@ class TeacherSubjectServiceImpl implements TeacherSubjectService
             $reservationData['configuration_flag'] = 1;
             $reservationData['persons'] = [['person_id' => $data['person_id'], 'teacher_subject_ids' => [$data['teacher_subject_id']]]];
             $reservationData['person_id'] = $data['person_id'];
-            $reservationData['verified'] = 1;
+            $reservationData['verified'] = 1; 
             $reservationData['classroom_ids'] = $data['classroom_ids'];
             $reservation = $this->reservationRepository->save($reservationData);
             $this->reservationService->accept($reservation['reservation_id'], true);
