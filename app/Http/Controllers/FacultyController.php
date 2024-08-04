@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 
 use App\Service\ServiceImplementation\FacultyServiceImpl; 
 
+use Exception;
+
 class FacultyController extends Controller
 {
     private $facultyService; 

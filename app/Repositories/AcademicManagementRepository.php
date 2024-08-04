@@ -35,14 +35,18 @@ class AcademicManagementRepository
         $academicManagement->initial_date = $data['date_start']; 
         $academicManagement->end_date = $data['date_end'];
         $academicManagement->save(); 
+        return $this->formatOutput($academicManagement);
     }
 
     public function update(array $data, int $academicManagementId): array 
     {
-        $academicManagement = $this->model::find($academicManagementId); 
-        $academicManagement->initial_date = $data['date_start']; 
-        $academicManagement->end_date = $data['date_end'];
+        $academicManagement = $this->model::find($academicManagementId);
+        if (array_key_exists('date_start', $data)) 
+            $academicManagement->initial_date = $data['date_start'];
+        if (array_key_exists('date_end', $data)) 
+            $academicManagement->end_date = $data['date_end'];
         $academicManagement->save();         
+        return $this->formatOutput($academicManagement);
     }
 
     public function formatOutput($academicManagement) 

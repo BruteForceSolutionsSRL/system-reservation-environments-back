@@ -70,6 +70,7 @@ class BlockRepository
         $block->max_floor = $data['maxfloor']; 
         $block->max_classrooms = $data['maxclassrooms']; 
         $block->block_status_id = $data['block_status_id']; 
+        $block->faculty_id = $data['faculty_id'];
 
         $block->save();
         return $this->formatOutput($block); 
@@ -82,6 +83,9 @@ class BlockRepository
         $block->max_floor = $data['maxfloor']; 
         $block->max_classrooms = $data['maxclassrooms']; 
         $block->block_status_id = $data['block_status_id']; 
+        if (array_key_exists('faculty_id', $data)) {
+            $block->faculty_id = $data['faculty_id'];
+        }
 
         $block->save();
         return $this->formatOutput($block);
@@ -95,6 +99,21 @@ class BlockRepository
         $block->block_status_id = $this->blockStatusRepository->deleted();
         $block->save();
         return $retrieveBlock;
+    }
+
+    public function getBlocks(array $data): array 
+    {
+        $query = Block::with(['blockStatus:id,name']); 
+    
+        if (array_key_exists('faculty_ids', $data)) {
+            $query->whereIn('faculty_id', $data['faculty_ids']);
+        }
+
+        return $query->get()->map(
+            function ($block) {
+                return $this->formatOutput($block);
+            }
+        )->toArray();
     }
 
     /**
@@ -112,7 +131,9 @@ class BlockRepository
             'maxclassrooms' => $block->max_classrooms,
             'block_status_id' => $block->block_status_id, 
             'block_status_name' => $block->blockStatus->name,
-            'classrooms' => $this->classroomRepository->getClassroomsByBlock($block->id)
+            'classrooms' => $this->classroomRepository->getClassroomsByBlock($block->id),
+            'faculty_id' => $block->faculty_id, 
+            'faculty_name' => $block->faculty->name,
         ];
     }
 }

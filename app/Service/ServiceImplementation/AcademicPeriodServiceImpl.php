@@ -5,6 +5,8 @@ use App\Service\AcademicPeriodService;
 
 use App\Repositories\AcademicPeriodRepository;
 
+use Carbon\Carbon;
+
 class AcademicPeriodServiceImpl implements AcademicPeriodService
 {
 	private $academicPeriodRepository; 
@@ -25,6 +27,21 @@ class AcademicPeriodServiceImpl implements AcademicPeriodService
 		);
 	} 
 
+	public function getActualAcademicPeriodByFaculty(int $factultyId): array 
+	{
+		$now = Carbon::now()->setTimeZone('America/New_York')->format('Y-m-d');
+		$result = $this->academicPeriodRepository->getAcademicPeriods(
+			[
+				'facultyId' => $factultyId, 
+				'date' => $now,
+			]
+		);
+		if (empty($result)) {
+			return [];
+		}
+		return $result[0];
+	}
+
 	public function getAcademicPeriod(int $academicPeriodId): array
 	{
 		return $this->academicPeriodRepository->getAcademicPeriod($academicPeriodId); 
@@ -32,10 +49,22 @@ class AcademicPeriodServiceImpl implements AcademicPeriodService
 	
 	public function store(array $data): string 
 	{
+		if ($this->existsCollision($data)) {
+			return 'No se pudo realiza el registro del periodo academico, dado que existe un periodo academico ya registrado en dichas fechas, para la facultad seleccionada';
+		}
 		$academicPeriod = $this->academicPeriodRepository->store($data);
 		return 'Se registro correctamente el periodo academico '.$academicPeriod['name'].'.';
 	}
-	
+
+	public function existsCollision(array $data): bool 
+	{
+		return count($this->academicPeriodRepository->getAcademicPeriods([
+			'date' => $data['date_start'],
+			'date_end' => $data['date_end'], 
+			'facultyId' => $data['faculty_id']
+		])) !== 0;
+	}
+
 	public function update(array $data, int $academicPeriodId): string
 	{
 		$academicPeriod = $this->academicPeriodRepository->update($data, $academicPeriodId); 

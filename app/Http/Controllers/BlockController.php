@@ -32,10 +32,26 @@ class BlockController extends Controller
     public function list(Request $request): Response
     {
         try {
-            return response()->json(
-                $this->blockService->getAllBlocks(),
-                200
-            );
+            $facultyId = \JWTAuth::parseToken($request->bearerToken())->getClaim('faculty_id');
+            if ($facultyId === -1) {
+                $facultyIds = $request->input('faculty_ids'); 
+                if (empty($facultyIds)) {
+                    return response()->json(
+                        $this->blockService->getAllBlocks(),
+                        200
+                    );
+                } else {
+                    return response()->json(
+                        $this->blockService->getBlocksByFaculties($facultyIds),
+                        200
+                    );
+                }
+            } else {
+                return response()->json(
+                    $this->blockService->getBlocksByFaculties([$facultyId]),
+                    200
+                );
+            }
         } catch (Exception $e) {
             return response()->json(
                 [
@@ -325,7 +341,8 @@ class BlockController extends Controller
                 min:0',
             'block_status_id' => '
                 integer|
-                exists:block_statuses,id'
+                exists:block_statuses,id',
+            'faculty_id' => 'integer|exists:faculties,id'
         ], [
             'name.required' => 'El atributo \'nombre\' no debe ser nulo o vacio',
             'name.regex' => 'El nombre solamente puede tener caracteres alfanumericos y \'-\', \'.\', \' \'',
@@ -339,7 +356,10 @@ class BlockController extends Controller
             'maxclassrooms.exists' => 'El \'capacidad de ambientes\' debe ser un numero mayor a 0',
 
             'block_status_id.integer' => 'El \'estado\' debe ser un valor entero',
-            'block_status_id.exists' => 'El \'estado\' debe ser una seleccion valida'
+            'block_status_id.exists' => 'El \'estado\' debe ser una seleccion valida',
+
+            'faculty_id.integer' => 'La \'facultad\' seleccionada debe ser un valor entero',
+            'faculty_id.exists' => 'La \'facultad\' seleccionada debe ser una seleccion valida',            
         ]);
     }
 }

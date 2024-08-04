@@ -23,7 +23,7 @@ class AcademicPeriodRepository
         return $this->model::where('initial_date', '<=', $date)
             ->where('end_date', '>=', $date)
             ->get()->map(
-                function ($AcademicPeriod) 
+                function ($academicPeriod) 
                 {
                     return $this->formatOutput($academicPeriod);
                 }
@@ -97,7 +97,6 @@ class AcademicPeriodRepository
         return $this->formatOutput($academicPeriod);
     }
 
-
     public function getAcademicPeriods(array $data): array 
     {
         $query = AcademicPeriod::with([
@@ -108,10 +107,13 @@ class AcademicPeriodRepository
         ]); 
 
         if (array_key_exists('date', $data)) {
+            if (!array_key_exists('date_end', $data)) {
+                $data['date_end'] = $data['date'];
+            }
             $query->where(
                 function ($query) use ($data){
                     $query->where('initial_date', '<=', $data['date'])
-                        ->where('end_date', '>=', $data['date']);
+                        ->where('end_date', '>=', $data['date_end']);
                 }
             );
         }
@@ -125,7 +127,6 @@ class AcademicPeriodRepository
                 return $this->formatOutput($academicPeriod);
             }
         )->toArray();
-        
     }
 
     public function formatOutput($academicPeriod) 
@@ -136,7 +137,8 @@ class AcademicPeriodRepository
             'name' => $academicPeriod->name,
             'initial_date' => $academicPeriod->initial_date,
             'end_date' => $academicPeriod->end_date,
-            'activated' => $academicPeriod->activated
+            'activated' => $academicPeriod->activated,
+            'initial_date_reservations' => $academicPeriod->initial_date_reservations,
         ];
     }
 }

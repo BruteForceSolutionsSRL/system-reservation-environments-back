@@ -17,14 +17,8 @@ return new class extends Migration
         Schema::create('study_plans', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->unsignedBigInteger('academic_period_id');
             $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
             $table->timestamp('updated_at')->default(DB::raw('CURRENT_TIMESTAMP'));
-
-            $table->foreign('academic_period_id')
-                    ->references('id')
-                    ->on('academic_periods')
-                    ->cascadeOnDelete();
         });
     }
 

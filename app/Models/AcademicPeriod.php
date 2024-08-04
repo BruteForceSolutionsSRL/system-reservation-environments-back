@@ -12,7 +12,12 @@ class AcademicPeriod extends Model
 
     public function studyPlans()
     {
-        return $this->hasMany(StudyPlan::class);
+        return $this->belongsToMany(StudyPlan::class, 'study_plan_academic_period');
+    }
+
+    public function studyPlanAcademicPeriods()
+    {
+        return $this->hasMany(StudyPlanAcademicPeriod::class);
     }
 
     public function reservations()

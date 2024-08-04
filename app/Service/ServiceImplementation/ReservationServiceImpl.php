@@ -369,6 +369,7 @@ class ReservationServiceImpl implements ReservationService
      */
     public function store(array $data): string
     {
+        $config = array_key_exists('configuration', $data);
         if (!array_key_exists('classroom_ids', $data) || count($data['classroom_ids']) == 0) {
             $data['classroom_ids'] = $this->classroomService
                 ->suggestClassrooms($data);
@@ -401,11 +402,20 @@ class ReservationServiceImpl implements ReservationService
         $data['persons'] = $this->personRepository->getTeachersBySubjectGroups(
             $data['teacher_subject_ids']
         );
-        if (!$this->isResposible($data['persons'], $data['person_id'])) {
+        if (!$this->isResposible($data['persons'], $data['person_id']) && !$config) {
             return 'No eres responsable de ninguno de los grupos seleccionados, debe seleccionar al menos un grupo a su nombre.';
         }
         $data['academic_period'] = $this->academicPeriodRepository
             ->getActualAcademicPeriod($data['faculty_id']);
+
+        if (!$config) {
+            $now = Carbon::now()->setTimeZone('America/New_York')->format('Y-m-d');
+            if (($data['academic_period']['initial_date_reservations'] > $now) ||
+            ($now > $data['academic_period']['end_date'])) {
+                return 'Se encuentra fuera de las fechas para realizar reservas, usted puede realizar reservas para la facultad seleccionada entre las fechas: '.$data['academic_period']['initial_date_reservations'].' y '.$data['academic_period']['end_date'].'.';
+            }
+        } 
+
         $reservation = $this->reservationRepository->save($data);
         $this->notificationService->store(
             $this->mailService->createReservation(

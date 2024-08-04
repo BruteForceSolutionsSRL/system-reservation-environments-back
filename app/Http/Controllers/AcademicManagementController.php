@@ -85,7 +85,7 @@ class AcademicManagementController extends Controller
 
     private function validateAcademicManagement(Request $request)
     {
-        return Validator::make($request->all(), [
+        return \Validator::make($request->all(), [
             'date_start' => 'required|date',
             'date_end' => 'required|date',
             'name' => 'required|string|unique:academic_managements,name',
@@ -137,7 +137,7 @@ class AcademicManagementController extends Controller
     }
     private function validateAcademicManagementUpdate(Request $request)
     {
-        return Validator::make($request->all(), [
+        return \Validator::make($request->all(), [
             'date_start' => 'required|date',
             'date_end' => 'required|date',
         ], [

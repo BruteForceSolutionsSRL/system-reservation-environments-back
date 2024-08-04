@@ -277,9 +277,9 @@ class ReservationController extends Controller
             $person = $this->personService->getUser($personId);
             $reservation = $this->reservationService->getReservation($reservationId);
             $ok = -1;
-            foreach ($reservation['persons'] as $person) 
-            if ($person['person_id'] === $personId) {
-                if ($person['created_by_me'] == 1) $ok = 1;
+            foreach ($reservation['persons'] as $personIterator) 
+            if ($personIterator['person_id'] === $personId) {
+                if ($personIterator['created_by_me'] == 1) $ok = 1;
                 else $ok = 0;
                 break;
             }
@@ -299,12 +299,12 @@ class ReservationController extends Controller
                     403
                 );
             }
-
+            
             $message = 
                 ($ok == 1)? 
                 $this->reservationService->cancel(
                     $reservationId,
-                    $ok==1? 
+                    $ok==1?  
                     'Razon de la cancelacion es: El usuario: '.$person['fullname'].' cancelo la reserva': 
                     'Razon de la cancelacion es: El administrador '.$person['fullname'].' cancelo su reserva, pongase en contacto para mayor informacion.'
                 ): 
@@ -353,11 +353,12 @@ class ReservationController extends Controller
                 ->getTimeSlot($data['time_slot_ids'][0])['time'])->addHours(4); 
 
             $now = Carbon::now();
-            if ($now >= $requestedHour)
+            if ($now >= $requestedHour) {
                 return response()->json(
                     ['message' => 'La hora elegida ya paso, no es posible realizar una reserva, intente seleccionar una hora mayor.'], 
                     404
                 );
+            }
             
             if (\JWTAuth::parseToken($request->bearerToken())->getClaim('faculty_id') !== null) {
                 $data['faculty_id'] = \JWTAuth::parseToken($request->bearerToken())->getClaim('faculty_id'); 
@@ -367,7 +368,6 @@ class ReservationController extends Controller
                     400
                 );
             }
-            $data['faculty_id'] = 1;
 
             $data['person_id']  = $request['session_id'];
 
@@ -381,7 +381,15 @@ class ReservationController extends Controller
             $pos = strpos($result, 'aceptada');
             if ($pos !== false)
                 return response()->json(['message' => $result], 202);
-
+            $pos = strpos($result, 'fuera'); 
+            if ($pos !== false) 
+                return response()->json(['message' => $result], 403);
+            $pos = strpos($result, 'responsable');
+            if ($pos !== false) 
+                return response()->json(['message' => $result], 400);
+            $pos = strpos($result, 'grupos');
+            if ($pos !== false) 
+                return response()->json(['message' => $result], 400);
             return response()->json(
                 ['message' =>$result], 
                 200
@@ -752,10 +760,5 @@ class ReservationController extends Controller
             'faculty_id.exists' => 'La facultad seleccionada no existe, por favor intente mas tarde.',
 
         ]);
-    }
-
-    public function test(): Response
-    {
-        return response()->json($this->reservationService->test(), 200);
     }
 }

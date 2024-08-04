@@ -13,6 +13,17 @@ class UniversitySubjectImpl implements UniversitySubjectService
         $this->universitySubjectRepository = new UniversitySubjectRepository();
     }
 
+    public function getUniversitySubject(int $universitySubjectId): array 
+    {
+        return $this->universitySubjectRepository
+            ->getUniversitySubject($universitySubjectId);
+    }
+
+    public function delete(int $universitySubjectId): string 
+    {
+        $this->universitySubjectRepository->delete($universitySubjectId);
+        return 'La materia fue eliminada correctamente';
+    }
 
     /**
      * get all the subjects registered in the system

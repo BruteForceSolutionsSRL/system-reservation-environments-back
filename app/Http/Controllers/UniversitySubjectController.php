@@ -43,6 +43,24 @@ class UniversitySubjectController extends Controller
         }
     }
 
+    public function index(int $universitySubjectId): Response 
+    {
+        try {
+            return response()->json(
+                $this->universitySubjectService->getUniversitySubject($universitySubjectId),
+                200
+            );
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'message' => 'Hubo un error en el servidor',
+                    'error' => $e->getMessage()
+                ],
+                500
+            );
+        }        
+    }
+
     public function store(Request $request): Response 
     {
         try {
@@ -104,5 +122,31 @@ class UniversitySubjectController extends Controller
 
             'levels' => 'Los niveles de las carreras a las que se asigne la materia deben ser opciones no vacias.',
         ]);
+    }
+
+    public function destroy(int $universitySubjectId): Response
+    {
+        try {
+            $universitySubject = $this->universitySubjectService
+                ->getUniversitySubject($universitySubjectId); 
+            if (empty($universitySubject)) {
+                return response()->json(
+                    ['message' => 'No existe la materia seleccionada.'], 
+                    404
+                );
+            }
+            return response()->json(
+                ['message' => $this->universitySubjectService->delete($universitySubjectId)],
+                200
+            );
+    } catch (Exception $e) {
+            return response()->json(
+                [
+                    'message' => 'Hubo un error en el servidor.',
+                    'error' => $e->getMessage()
+                ],
+                500
+            );
+        }
     }
 }
