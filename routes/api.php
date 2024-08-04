@@ -196,9 +196,10 @@ Route::controller(PersonController::class)->group(function() {
 });
 
 Route::controller(UniversitySubjectController::class)->group(function() {
-    Route::group(['middleware' => ['jwt.verify']], function () {
-        Route::middleware('permissions:report')->get('/university-subjects', 'list');
-    });
+    //Route::group(['middleware' => ['jwt.verify']], function () {
+    //    Route::middleware('permissions:report')->get('/university-subjects', 'list');
+    //});
+    Route::get('university-subjects', 'list');
     Route::group(['middleware' => ['sanitize:api','jwt.verify']], function () {
         Route::middleware('permissions:academic_management')->post('/university-subjects/store', 'store');
         Route::middleware('permissions:academic_management')->delete('/university-subjects/{universitySubjectId}', 'destroy');

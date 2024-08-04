@@ -68,6 +68,29 @@ class UniversitySubjectRepository
         return [
             'university_subject_id' => $universitySubject->id,
             'name' => $universitySubject->name,
+            'groups' => $universitySubject->teacherSubjects->map(
+                function ($teacherSubject) {
+                    return [
+                        'group_number' => $teacherSubject->group_number, 
+                        'group_id' => $teacherSubject->id,
+                        'person' => [
+                            'person_id' => $teacherSubject->person->id, 
+                            'name' => $teacherSubject->person->name,
+                            'last_name' => $teacherSubject->person->last_name, 
+                            'fullname' => $teacherSubject->person->name.' '.$teacherSubject->person->last_name,
+                        ],
+                    ];
+                }  
+            )->toArray(),
+            'study_plans' => $universitySubject->studyPlans->map(
+                function ($studyPlan) {
+                    return [
+                        'study_plan_id' => $studyPlan->id, 
+                        'name' => $studyPlan->name,
+                    ];
+                }
+            )->toArray(),
+
         ];
     }
 }
