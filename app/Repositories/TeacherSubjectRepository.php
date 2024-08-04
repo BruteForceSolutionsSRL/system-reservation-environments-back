@@ -17,6 +17,14 @@ class TeacherSubjectRepository
         $this->personRepository = new PersonRepository();
     }
 
+    public function getAllTeacherSubjects() {
+        return $this->model::all()->map(
+            function ($teacherSubject) {
+                return $this->formatOutputSubject($teacherSubject);
+            }
+        )->toArray();
+    }
+
     /**
      * Retrieve a list of university subjects by teacher id
      * @param int $teacherID
@@ -86,8 +94,16 @@ class TeacherSubjectRepository
     private function formatOutputSubject(TeacherSubject $universitySubject): array
     {
         return [
+            'group_id' => $universitySubject->id, 
+            'group_number' => $universitySubject->group_number,
             'subject_id' => $universitySubject->university_subject_id,
             'subject_name' => $universitySubject->universitySubject->name,
+            'person' => [
+                'person_id' => $universitySubject->person->id, 
+                'name' => $universitySubject->person->name, 
+                'last_name' => $universitySubject->person->last_name,
+                'fullname' => $universitySubject->person->name.' '.$universitySubject->person->last_name,
+            ],
         ];
     }
 

@@ -15,6 +15,11 @@ class PersonReservation extends Model
         return $this->belongsToMany(TeacherSubject::class);
     }
 
+    public function personReservationTeacherSubjects()
+    {
+        return $this->hasMany(PersonReservationTeacherSubject::class);
+    }
+
     public function person()
     {
         return $this->belongsTo(Person::class);

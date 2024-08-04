@@ -18,6 +18,11 @@ class TeacherSubjectController extends Controller
         $this->teacherSubjectService = new TeacherSubjectServiceImpl(); 
     }
 
+    public function list() 
+    {
+        return response()->json($this->teacherSubjectService->getAllTeacherSubjects(), 200);
+    }
+
     /**
      * Obtaining subjects through a teacher id.
      * @param int $personId
