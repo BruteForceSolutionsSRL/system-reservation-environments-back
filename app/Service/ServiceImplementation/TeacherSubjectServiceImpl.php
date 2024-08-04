@@ -17,6 +17,10 @@ class TeacherSubjectServiceImpl implements TeacherSubjectService
         $this->teacherSubjectRepository = new TeacherSubjectRepository();
     }
 
+    public function getAllTeacherSubjects() {
+        return $this->teacherSubjectRepository->getAllTeacherSubjects(); 
+    }
+
     /**
      * Retrieve a list of university subjects with teacher id
      * @param int $teacherID
