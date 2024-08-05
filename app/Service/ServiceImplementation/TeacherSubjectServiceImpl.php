@@ -49,8 +49,9 @@ class TeacherSubjectServiceImpl implements TeacherSubjectService
      */
     public function getSubjectsByTeacherId(int $teacherID): array
     {
-        return $this->teacherSubjectRepository
-            ->getSubjectsByTeacherID($teacherID);
+        return $this->getTeacherSubjectByParams(
+            ['person_id' => $teacherID]
+        );
     }
     
     /**
@@ -62,6 +63,11 @@ class TeacherSubjectServiceImpl implements TeacherSubjectService
     {
         return ($this->teacherSubjectRepository
             ->getTeachersBySubject($universitySubjectID)); 
+    }
+
+    public function getTeacherSubjectByParams(array $data): array 
+    {
+        return $this->teacherSubjectRepository->getTeacherSubjects($data); 
     }
 
     /**

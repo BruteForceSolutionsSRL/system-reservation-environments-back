@@ -91,7 +91,14 @@ class AcademicPeriodController extends Controller
     public function copyAcademicPeriod(Request $request): Response 
     {
         try {
-            return response()->json([], 200);
+            $validator = $this->validateCopying($request);
+            if ($validator->fails()) {
+                return response()->json([
+                    'message' => implode(',', $validator->errors()->all())
+                ], 400);
+            }
+            $data = $validator->validated();
+            return response()->json($this->academicPeriodService->copyAcademicPeriod($data), 200);
         } catch (Exception $e) {
             return response()->json(
                 [
@@ -100,6 +107,41 @@ class AcademicPeriodController extends Controller
                 ]
             );
         }
+    }
+
+    private function validateCopying(Request $request) 
+    {
+        return \Validator::make($request->all(), 
+        [
+            'academic_period_id' => 'required|integer|exists:academic_periods,id',
+            'date_start' => 'required|date',
+            'date_end' => 'required|date',
+            'name' => 'required|string|unique:academic_periods,name',
+            'academic_management_id' => 'required|int|exists:academic_managements,id',
+            'initial_date_reservations' => 'required|date',
+        ], 
+        [
+            'date_start.required' => 'La fecha de inicio de periodo academico es obligatoria.',
+            'date_start.date' => 'La fecha de inicio de periodo academico debe ser un formato válido.',
+
+            'date_end.required' => 'La fecha fin del periodo academico es obligatoria.',
+            'date_end.date' => 'La fecha fin del periodo academico debe ser un formato válido.',
+
+            'name.required' => 'El nombre no puede ser nulo.',
+            'name.unique' => 'El nombre no es valido, ya existe un periodo academica con ese nombre, intente con otro nombre.',
+            'name.string' => 'El nombre esta vacio, por favor llene correctamente el nombre.',
+            
+            'academic_management_id.required' => 'La gestion academica debe ser seleccionada.',
+            'academic_management_id.int' => 'La gestion academica seleccionada no es valida, intente otra vez.',
+            'academic_management_id.exists' => 'La gestion academica seleccionada no existe.',
+
+            'initial_date_reservations.required' => 'La fecha de inicio de pedir reservas es obligatoria.',
+            'initial_date_reservations.date' => 'La fecha de inicio de pedir reservas debe ser un formato válido.',
+
+            'academic_period_id.required' => 'Es necesario el periodo academico que quiere copiar', 
+            'academic_period_id.integer' => 'El periodo academico seleccionado no es valido', 
+            'academic_period_id.exists' => 'El periodo academico seleccionado no existe',
+        ]);
     }
 
     public function store(Request $request): Response 

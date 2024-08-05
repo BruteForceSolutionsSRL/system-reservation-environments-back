@@ -70,6 +70,44 @@ class TeacherSubjectRepository
             )->toArray();
     }
 
+    public function getTeacherSubjects(array $data): array 
+    {
+        $query = TeacherSubject::with('person:id,name'); 
+        if (array_key_exists('university_subject_id', $data)) {
+            $query->where('university_subject_id', $data['university_subject_id']);
+        }
+
+        if (array_key_exists('group_number', $data)) {
+            $query->where('group_number', $data['group_number']);
+        }
+
+        if (array_key_exists('academic_period_id', $data)) {
+            $query->whereHas('universitySubject.studyPlans.academicPeriods', 
+                function ($query) use ($data) {
+                    $query->where('academic_periods.id', $data['academic_period_id']);
+                }
+            );
+        }
+
+        if (array_key_exists('person_id', $data)) {
+            $query->where('person_id', $data['person_id']);
+        }
+
+        if (array_key_exists('faculty_id', $data)) {
+            $query->whereHas('universitySubject.studyPlans.academicPeriods.faculty', 
+                function ($query) use ($data) {
+                    $query->where('academic_periods.faculty_id', $data['faculty_id']);
+                }
+            );
+        }
+
+        return $query->get()->map(
+            function ($teacherSubject) {
+                return $this->formatOutputSubject($teacherSubject);
+            }
+        )->toArray();
+    }
+
     /**
      * Check if an array of teacher subjects are from the same university subject
      */
@@ -93,6 +131,7 @@ class TeacherSubjectRepository
      */
     private function formatOutputSubject($teacherSubject): array
     {
+        if (!$teacherSubject) return [];
         return [
             'group_id' => $teacherSubject->id, 
             'group_number' => $teacherSubject->group_number,
@@ -130,6 +169,7 @@ class TeacherSubjectRepository
      */
     private function formatOutputTeacher($teacher): array
     {
+        if (!$teacher) return [];
         return [
             'person_id' => $teacher['person_id'],
             'teacher_name' => $teacher['name'],

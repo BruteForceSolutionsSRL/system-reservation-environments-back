@@ -80,6 +80,58 @@ class TeacherSubjectController extends Controller
         }
     }
 
+    public function getAllTeacherSubjectsByAcademicPeriod(int $academicPeriodId): Response 
+    {
+        try {
+            return response()->json(
+                $this->teacherSubjectService->getTeacherSubjectByParams(
+                    [
+                        'academic_period_id' => $academicPeriodId,
+                    ]
+                ), 
+                200
+            );
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'message' => 'Hubo un error en el servidor',
+                    'error' => $e -> getMessage()
+                ],
+                500
+            );
+        }
+    }    
+
+    public function getAllTeacherSubjectsByPersonAndFaculty(Request $request): Response 
+    {
+        try {
+            $personId = $request['session_id'];
+            $facultyId = \JWTAuth::parseToken($request->bearerToken())->getClaim('faculty_id'); 
+            if ($facultyId == -1) {
+                return response()->json([
+                    'message' => 'No existe una facultad seleccionada, por favor intente iniciar sesion nuevamente',
+                ], 400);
+            }
+            return response()->json(
+                $this->teacherSubjectService->getTeacherSubjectByParams(
+                    [
+                        'person_id' => $personId,
+                        'faculty_id' => $facultyId,
+                    ]
+                ), 
+                200
+            );
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'message' => 'Hubo un error en el servidor',
+                    'error' => $e -> getMessage()
+                ],
+                500
+            );
+        }
+    }
+
     /**
      * 
      */
@@ -96,6 +148,16 @@ class TeacherSubjectController extends Controller
             }
         
             $data = $validator->validated();
+
+            $teacherSubjects = $this->teacherSubjectService->getTeacherSubjectByParams([
+                'university_subject_id' => $data['university_subject_id'], 
+                'group_number' => $data['group_number'],
+            ]);
+            if (!empty($teacherSubjects)) {
+                return response()->json([
+                    'message' => 'El grupo ya existe, por favor intente con otro no existente',
+                ], 400);
+            }
 
             return response()->json([
                 $this->teacherSubjectService->saveGroup($data),
@@ -117,8 +179,6 @@ class TeacherSubjectController extends Controller
      */
     private function validateSaveGroupData(Request $request): mixed
     {
-        $validDays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-
         return Validator::make($request->all(), [
             'university_subject_id' => 'required|exists:university_subjects,id',
             'person_id' => 'required|exists:people,id',

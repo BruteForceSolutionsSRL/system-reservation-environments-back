@@ -42,6 +42,13 @@ class StudyPlanRepository
         )->toArray();
     }
 
+    public function addAcademicPeriod(int $studyPlanId, int $academicPeriodId) 
+    {
+        $studyPlan = $this->model::find($studyPlanId); 
+        $studyPlan->academicPeriods->attach([$academicPeriodId]);
+        return $this->formatOutput($studyPlan);
+    }
+
     private function formatOutput($studyPlan): array 
     {
         if ($studyPlan == null) return [];

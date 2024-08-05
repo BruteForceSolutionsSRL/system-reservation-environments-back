@@ -423,11 +423,9 @@ class ReservationRepository extends Repository
             }
             if (array_key_exists('teacher_subject_ids', $data['persons'][0])) {
                 $dp = [];
-                echo 'x';
                 foreach ($data['persons'] as $person) {
                     $dp[$person['person_id']] = $person['teacher_subject_ids'];
                 }
-                echo 'z';
                 foreach ($reservation->personReservations as $personReservation) {
                     $personReservation->teacherSubjects()->attach($dp[$personReservation->person_id]);
                 }
@@ -663,9 +661,11 @@ class ReservationRepository extends Repository
                 }
             )->toArray(),
             'reason_name' => $reservationReason->reason,
+            'reservation_reason_id' => $reservationReason->id,
             'priority' => $priority,
             'special' => $reservation->priority,
             'reservation_status' => $reservationStatus->status,
+            'reservation_status_id' => $reservationStatus->id,
             'repeat' => $reservation->repeat,
             'date' => $reservation->date,
             'observation' => $reservation->observation,
@@ -963,6 +963,10 @@ class ReservationRepository extends Repository
 
         if (!empty($data['academic_period'])) {
             $query->where('academic_period_id', $data['academic_period']);
+        }
+
+        if (array_key_exists('configuration_flag', $data)) {
+            $query->where('configuration_flag' , $data['configuration_flag']);
         }
     
         if (!empty($data['reservation_statuses'])) {
