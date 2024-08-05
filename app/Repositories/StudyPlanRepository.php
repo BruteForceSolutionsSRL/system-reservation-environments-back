@@ -45,7 +45,7 @@ class StudyPlanRepository
     public function addAcademicPeriod(int $studyPlanId, int $academicPeriodId) 
     {
         $studyPlan = $this->model::find($studyPlanId); 
-        $studyPlan->academicPeriods->attach([$academicPeriodId]);
+        $studyPlan->academicPeriods()->attach([$academicPeriodId]);
         return $this->formatOutput($studyPlan);
     }
 

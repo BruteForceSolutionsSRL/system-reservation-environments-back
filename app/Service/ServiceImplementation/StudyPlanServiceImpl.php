@@ -25,6 +25,6 @@ class StudyPlanServiceImpl
 
     public function attachAcademicPeriod(int $studyPlanId, int $academicPeriodId) 
     {
-        dd($this->studyPlanRepository->addAcademicPeriod($studyPlanId, $academicPeriodId));
+        $this->studyPlanRepository->addAcademicPeriod($studyPlanId, $academicPeriodId);
     }
 }

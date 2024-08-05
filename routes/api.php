@@ -244,6 +244,7 @@ Route::controller(AcademicPeriodController::class)->group(function() {
         Route::get('/academic-periods/{academicPeriodId}', 'index');
 
         Route::post('/academic-periods/store', 'store'); 
+        Route::post('/academic-periods/copy-period', 'copyAcademicPeriod');
         Route::put('/academic-periods/{academicPeriodId}/update', 'update');        
     });
 });

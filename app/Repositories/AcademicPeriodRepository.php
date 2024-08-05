@@ -118,6 +118,10 @@ class AcademicPeriodRepository
             );
         }
 
+        if (array_key_exists('name', $data)) {
+            $query->where('name', $data['name']);
+        }
+
         if (array_key_exists('facultyId', $data)) {
             $query->where('faculty_id', $data['facultyId']);
         }

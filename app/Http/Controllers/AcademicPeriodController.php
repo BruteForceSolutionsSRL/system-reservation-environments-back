@@ -98,6 +98,35 @@ class AcademicPeriodController extends Controller
                 ], 400);
             }
             $data = $validator->validated();
+
+            if ($this->existsNameInAcademicManagement($data['name'], $data['academic_management_id'])) {
+                return response()->json([
+                    'message' => 'Ya existe un periodo academico con este nombre en esta gestion academica, por favor introduce otro nombre.',
+                ], 400);
+            }
+
+            if ($data['date_start'] > $data['initial_date_reservations']) {
+                return response()->json(
+                    ['message' => 'La fecha seleccionada para inicio de aceptacion de reservas no puede empezar antes que la fecha de inicio del periodo academico.'], 
+                    400
+                );
+            }
+
+            if ($data['date_end'] < $data['initial_date_reservations']) {
+                return response()->json(
+                    ['message' => 'La fecha seleccionada para inicio de aceptacion de reservas no puede ser despues que la fecha de fin del periodo academico.'],
+                    400
+                );
+            }
+
+            $now = Carbon::now()->setTimeZone('America/New_York')->format('Y-m-d');
+            if ($now > $data['date_start']) {
+                return response()->json(
+                    ['message' => 'Fecha de inicio de semestre no puede ser una fecha pasada a la fecha actual.'],
+                    400
+                );
+            }
+
             return response()->json($this->academicPeriodService->copyAcademicPeriod($data), 200);
         } catch (Exception $e) {
             return response()->json(
@@ -144,6 +173,16 @@ class AcademicPeriodController extends Controller
         ]);
     }
 
+    private function existsNameInAcademicManagement(string $name, $academicManagementId): bool 
+    {
+        return count(
+            $this->academicPeriodService->getAcademicPeriods([
+                'name' => $name, 
+                'academic_management_id' => $academicManagementId,
+            ])
+        ) != 0;
+    }
+
     public function store(Request $request): Response 
     {
         try {
@@ -155,6 +194,11 @@ class AcademicPeriodController extends Controller
                 );
             }
             $data = $validator->validated();
+            if ($this->existsNameInAcademicManagement($data['name'], $data['academic_management'])) {
+                return response()->json([
+                    'message' => 'Ya existe un periodo academico con este nombre en esta gestion academica, por favor introduce otro nombre.',
+                ], 400);
+            }
 
             if ($data['date_start'] > $data['initial_date_reservations']) {
                 return response()->json(
@@ -179,8 +223,9 @@ class AcademicPeriodController extends Controller
             $message = $this->academicPeriodService->store($data);
             
             $pos = strpos($message, 'registro'); 
-            if ($pos !== false) 
-                return response()->json(['message' => $message, 400]);
+            if ($pos !== false) {
+                return response()->json(['message' => $message], 400);
+            }
 
             return response()->json(['message' => $message], 200); 
         } catch (Exception $e) {
@@ -199,7 +244,7 @@ class AcademicPeriodController extends Controller
         return Validator::make($request->all(), [
             'date_start' => 'required|date',
             'date_end' => 'required|date',
-            'name' => 'required|string|unique:academic_periods,name',
+            'name' => 'required|string',
             'academic_management_id' => 'required|int|exists:academic_managements,id',
             'initial_date_reservations' => 'required|date',
             'faculty_id' => 'required|int|exists:faculties,id',

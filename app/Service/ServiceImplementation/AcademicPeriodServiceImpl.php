@@ -5,7 +5,9 @@ use App\Service\AcademicPeriodService;
 
 use App\Repositories\{
 	AcademicPeriodRepository,
-	ReservationRepository
+	ReservationRepository,
+	ReservationStatusRepository as ReservationStatuses,
+	TimeSlotRepository
 };
 
 use Carbon\Carbon;
@@ -14,12 +16,14 @@ class AcademicPeriodServiceImpl implements AcademicPeriodService
 {
 	private $academicPeriodRepository; 
 	private $reservationRepository; 
+	private $timeSlotRepository;
 	private $studyPlanService;
 	public function __construct() 
 	{
 		$this->academicPeriodRepository = new AcademicPeriodRepository();
 		$this->reservationRepository = new ReservationRepository();
-		
+		$this->timeSlotRepository = new TimeSlotRepository();
+
 		$this->studyPlanService = new StudyPlanServiceImpl();
 	}
 
@@ -110,10 +114,14 @@ class AcademicPeriodServiceImpl implements AcademicPeriodService
 
 		foreach ($reservations as $reservation) {
 			$date = Carbon::parse($academicPeriod['initial_date'])->next(Carbon::parse($reservation['date'])->dayOfWeek);
-			dd($date);
 			$reservationData = [
 				'academic_period_id' => $academicPeriod['academic_period_id'], 
-				'time_slot_ids' => [],
+				'time_slot_ids' => array_map(
+					function ($timeSlot) {
+						return $this->timeSlotRepository->getTimeSlot($timeSlot)['time_slot_id'];
+					}, 
+					$reservation['time_slot']
+				),
 				'classroom_ids' => array_map(
 					function ($classroom) {
 						return $classroom['classroom_id'];
@@ -123,7 +131,7 @@ class AcademicPeriodServiceImpl implements AcademicPeriodService
 				'persons' => array_map(
 					function ($person) {
 						return [
-							'person_id', 
+							'person_id' => $person['person_id'], 
 							'teacher_subject_ids' => array_map(
 								function ($teacherSubject) {
 									return $teacherSubject['group_id'];
@@ -131,15 +139,19 @@ class AcademicPeriodServiceImpl implements AcademicPeriodService
 								$person['groups']
 							)
 						];
-					}, $data['persons']
+					}, $reservation['persons']
 				), 
-				'reservation_status_id' => '', 
-				'reservation_reason_id' => '',
+				'quantity' => $reservation['quantity'],
+				'reservation_status_id' => $reservation['reservation_status_id'], 
+				'reservation_reason_id' => $reservation['reservation_reason_id'],
 				'configuration_flag' => 1, 
 				'repeat' => $reservation['repeat'], 
 				'priority' => $reservation['special'], 
 				'date' => $date,
+				'verified' => 1,
+				'observation' => $reservation['observation'],
 			];
+			$this->reservationRepository->save($reservationData);
 		}
 
 		return 'Se copio de manera correcta el periodo academico '.$academicPeriod['name'];

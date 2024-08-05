@@ -397,7 +397,7 @@ class ReservationRepository extends Repository
 
         if (!array_key_exists('configuration_flag', $data)) {
             $data['configuration_flag'] = 0;
-        }
+        } 
         $reservation->configuration_flag = $data['configuration_flag'];
         
         $reservation->save();
