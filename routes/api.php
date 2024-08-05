@@ -238,9 +238,9 @@ Route::controller(AcademicManagementController::class)->group(function() {
 });
 
 Route::controller(AcademicPeriodController::class)->group(function() {
+    Route::middleware('jwt.verify')->get('/academic-periods/actual-period', 'getAcademicPeriodByFaculty');
     Route::group(['middleware' => ['jwt.verify', 'permissions:academic_periods']], function () {
         Route::get('/academic-periods', 'list');
-        Route::get('/academic-periods/actual-period', 'getAcademicPeriodByFaculty');
         Route::get('/academic-periods/{academicPeriodId}', 'index');
 
         Route::post('/academic-periods/store', 'store'); 
