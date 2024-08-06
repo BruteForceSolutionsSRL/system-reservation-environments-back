@@ -3,7 +3,8 @@
 namespace App\Repositories;
 
 use App\Models\{
-    Classroom
+    Classroom,
+    ClassroomReservation
 };
 
 use App\Repositories\{
@@ -15,6 +16,9 @@ use App\Repositories\{
 use Illuminate\Cache\Repository;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Builder;
+
+use function PHPUnit\Framework\isEmpty;
 
 class ClassroomRepository extends Repository
 {
@@ -343,14 +347,14 @@ class ClassroomRepository extends Repository
     private function getClassroomStatsReason(array $data, array $reasons): array
     {
         $reasonsIds = array_column($reasons, 'reason_id');
-        $stats = DB::table('classroom_reservation')
+        $stats = ClassroomReservation::with('')
             ->join('reservations', 'classroom_reservation.reservation_id', '=', 'reservations.id')
             ->join('reservation_reasons', 'reservations.reservation_reason_id', '=', 'reservation_reasons.id')  
             ->select(
                 'reservations.reservation_reason_id',
                 'reservation_reasons.reason',
                 DB::raw('COUNT(*) as total_reservations'),
-                DB::raw('CEIL(AVG(reservations.number_of_students)) as average_students')
+                DB::raw('CEIL(AVG(reservations.quantity)) as average_students')
             )
             ->where('classroom_reservation.classroom_id', $data['classroom_id'])
             ->whereBetween('reservations.date',[$data['date_start'], $data['date_end']])
@@ -390,21 +394,22 @@ class ClassroomRepository extends Repository
      */
     private function getClassroomStatsReservations(array $data, array $statuses): array
     {
+
         $ClassroomStats = DB::table('classroom_reservation')
-            ->join('reservations', 'classroom_reservation.reservation_id', '=', 'reservations.id')
-            ->select(
-                DB::raw('DATE(reservations.date) as date'),
-                DB::raw("CAST(SUM(CASE WHEN reservations.reservation_status_id = {$statuses['accepted']} THEN 1 ELSE 0 END) as UNSIGNED) as accepted"),
-                DB::raw("CAST(SUM(CASE WHEN reservations.reservation_status_id = {$statuses['rejected']} THEN 1 ELSE 0 END) as UNSIGNED) as rejected"),
-                DB::raw("CAST(SUM(CASE WHEN reservations.reservation_status_id = {$statuses['pending']} THEN 1 ELSE 0 END) as UNSIGNED) as pending"),
-                DB::raw("CAST(SUM(CASE WHEN reservations.reservation_status_id = {$statuses['cancelled']} THEN 1 ELSE 0 END) as UNSIGNED) as cancelled")
-            )
-            ->where('classroom_reservation.classroom_id', $data['classroom_id'])
-            ->whereBetween('reservations.date', [$data['date_start'], $data['date_end']])
-            ->orderBy(DB::raw('DATE(reservations.date)'))
-            ->groupBy(DB::raw('DATE(reservations.date)'))
-            ->get()
-            ->toArray();
+        ->join('reservations', 'classroom_reservation.reservation_id', '=', 'reservations.id')
+        ->select(
+            DB::raw('DATE(reservations.date) as date'),
+            DB::raw("CAST(SUM(CASE WHEN reservations.reservation_status_id = {$statuses['accepted']} THEN 1 ELSE 0 END) as UNSIGNED) as accepted"),
+            DB::raw("CAST(SUM(CASE WHEN reservations.reservation_status_id = {$statuses['rejected']} THEN 1 ELSE 0 END) as UNSIGNED) as rejected"),
+            DB::raw("CAST(SUM(CASE WHEN reservations.reservation_status_id = {$statuses['pending']} THEN 1 ELSE 0 END) as UNSIGNED) as pending"),
+            DB::raw("CAST(SUM(CASE WHEN reservations.reservation_status_id = {$statuses['cancelled']} THEN 1 ELSE 0 END) as UNSIGNED) as cancelled")
+        )
+        ->where('classroom_reservation.classroom_id', $data['classroom_id'])
+        ->whereBetween('reservations.date', [$data['date_start'], $data['date_end']])
+        ->orderBy(DB::raw('DATE(reservations.date)'))
+        ->groupBy(DB::raw('DATE(reservations.date)'))
+        ->get()
+        ->toArray();
         return $ClassroomStats;
     }
 }

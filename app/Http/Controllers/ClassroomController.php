@@ -710,13 +710,15 @@ class ClassroomController extends Controller
     {
         try {
             $validator = $this->validateGetClassroomStatsData($request);
-            if ($validator->fails()) 
+            if ($validator->fails()) {
                 return response()->json(
                     ['message' => implode($validator->errors()->all())],
                     400
                 );
+            }
 
             $data = $validator->validated();
+            
             $report = $this->classroomService->getClassroomStats($data);
             if (empty($report)) {
                 return response()->json(
@@ -748,17 +750,9 @@ class ClassroomController extends Controller
     private function validateGetClassroomStatsData(Request $request)
     {
         return Validator::make($request->all(), [
-            'classroom_id' => '
-                required|
-                integer|
-                exists:classrooms,id',
-            'date_start' => '
-                required|
-                date',
-            'date_end' => '
-                required|
-                date|
-                after_or_equal:date_start'
+            'classroom_id' => 'required|integer|exists:classrooms,id',
+            'date_start' => 'required|date',
+            'date_end' => 'required|date|after_or_equal:date_start'
         ], [
             'classroom_id.required' => 'El atributo \'classroom_id\' no debe ser nulo o vacio',
             'classroom_id.integer' => 'El atributo \'classroom_id\', debe ser un valor entero',
