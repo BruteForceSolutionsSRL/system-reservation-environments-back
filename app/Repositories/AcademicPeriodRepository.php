@@ -34,6 +34,12 @@ class AcademicPeriodRepository
     {
         $now = Carbon::now();
         $now = $now->format('Y-m-d');
+        //dd(
+        //    $this->model::where('faculty_id', $facultyId)
+        //        ->where('initial_date', '<=', $now)
+        //        ->where('end_date', '>=', $now)
+        //        ->get()->first()
+        //)   ;     
         return $this->formatOutput(
             $this->model::where('faculty_id', $facultyId)
                 ->where('initial_date', '<=', $now)
