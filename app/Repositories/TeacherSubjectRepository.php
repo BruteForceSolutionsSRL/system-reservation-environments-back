@@ -137,12 +137,7 @@ class TeacherSubjectRepository
             'group_number' => $teacherSubject->group_number,
             'subject_id' => $teacherSubject->university_subject_id,
             'subject_name' => $teacherSubject->universitySubject->name,
-            'person' => [
-                'person_id' => $teacherSubject->person->id, 
-                'name' => $teacherSubject->person->name, 
-                'last_name' => $teacherSubject->person->last_name,
-                'fullname' => $teacherSubject->person->name.' '.$teacherSubject->person->last_name,
-            ],
+            'person' => $this->personRepository->getPerson($teacherSubject->person->id),
         ];
     }
 

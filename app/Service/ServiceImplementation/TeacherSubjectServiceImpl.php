@@ -95,7 +95,7 @@ class TeacherSubjectServiceImpl implements TeacherSubjectService
                     'academic_period' => $academicPeriodId, 
                     'teacher_subjects' => [$teacherSubject['group_id']], 
                     'configuration_flag' => 1,
-                    'repeat' => 1,
+                    'repeat' => 7,
                 ]);
                 $result = $teacherSubject; 
                 $result['class_schedules'] = []; 
