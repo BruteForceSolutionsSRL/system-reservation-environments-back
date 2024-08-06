@@ -87,6 +87,33 @@ class TeacherSubjectServiceImpl implements TeacherSubjectService
         return $this->teacherSubjectRepository->getTeacherSubjects($data); 
     }
 
+    public function formatByAcademicPeriod(array $teacherSubjects, int $academicPeriodId): array
+    {
+        return array_map(
+            function ($teacherSubject) use ($academicPeriodId) {
+                $reservations = $this->reservationRepository->getReservations([
+                    'academic_period' => $academicPeriodId, 
+                    'teacher_subjects' => [$teacherSubject['group_id']], 
+                    'configuration_flag' => 1,
+                    'repeat' => 1,
+                ]);
+                $result = $teacherSubject; 
+                $result['class_schedules'] = []; 
+                foreach ($reservations as $reservation) {
+                    $item = [
+                        'day' => Carbon::parse($reservation['date'])->dayOfWeek - 1, 
+                        'classroom' => $reservation['classrooms'][0],
+                        'time_slots' => $reservation['time_slot'],
+                    ];
+                    array_push($result['class_schedules'], $item);
+                }
+
+                return $result; 
+            }, 
+            $teacherSubjects
+        );
+    }
+
     /**
      * 
      * @param array $data

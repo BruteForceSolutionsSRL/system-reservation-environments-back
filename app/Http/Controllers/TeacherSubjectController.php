@@ -84,10 +84,13 @@ class TeacherSubjectController extends Controller
     {
         try {
             return response()->json(
-                $this->teacherSubjectService->getTeacherSubjectByParams(
-                    [
-                        'academic_period_id' => $academicPeriodId,
-                    ]
+                $this->teacherSubjectService->formatByAcademicPeriod(
+                    $this->teacherSubjectService->getTeacherSubjectByParams(
+                        [
+                            'academic_period_id' => $academicPeriodId,
+                        ]
+                        ),
+                        $academicPeriodId                    
                 ), 
                 200
             );
