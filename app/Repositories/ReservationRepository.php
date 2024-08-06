@@ -375,11 +375,21 @@ class ReservationRepository extends Repository
         $reservation->repeat = $data['repeat'];
         $reservation->date = $data['date'];
         $reservation->reservation_reason_id = $data['reservation_reason_id'];
-        $reservation->reservation_status_id = ReservationStatuses::pending();
+
+        if (array_key_exists('verified', $data)) {
+            $reservation->reservation_status_id = $data['reservation_status_id'];
+        } else {
+            $reservation->reservation_status_id = ReservationStatuses::pending();
+        }
+        
         $reservation->priority = $data['priority'];
         $reservation->verified = 0;
         $reservation->observation = (array_key_exists('observation', $data))? $data['observation']: 'Ninguna';
-        $reservation->academic_period_id = $data['academic_period']['academic_period_id'];
+        $reservation->academic_period_id = $data['academic_period_id'];
+
+        if (array_key_exists('verified', $data)) {
+            $reservation->parent_id = $data['verified'];
+        }
 
         if (array_key_exists('parent_id', $data)) {
             $reservation->parent_id = $data['parent_id'];
@@ -387,7 +397,7 @@ class ReservationRepository extends Repository
 
         if (!array_key_exists('configuration_flag', $data)) {
             $data['configuration_flag'] = 0;
-        }
+        } 
         $reservation->configuration_flag = $data['configuration_flag'];
         
         $reservation->save();
@@ -396,7 +406,7 @@ class ReservationRepository extends Repository
             $reservation->parent_id = $reservation->id;
             $reservation->save();
         }
-        
+
         if (!empty($data['persons'])) {
             $reservation->persons()->attach(
                 array_map(
@@ -405,7 +415,12 @@ class ReservationRepository extends Repository
                     }, $data['persons']
                 )
             );
-            $reservation->persons()->updateExistingPivot($data['person_id'], ['created_by_me' => 1]);
+            if (array_key_exists('person_id', $data)) {
+                $reservation->persons()->updateExistingPivot(
+                    $data['person_id'], 
+                    ['created_by_me' => 1]
+                );
+            }
             if (array_key_exists('teacher_subject_ids', $data['persons'][0])) {
                 $dp = [];
                 foreach ($data['persons'] as $person) {
@@ -416,7 +431,6 @@ class ReservationRepository extends Repository
                 }
             }
         }
-        
         if (!empty($data['classroom_ids'])) {
             $reservation->classrooms()->attach($data['classroom_ids']);
         }
@@ -647,9 +661,11 @@ class ReservationRepository extends Repository
                 }
             )->toArray(),
             'reason_name' => $reservationReason->reason,
+            'reservation_reason_id' => $reservationReason->id,
             'priority' => $priority,
             'special' => $reservation->priority,
             'reservation_status' => $reservationStatus->status,
+            'reservation_status_id' => $reservationStatus->id,
             'repeat' => $reservation->repeat,
             'date' => $reservation->date,
             'observation' => $reservation->observation,
@@ -947,6 +963,10 @@ class ReservationRepository extends Repository
 
         if (!empty($data['academic_period'])) {
             $query->where('academic_period_id', $data['academic_period']);
+        }
+
+        if (array_key_exists('configuration_flag', $data)) {
+            $query->where('configuration_flag' , $data['configuration_flag']);
         }
     
         if (!empty($data['reservation_statuses'])) {

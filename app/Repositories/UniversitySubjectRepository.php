@@ -82,14 +82,17 @@ class UniversitySubjectRepository
                     ];
                 }  
             )->toArray(),
-            'study_plans' => $universitySubject->studyPlans->map(
-                function ($studyPlan) {
+            'study_plans' => $universitySubject->studyPlanUniversitySubjects->map(
+                function ($studyPlanUniversitySubject) {
                     return [
-                        'study_plan_id' => $studyPlan->id, 
-                        'name' => $studyPlan->name,
+                        'study_plan_id' => $studyPlanUniversitySubject->studyPlan->id, 
+                        'name' => $studyPlanUniversitySubject->studyPlan->name,
+                        'grade' => $studyPlanUniversitySubject->grade,
                     ];
                 }
             )->toArray(),
+            'department_id' => $universitySubject->department->id, 
+            'department_name' => $universitySubject->department->name,
 
         ];
     }

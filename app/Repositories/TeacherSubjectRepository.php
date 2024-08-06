@@ -70,6 +70,44 @@ class TeacherSubjectRepository
             )->toArray();
     }
 
+    public function getTeacherSubjects(array $data): array 
+    {
+        $query = TeacherSubject::with('person:id,name'); 
+        if (array_key_exists('university_subject_id', $data)) {
+            $query->where('university_subject_id', $data['university_subject_id']);
+        }
+
+        if (array_key_exists('group_number', $data)) {
+            $query->where('group_number', $data['group_number']);
+        }
+
+        if (array_key_exists('academic_period_id', $data)) {
+            $query->whereHas('universitySubject.studyPlans.academicPeriods', 
+                function ($query) use ($data) {
+                    $query->where('academic_periods.id', $data['academic_period_id']);
+                }
+            );
+        }
+
+        if (array_key_exists('person_id', $data)) {
+            $query->where('person_id', $data['person_id']);
+        }
+
+        if (array_key_exists('faculty_id', $data)) {
+            $query->whereHas('universitySubject.studyPlans.academicPeriods.faculty', 
+                function ($query) use ($data) {
+                    $query->where('academic_periods.faculty_id', $data['faculty_id']);
+                }
+            );
+        }
+
+        return $query->get()->map(
+            function ($teacherSubject) {
+                return $this->formatOutputSubject($teacherSubject);
+            }
+        )->toArray();
+    }
+
     /**
      * Check if an array of teacher subjects are from the same university subject
      */
@@ -78,9 +116,9 @@ class TeacherSubjectRepository
         if (empty($teacherSubjectIds)) {
             return true;
         }
-        $subjectId = $this->model::find($teacherSubjectIds[0])->university_subject_id;
+        $subjectId = $this->model::find($teacherSubjectIds[0])->first()->university_subject_id;
         foreach ($teacherSubjectIds as $teacherSubjectId) {
-            $auxSubjectId = $this->model::find($teacherSubjectId)->university_subject_id; 
+            $auxSubjectId = $this->model::find($teacherSubjectId)->first()->university_subject_id; 
             if ($auxSubjectId !== $subjectId) return false;
         }
         return true;
@@ -91,20 +129,37 @@ class TeacherSubjectRepository
      * @param TeacherSubject $universitySubject
      * @return array
      */
-    private function formatOutputSubject(TeacherSubject $universitySubject): array
+    private function formatOutputSubject($teacherSubject): array
     {
+        if (!$teacherSubject) return [];
         return [
-            'group_id' => $universitySubject->id, 
-            'group_number' => $universitySubject->group_number,
-            'subject_id' => $universitySubject->university_subject_id,
-            'subject_name' => $universitySubject->universitySubject->name,
+            'group_id' => $teacherSubject->id, 
+            'group_number' => $teacherSubject->group_number,
+            'subject_id' => $teacherSubject->university_subject_id,
+            'subject_name' => $teacherSubject->universitySubject->name,
             'person' => [
-                'person_id' => $universitySubject->person->id, 
-                'name' => $universitySubject->person->name, 
-                'last_name' => $universitySubject->person->last_name,
-                'fullname' => $universitySubject->person->name.' '.$universitySubject->person->last_name,
+                'person_id' => $teacherSubject->person->id, 
+                'name' => $teacherSubject->person->name, 
+                'last_name' => $teacherSubject->person->last_name,
+                'fullname' => $teacherSubject->person->name.' '.$teacherSubject->person->last_name,
             ],
         ];
+    }
+
+    /**
+     * 
+     * @param array $data
+     * @return array
+     */
+    public function saveGroup(array $data):array
+    {
+        $teacherSubject = new TeacherSubject();
+        $teacherSubject->group_number = $data['group_number'];
+        $teacherSubject->person_id = $data['person_id'];  
+        $teacherSubject->university_subject_id = $data['university_subject_id'];
+        $teacherSubject->save();
+
+        return $this->formatOutputSubject($teacherSubject);
     }
 
     /**
@@ -114,6 +169,7 @@ class TeacherSubjectRepository
      */
     private function formatOutputTeacher($teacher): array
     {
+        if (!$teacher) return [];
         return [
             'person_id' => $teacher['person_id'],
             'teacher_name' => $teacher['name'],

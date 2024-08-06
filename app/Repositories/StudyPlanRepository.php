@@ -24,7 +24,7 @@ class StudyPlanRepository
 
     public function getStudyPlans(array $data): array  
     {
-        $query = StudyPlan::with(['academicPeriod:id,name']);
+        $query = StudyPlan::with(['academicPeriods:id,name']);
         
         if (array_key_exists('department_ids', $data)) {
             $query->whereHas(
@@ -40,6 +40,13 @@ class StudyPlanRepository
                 return $this->formatOutput($studyPlan);
             }
         )->toArray();
+    }
+
+    public function addAcademicPeriod(int $studyPlanId, int $academicPeriodId) 
+    {
+        $studyPlan = $this->model::find($studyPlanId); 
+        $studyPlan->academicPeriods()->attach([$academicPeriodId]);
+        return $this->formatOutput($studyPlan);
     }
 
     private function formatOutput($studyPlan): array 

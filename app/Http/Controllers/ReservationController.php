@@ -8,6 +8,7 @@ use Illuminate\Http\{
 };
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 use App\Service\ServiceImplementation\{
     ReservationServiceImpl,
@@ -360,8 +361,8 @@ class ReservationController extends Controller
                 );
             }
             
-            if (\JWTAuth::parseToken($request->bearerToken())->getClaim('faculty_id') !== null) {
-                $data['faculty_id'] = \JWTAuth::parseToken($request->bearerToken())->getClaim('faculty_id'); 
+            if (JWTAuth::parseToken($request->bearerToken())->getClaim('faculty_id') !== null) {
+                $data['faculty_id'] = JWTAuth::parseToken($request->bearerToken())->getClaim('faculty_id'); 
             } else {
                 return response()->json(
                     ['message' => 'Existe un error con su token de acceso, por favor cierre sesion e ingrese nuevamente.'], 
@@ -372,24 +373,24 @@ class ReservationController extends Controller
             $data['person_id']  = $request['session_id'];
 
             $result = $this->reservationService->store($data);
-            $pos = strpos($result, 'No existen');
-            if ($pos !== false)
-                return response()->json(['message' => $result], 400);
-            $pos = strpos($result, 'rechazo'); 
-            if ($pos !== false)
-                return response()->json(['message' => $result], 201);
-            $pos = strpos($result, 'aceptada');
-            if ($pos !== false)
-                return response()->json(['message' => $result], 202);
+            $pos = strpos($result, 'No eres responsable');
+            if ($pos !== false) 
+                return response()->json(['message' => $result, 'value' => 1], 400);
             $pos = strpos($result, 'fuera'); 
             if ($pos !== false) 
-                return response()->json(['message' => $result], 403);
-            $pos = strpos($result, 'responsable');
-            if ($pos !== false) 
-                return response()->json(['message' => $result], 400);
+                return response()->json(['message' => $result, 'value' => 2], 403);
+            $pos = strpos($result, 'No existen');
+            if ($pos !== false)
+                return response()->json(['message' => $result, 'value' => 3], 400);
+            $pos = strpos($result, 'rechazo'); 
+            if ($pos !== false)
+                return response()->json(['message' => $result, 'value' => 4], 201);
+            $pos = strpos($result, 'aceptada');
+            if ($pos !== false)
+                return response()->json(['message' => $result, 'value' => 5], 202);
             $pos = strpos($result, 'grupos');
             if ($pos !== false) 
-                return response()->json(['message' => $result], 400);
+                return response()->json(['message' => $result, 'value' => 6], 400);
             return response()->json(
                 ['message' =>$result], 
                 200
