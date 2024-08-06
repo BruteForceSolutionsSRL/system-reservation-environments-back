@@ -16,17 +16,20 @@ use Illuminate\Http\{
 
 use App\Service\ServiceImplementation\{
     ClassroomServiceImpl as ClassroomService,
-    BlockServiceImpl
+    BlockServiceImpl,
+    AcademicPeriodServiceImpl
 };
 
 class ClassroomController extends Controller
 {
     private $classroomService;
     private $blockService;
+    private $academicPeriodService; 
     function __construct()
     {
         $this->classroomService = new ClassroomService();
         $this->blockService = new BlockServiceImpl();
+        $this->academicPeriodService = new AcademicPeriodServiceImpl();
     }
 
     /**
@@ -416,6 +419,10 @@ class ClassroomController extends Controller
                 );
 
             $data = $validator->validated();
+            $block = $this->blockService->getBlock($data['block_id']);
+
+            $data['academic_period_id'] = $this->academicPeriodService
+                ->getActualAcademicPeriodByFaculty($block['faculty_id'])['academic_period_id'];
             return response()->json(
                 $this->classroomService->getClassroomByDisponibility($data),
                 200
@@ -506,6 +513,9 @@ class ClassroomController extends Controller
 
             $data = $validator->validated();
             $data['endpoint'] = 1;
+            $block = $this->blockService->getBlock($data['block_id']);
+            $data['academic_period_id'] = $this->academicPeriodService
+                ->getActualAcademicPeriodByFaculty($block['faculty_id'])['academic_period_id'];
 
             return response()->json(
                 $this->classroomService->getClassroomsByDisponibility($data), 
@@ -539,6 +549,9 @@ class ClassroomController extends Controller
                 );
 
             $data = $validator->validated();
+            $block = $this->blockService->getBlock($data['block_id']);
+            $data['academic_period_id'] = $this->academicPeriodService
+                ->getActualAcademicPeriodByFaculty($block['faculty_id'])['academic_period_id'];
 
             $response = $this->classroomService->suggestClassrooms($data);
 

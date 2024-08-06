@@ -73,11 +73,12 @@ class BlockController extends Controller
         try {
 
             $validator = $this->validateForListBlocks($request);
-            if ($validator->fails())
+            if ($validator->fails()) {
                 return response()->json(
                     ['message' => implode(',', $validator->errors()->all())],
                     400
                 );
+            }
             $data = $validator->validated();
             return response()->json(
                 $this->blockService->listBlocksForSpecialReservation($data),

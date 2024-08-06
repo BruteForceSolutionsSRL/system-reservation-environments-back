@@ -22,4 +22,9 @@ class StudyPlanServiceImpl
     {
         return $this->studyPlanRepository->getStudyPlans($data);
     }
+
+    public function attachAcademicPeriod(int $studyPlanId, int $academicPeriodId) 
+    {
+        $this->studyPlanRepository->addAcademicPeriod($studyPlanId, $academicPeriodId);
+    }
 }
