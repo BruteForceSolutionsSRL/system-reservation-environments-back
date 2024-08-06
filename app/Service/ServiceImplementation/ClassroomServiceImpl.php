@@ -213,7 +213,8 @@ class ClassroomServiceImpl implements ClassroomService
                     ReservationStatuses::accepted()
                 ],
                 'time_slots' => $data['time_slot_ids'],
-                'classrooms' => $data['classroom_ids']
+                'classrooms' => $data['classroom_ids'],
+                'academic_period' => $data['academic_period_id'],
             ]
         );
         $dp = [];
@@ -290,6 +291,7 @@ class ClassroomServiceImpl implements ClassroomService
                     $classrooms
 		        ),
 		        'priorities' => [1],
+                'academic_period' => $data['academic_period_id'],
             ]
 	    );
         if (array_key_exists('endpoint', $data)) {

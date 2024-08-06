@@ -25,7 +25,7 @@ class ConstantController extends Controller
 				$this->constantsService->getAutomaticReservationConstant(), 
 				200
 			);
-		} catch (Exception $e) {
+		} catch (\Exception $e) {
 			return response()->json(
 				[
 					'message' => 'Hubo un error en el servidor.', 
@@ -43,7 +43,7 @@ class ConstantController extends Controller
 				$this->constantsService->getMaximalReservationPerGroup(), 
 				200
 			);
-		} catch (Exception $e) {
+		} catch (\Exception $e) {
 			return response()->json(
 				[
 					'message' => 'Hubo un error en el servidor.', 
@@ -62,7 +62,7 @@ class ConstantController extends Controller
 				$this->constantsService->getAutomaticReservationConstant(), 
 				200
 			);
-		} catch (Exception $e) {
+		} catch (\Exception $e) {
 			return response()->json(
 				[
 					'message' => 'Hubo un error en el servidor.', 
@@ -89,7 +89,7 @@ class ConstantController extends Controller
 				$this->constantsService->getMaximalReservationPerGroup(), 
 				200
 			);
-		} catch (Exception $e) {
+		} catch (\Exception $e) {
 			return response()->json(
 				[
 					'message' => 'Hubo un error en el servidor.', 

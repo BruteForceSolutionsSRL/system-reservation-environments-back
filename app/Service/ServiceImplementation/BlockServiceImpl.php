@@ -231,7 +231,8 @@ class BlockServiceImpl implements BlockService
                         'reservation_statuses' => [
                             ReservationStatusRepository::accepted(), 
                             ReservationStatusRepository::rejected()
-                        ]
+                        ],
+                        'academic_period' => $data['academic_period_id'],
                     ]
                 )
             ); 

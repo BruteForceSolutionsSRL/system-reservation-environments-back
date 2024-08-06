@@ -158,7 +158,8 @@ class ReservationServiceImpl implements ReservationService
             [
                 'date' => $reservation['date'],
                 'time_slots' => $reservation['time_slot'],
-                'classrooms' => $reservation['classrooms']
+                'classrooms' => $reservation['classrooms'],
+                'academic_period' => $reservation['academic_period_id'],
             ]
         );
 
@@ -203,7 +204,8 @@ class ReservationServiceImpl implements ReservationService
             [
                 'date' => $reservation['date'],
                 'time_slots' => $reservation['time_slot'],
-                'classrooms' => $reservation['classrooms']
+                'classrooms' => $reservation['classrooms'],
+                'academic_period_id' => $reservation['academic_period_id'],
             ]
         );
 
@@ -308,7 +310,8 @@ class ReservationServiceImpl implements ReservationService
                         return $classroom['classroom_id'];
                     },
                     $reservation['classrooms']
-                )
+                ),
+                'academic_period' => $reservation['academic_period_id'],
             ]
         );
 
@@ -405,8 +408,9 @@ class ReservationServiceImpl implements ReservationService
         if (!$this->isResposible($data['persons'], $data['person_id']) && !$config) {
             return 'No eres responsable de ninguno de los grupos seleccionados, debe seleccionar al menos un grupo a su nombre.';
         }
-        $data['academic_period_id'] = $this->academicPeriodRepository
-            ->getActualAcademicPeriod($data['faculty_id'])['academic_period_id'];
+        $data['academic_period'] = $this->academicPeriodRepository
+            ->getActualAcademicPeriod($data['faculty_id']);
+        $data['academic_period_id'] = $data['academic_period']['academic_period_id'];
 
         if (!$config) {
             $now = Carbon::now()->setTimeZone('America/New_York')->format('Y-m-d');
@@ -415,7 +419,6 @@ class ReservationServiceImpl implements ReservationService
                 return 'Se encuentra fuera de las fechas para realizar reservas, usted puede realizar reservas para la facultad seleccionada entre las fechas: '.$data['academic_period']['initial_date_reservations'].' y '.$data['academic_period']['end_date'].'.';
             }
         } 
-
         $reservation = $this->reservationRepository->save($data);
         if (!$config) {
             $this->notificationService->store(
@@ -489,7 +492,8 @@ class ReservationServiceImpl implements ReservationService
                         return $classroom['classroom_id'];
                     },
                     $reservation['classrooms']
-                )
+                ),
+                'academic_period' => $reservation['academic_period_id'],
             ]
         )) == 0;
     }
@@ -554,7 +558,8 @@ class ReservationServiceImpl implements ReservationService
                         return $classroom['classroom_id'];
                     },
                     $reservation['classrooms']
-                )
+                ),
+                'academic_period' => $reservation['academic_period_id'],
             ]
         );
         foreach ($reservationSet as $reservationIterable) {
@@ -763,7 +768,8 @@ class ReservationServiceImpl implements ReservationService
                     function ($classroom) {
                         return $classroom['classroom_id'];
                     }, $data['classrooms']
-                )
+                ),
+                'academic_period' => $data['academic_period_id']
             ]
         );
         if (count($reservations) == 1) {
@@ -818,6 +824,7 @@ class ReservationServiceImpl implements ReservationService
                 'reservation_statuses' => [
                     ReservationStatuses::accepted()
                 ],
+                'academic_period' => $data['academic_period_id'],
             ]
         );
 
@@ -870,6 +877,7 @@ class ReservationServiceImpl implements ReservationService
                 'priorities' => [0],
                 'no_repeat' => 1,
                 'time_slots' => $data['time_slot_ids'],
+                'academic_period' => $data['academic_period_id'],
             ]
         );
 
@@ -913,12 +921,5 @@ class ReservationServiceImpl implements ReservationService
         $reservation = $this->reservationRepository
             ->detachPersonFromReservation($personId, $reservationId);
         return 'Usted fue eliminado de la solicitud/reserva '.$reservation['reservation_id'].'.';
-    }
-
-    public function test()
-    {
-        return $this->reservationRepository->getReservations([
-            
-        ]);
     }
 }
