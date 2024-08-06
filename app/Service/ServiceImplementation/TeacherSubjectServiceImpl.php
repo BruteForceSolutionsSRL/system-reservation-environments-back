@@ -52,21 +52,21 @@ class TeacherSubjectServiceImpl implements TeacherSubjectService
         $result = $this->getTeacherSubjectByParams(
             ['person_id' => $teacherID]
         );
-//        $result['university_subjects'] = [];
-//        $dp = []; 
-//        foreach ($result as $teacherSubject) {
-//            if (empty($teacherSubject)) {
-//                continue;
-//            }
-//            if (array_key_exists($teacherSubject['subject_id'], $dp)) {
-//                continue;
-//            }
-//            $dp[$teacherSubject['subject_id']] = 1;
-//            array_push($result['university_subjects'], [
-//                'subject_id' => $teacherSubject['subject_id'], 
-//                'subject_name' => $teacherSubject['subject_name'],
-//            ]);
-//        }
+        $result['university_subjects'] = [];
+        $dp = []; 
+        foreach ($result as $teacherSubject) {
+            if (empty($teacherSubject)) {
+                continue;
+            }
+            if (array_key_exists($teacherSubject['subject_id'], $dp)) {
+                continue;
+            }
+            $dp[$teacherSubject['subject_id']] = 1;
+            array_push($result['university_subjects'], [
+                'subject_id' => $teacherSubject['subject_id'], 
+                'subject_name' => $teacherSubject['subject_name'],
+            ]);
+        }
 
         return $result;
     }
