@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\{
+    AcademicPeriod,
     Reservation,
     Person
 };
@@ -10,7 +11,8 @@ use App\Models\{
 
 use App\Repositories\{
     ReservationStatusRepository as ReservationStatuses,
-    ClassroomLogsRepository
+    ClassroomLogsRepository,
+    AcademicPeriodRepository
 };
 
 use App\Service\ServiceImplementation\TimeSlotServiceImpl;
@@ -19,7 +21,6 @@ use DateTime;
 
 use Illuminate\Cache\Repository;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rules\Unique;
 
 class ReservationRepository extends Repository
 {
@@ -27,10 +28,12 @@ class ReservationRepository extends Repository
     private $timeSlotService;
     private $classroomLog;
     private $timeSlotRepository; 
+    private $academicPeriodRepository;
     function __construct()
     {
         $this->model = Reservation::class;
         $this->timeSlotRepository = new TimeSlotRepository();
+        $this->academicPeriodRepository = new AcademicPeriodRepository();
         $this->timeSlotService = new TimeSlotServiceImpl();
 
         $this->classroomLog = new ClassroomLogsRepository();
@@ -801,10 +804,12 @@ class ReservationRepository extends Repository
      */
     public function getReports(array $data): array
     {
+        $actualAcademicPeriod = $this->academicPeriodRepository->getActualAcademicPeriod($data['faculty_id']);
         $query = DB::table('reservations')
-            ->join('reservation_teacher_subject', 'reservations.id', '=', 'reservation_teacher_subject.reservation_id')
-            ->join('teacher_subjects', 'reservation_teacher_subject.teacher_subject_id', '=', 'teacher_subjects.id')
-            ->join('people', 'teacher_subjects.person_id', '=', 'people.id')
+            ->join('person_reservation','reservations.id','=','person_reservation.reservation_id')
+            ->join('people', 'person_reservation.person_id', '=', 'people.id')
+            ->join('person_reservation_teacher_subject','person_reservation_teacher_subject.person_reservation_id','=','person_reservation.person_id')
+            ->join('teacher_subjects','person_reservation_teacher_subject.teacher_subject_id','=','teacher_subjects.id') 
             ->join('classroom_reservation', 'reservations.id', '=', 'classroom_reservation.reservation_id')
             ->join('classrooms', 'classroom_reservation.classroom_id', '=', 'classrooms.id')
             ->join('blocks', 'classrooms.block_id', '=', 'blocks.id')
@@ -823,6 +828,7 @@ class ReservationRepository extends Repository
                 'reservations.reservation_status_id',
                 'reservation_reasons.reason'
             )
+            ->where('academic_period_id',$actualAcademicPeriod['academic_period_id'])
             ->whereBetween('reservations.date', [$data['date_start'], $data['date_end']])
             ->whereIn('reservations.reservation_status_id', [
                 ReservationStatuses::accepted(), 
@@ -855,7 +861,6 @@ class ReservationRepository extends Repository
         $canceledCount = 0;
 
         $results = $query->orderBy('reservations.date')->get()->toArray();
-
         if (empty($results)) {
             return [
                 'accepted_reservations' => 0,

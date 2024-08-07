@@ -566,6 +566,8 @@ class ReservationController extends Controller
                 );
 
             $data = $validator->validated();
+            /* $data['faculty_id'] = JWTAuth::parseToken()->getClaims('faculty_id'); */
+            $data['faculty_id'] = 1;
             $report = $this->reservationService->getReports($data);
             if (empty($report['report'])) {
                 return response()->json([
@@ -596,33 +598,13 @@ class ReservationController extends Controller
     private function validateGetReportsData(Request $request)
     {
         return Validator::make($request->all(), [
-            'date_start' => '
-                required|
-                date',
-            'date_end' => '
-                required|
-                date|
-                after_or_equal:date_start',
-            'block_id' => '
-                nullable|
-                integer|
-                exists:blocks,id',
-            'classroom_id' => '
-                nullable|
-                integer|
-                exists:classrooms,id',
-            'reservation_status_id' => '
-                nullable|
-                integer|
-                exists:reservation_statuses,id',
-            'university_subject_id' => '
-                nullable|
-                integer|
-                exists:university_subjects,id',
-            'person_id' => '
-                nullable|
-                integer|
-                exists:people,id',
+            'date_start' => 'required|date',
+            'date_end' => 'required|date|after_or_equal:date_start',
+            'block_id' => 'nullable|integer|exists:blocks,id',
+            'classroom_id' => 'nullable|integer|exists:classrooms,id',
+            'reservation_status_id' => 'nullable|integer|exists:reservation_statuses,id',
+            'university_subject_id' => 'nullable|integer|exists:university_subjects,id',
+            'person_id' => 'nullable|integer|exists:people,id',
         ], [
             'date_start.required' => 'La fecha de inicio es obligatoria',
             'date_start.date' => 'La fecha de incio debe tener un formato válido',
