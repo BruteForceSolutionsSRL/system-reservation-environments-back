@@ -130,7 +130,7 @@ class TeacherSubjectController extends Controller
             }
             if ($request->has('faculty_id')) {
                 $facultyId = $request['faculty_id'];
-            }
+            }    
             if ($facultyId == -1) {
                 return response()->json([
                     'message' => 'No existe una facultad seleccionada, por favor intente iniciar sesion nuevamente',

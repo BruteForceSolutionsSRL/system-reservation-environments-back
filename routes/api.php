@@ -48,6 +48,7 @@ use App\Http\Controllers\{
  * environment_remove => eliminar ambiente (ENCARGADO)
  * reservation_cancel => cancelar solicitues de reserva (DOCENTE)
  * history => Obtener el historia de solicitudes (DOCENTE)
+ * academic_management => Manejar los periodos academicos + gestiones academicas (ENCARGADO)
  */
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {
@@ -145,15 +146,17 @@ Route::controller(ClassroomController::class)->group(function() {
 });
 
 Route::controller(TeacherSubjectController::class)->group(function() {
-    Route::get('/teacher-subjects', 'list');
-    Route::get('/teacher-subjects/teacher', 'getAllTeacherSubjectsByPersonAndFaculty'); // debe tener al menos un token 
-    Route::post('/teacher-subjects/store/group','saveGroup');
-    Route::get('/teacher-subjects/{academicPeriodId}', 'getAllTeacherSubjectsByAcademicPeriod');
-    //Route::group(['middleware' => ['jwt.verify','permissions:request_reserve,report']], function () {
-        Route::get('/teacher-subjects/teacher/{teacherId}', 'subjectsByTeacher');
-        Route::get('/teacher-subjects/subject/{universitySubjectID}', 'teachersBySubject');
-    //});
-    Route::get('/test', 'test');
+    Route::middleware('jwt.verify')->group(function () {
+        Route::get('/teacher-subjects', 'list');
+        Route::get('/teacher-subjects/teacher', 'getAllTeacherSubjectsByPersonAndFaculty');
+        Route::post('/teacher-subjects/store/group','saveGroup');
+        Route::get('/teacher-subjects/{academicPeriodId}', 'getAllTeacherSubjectsByAcademicPeriod');
+        Route::group(['middleware' => ['permissions:request_reserve,report']], function () {
+            Route::get('/teacher-subjects/teacher/{teacherId}', 'subjectsByTeacher');
+            Route::get('/teacher-subjects/subject/{universitySubjectID}', 'teachersBySubject');
+        });
+    
+    });
 });
 
 Route::controller(NotificationController::class)->group(function() {
