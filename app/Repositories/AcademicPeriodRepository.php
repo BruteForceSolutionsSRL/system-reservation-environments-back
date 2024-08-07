@@ -7,10 +7,13 @@ use Carbon\Carbon;
 class AcademicPeriodRepository 
 {
     protected $model; 
+    private $academicManagementRepository;
 
     public function __construct()
     {
         $this->model = AcademicPeriod::class;
+
+        $this->academicManagementRepository = new AcademicManagementRepository();
     }
 
     /**
@@ -187,6 +190,8 @@ class AcademicPeriodRepository
             'faculty_name' => $academicPeriod->faculty->name, 
             'academic_management_id' => $academicPeriod->academicManagement->id, 
             'academic_management_name' => $academicPeriod->academicManagement->name,
+            'academic_management' => $this->academicManagementRepository
+                ->getAcademicManagement($academicPeriod->academicManagement->id),
         ];
     }
 }
