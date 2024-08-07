@@ -154,14 +154,16 @@ class ReservationServiceImpl implements ReservationService
                 $message
             )
         );
-        $this->acceptPendingByCollision(
-            [
-                'date' => $reservation['date'],
-                'time_slots' => $reservation['time_slot'],
-                'classrooms' => $reservation['classrooms'],
-                'academic_period_id' => $reservation['academic_period_id'],
-            ]
-        );
+        if (ConstantRepository::getAutomaticReservation() !== 0) {
+            $this->acceptPendingByCollision(
+                [
+                    'date' => $reservation['date'],
+                    'time_slots' => $reservation['time_slot'],
+                    'classrooms' => $reservation['classrooms'],
+                    'academic_period_id' => $reservation['academic_period_id'],
+                ]
+            );    
+        }
 
         return 'La solicitud de reserva fue rechazada correctamente.';
     }
@@ -199,15 +201,17 @@ class ReservationServiceImpl implements ReservationService
         );
 
         $reservation = $this->reservationRepository->getReservation($reservation->id);
-
-        $this->acceptPendingByCollision(
-            [
-                'date' => $reservation['date'],
-                'time_slots' => $reservation['time_slot'],
-                'classrooms' => $reservation['classrooms'],
-                'academic_period_id' => $reservation['academic_period_id'],
-            ]
-        );
+        
+        if (ConstantRepository::getAutomaticReservation() !== 0) {
+            $this->acceptPendingByCollision(
+                [
+                    'date' => $reservation['date'],
+                    'time_slots' => $reservation['time_slot'],
+                    'classrooms' => $reservation['classrooms'],
+                    'academic_period_id' => $reservation['academic_period_id'],
+                ]
+            );    
+        }
 
         return 'La solicitud de reserva fue cancelada correctamente.';
     }

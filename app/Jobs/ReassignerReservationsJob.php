@@ -17,7 +17,8 @@ use App\Service\ServiceImplementation\{
 };
 
 use App\Repositories\{
-    ReservationRepository 
+    ReservationRepository,
+    ConstantRepository
 };
 
 class ReassignerReservationsJob implements ShouldQueue
@@ -80,7 +81,7 @@ class ReassignerReservationsJob implements ShouldQueue
                         $classrooms
                      )
                 );  
-                if ($reservation['reservation_status'] !== 'ACEPTADO') {
+                if ($reservation['reservation_status'] !== 'ACEPTADO' && ConstantRepository::getAutomaticReservation()!==0) {
                     $reservationService->accept($reservation['reservation_id'], false);
                 }
             } else {
