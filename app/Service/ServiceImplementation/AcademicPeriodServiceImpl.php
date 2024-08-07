@@ -95,11 +95,10 @@ class AcademicPeriodServiceImpl implements AcademicPeriodService
 		$academicPeriodId = $data['academic_period_id'];
 		$academicPeriodToCopy = $this->academicPeriodRepository->getAcademicPeriod($academicPeriodId);
 		$data['faculty_id'] = $academicPeriodToCopy['faculty_id'];
-		if ($this->existsCollision([$data])) {
+		if ($this->existsCollision($data)) {
 			return 'No se puede copiar el periodo academico, existe un periodo academico previo entre dichas fechas';
 		}
 		$academicPeriod = $this->academicPeriodRepository->store($data);
-
 		$studyPlans = $this->studyPlanService->obtainStudyPlansBySetOfFaculties([
 			'faculty_ids' => [$data['faculty_id']]
 		]);

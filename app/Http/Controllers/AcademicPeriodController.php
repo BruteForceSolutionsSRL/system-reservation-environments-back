@@ -262,7 +262,7 @@ class AcademicPeriodController extends Controller
 
             $message = $this->academicPeriodService->store($data);
             
-            $pos = strpos($message, 'registro'); 
+            $pos = strpos($message, 'existe'); 
             if ($pos !== false) {
                 return response()->json(['message' => $message], 400);
             }
