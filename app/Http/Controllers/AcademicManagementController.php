@@ -17,6 +17,10 @@ class AcademicManagementController extends Controller
         $this->academicManagementService = new AcademicManagementServiceImpl();
     }
 
+    /**
+     * Retrieve a list of academic management by a response class
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function list(): Response
     {
         try {
@@ -32,6 +36,11 @@ class AcademicManagementController extends Controller
         }
     }
 
+    /**
+     * Retrieve a single academic management by response
+     * @param int $academicManagementId
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function index(int $academicManagementId): Response
     {
         try {
@@ -57,6 +66,11 @@ class AcademicManagementController extends Controller
         }        
     }
 
+    /**
+     * Store a request to register a new academic management
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function store(Request $request): Response 
     {
         try {
@@ -83,6 +97,11 @@ class AcademicManagementController extends Controller
         }
     }
 
+    /**
+     * Validate a store request
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Validation\Validator
+     */
     private function validateAcademicManagement(Request $request)
     {
         return \Validator::make($request->all(), [
@@ -102,6 +121,12 @@ class AcademicManagementController extends Controller
         ]);
     }
 
+    /**
+     * Update a single academic management with request 
+     * @param \Illuminate\Http\Request $request
+     * @param int $academicManagementId
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function update(Request $request, int $academicManagementId): Response 
     {
         try {
@@ -113,7 +138,8 @@ class AcademicManagementController extends Controller
                 );
             }
             $data = $validator->validated();
-            $academicManagement = $this->academicManagementService->index($academicManagementId);
+            $academicManagement = $this->academicManagementService
+                ->getAcademicManagement($academicManagementId);
             if (empty($academicManagement)) {
                 return response()->json(
                     ['message' => 'No existe la gestion academica seleccionada, por favor seleccione otra.'], 
@@ -135,6 +161,11 @@ class AcademicManagementController extends Controller
             );
         }
     }
+    /**
+     * Validate a update request
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Validation\Validator
+     */
     private function validateAcademicManagementUpdate(Request $request)
     {
         return \Validator::make($request->all(), [

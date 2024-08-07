@@ -7,5 +7,5 @@ interface AcademicPeriodService
 	function getAcademicPeriods(array $data): array; 
 	function getAcademicPeriod(int $academicPeriodId): array;
 	function store(array $data): string; 
-	function update(array $data, int $academicPeriodId): string;  
+	function update(array $data, int $academicPeriodId): array;  
 }

@@ -18,6 +18,10 @@ class ConstantController extends Controller
 		$this->constantsService = new ConstantServiceImpl();
 	}
 
+	/**
+	 * Retrieve a status of a single constant 'AUTOMATIC_RESERVATIONS'
+	 * @return \Illuminate\Http\JsonResponse
+	 */
 	public function getAutomaticReservationConstant(): Response
 	{
 		try {
@@ -36,6 +40,10 @@ class ConstantController extends Controller
 		}
 	}
 
+	/**
+	 * Retrieve a status of a single constant 'MAXIMAL_RESERVATION_PER_GROUP'
+	 * @return \Illuminate\Http\JsonResponse
+	 */
 	public function getMaximalReservationPerGroup(): Response
 	{
 		try {
@@ -99,6 +107,11 @@ class ConstantController extends Controller
 			);
 		}
 	}
+	/**
+	 * Validate a updateMaximalReservationPerGroup request
+	 * @param \Illuminate\Http\Request $request
+	 * @return \Illuminate\Validation\Validator
+	 */
 	private function validateConstantMaximalReservationPerGroup(Request $request) 
 	{
         return \Validator::make($request->all(), [

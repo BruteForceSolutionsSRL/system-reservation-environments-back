@@ -51,6 +51,11 @@ class BlockRepository
         return $this->formatOutput($block);
     }
 
+    /**
+     * Find a single block (not deleted) by its name
+     * @param string $name
+     * @return array
+     */
     public function findByName(string $name): array 
     {
         return $this->model::where('name', $name)
@@ -63,6 +68,11 @@ class BlockRepository
                 )->toArray();
     }
 
+    /**
+     * Register a new block
+     * @param array $data
+     * @return array
+     */
     public function save(array $data): array 
     {
         $block = new Block(); 
@@ -76,6 +86,12 @@ class BlockRepository
         return $this->formatOutput($block); 
     }
 
+    /**
+     * Update a regitered block with new information
+     * @param array $data
+     * @param int $id
+     * @return array
+     */
     public function update(array $data, int $id): array 
     {
         $block = $this->model::find($id); 
@@ -91,6 +107,11 @@ class BlockRepository
         return $this->formatOutput($block);
     }
 
+    /**
+     * Delete a single block based on its ID
+     * @param int $id
+     * @return array
+     */
     public function delete(int $id): array 
     {
         $block = $this->model::find($id); 
@@ -101,6 +122,11 @@ class BlockRepository
         return $retrieveBlock;
     }
 
+    /**
+     * Get all blocks withing required query params
+     * @param array $data
+     * @return array
+     */
     public function getBlocks(array $data): array 
     {
         $query = Block::with(['blockStatus:id,name']); 

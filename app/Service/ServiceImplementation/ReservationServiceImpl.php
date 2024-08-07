@@ -159,7 +159,7 @@ class ReservationServiceImpl implements ReservationService
                 'date' => $reservation['date'],
                 'time_slots' => $reservation['time_slot'],
                 'classrooms' => $reservation['classrooms'],
-                'academic_period' => $reservation['academic_period_id'],
+                'academic_period_id' => $reservation['academic_period_id'],
             ]
         );
 

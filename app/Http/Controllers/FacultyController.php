@@ -18,6 +18,10 @@ class FacultyController extends Controller
     }
 
 
+    /**
+     * Retrieve a list of all faculties
+     * @return mixed|\Illuminate\Http\JsonResponse
+     */
     public function list() 
     {
         try {

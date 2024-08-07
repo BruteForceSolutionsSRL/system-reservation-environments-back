@@ -17,6 +17,10 @@ class DepartmentController extends Controller
         $this->departmentService = new DepartmentServiceImpl();
     }
 
+    /**
+     * Retrieve a list of all departments
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function list(): Response
     {
         try {

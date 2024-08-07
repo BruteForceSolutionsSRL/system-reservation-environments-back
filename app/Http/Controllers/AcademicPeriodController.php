@@ -23,6 +23,10 @@ class AcademicPeriodController extends Controller
         $this->academicPeriodService = new AcademicPeriodServiceImpl();
     }
 
+    /**
+     * Retrieve a list of all academic periods registeres
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function list(): Response
     {
         try {
@@ -38,6 +42,11 @@ class AcademicPeriodController extends Controller
         }
     }
 
+    /**
+     * Retrieve a response of a single academic period 
+     * @param int $academicPeriodId
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function index(int $academicPeriodId): Response
     {
         try {
@@ -61,6 +70,11 @@ class AcademicPeriodController extends Controller
         }        
     }
 
+    /**
+     * Retrieve a single academic period based of an faculty 
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function getAcademicPeriodByFaculty(Request $request): Response
     {
         try {
@@ -88,6 +102,11 @@ class AcademicPeriodController extends Controller
         }
     }
 
+    /**
+     * Copy a single academic period with request params
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function copyAcademicPeriod(Request $request): Response 
     {
         try {
@@ -126,8 +145,13 @@ class AcademicPeriodController extends Controller
                     400
                 );
             }
+            $message = $this->academicPeriodService->copyAcademicPeriod($data);
+            $pos = strpos($message, 'existe');
+            if ($pos !== false) {
+                return response()->json(['message' => $message], 400);
+            }
 
-            return response()->json($this->academicPeriodService->copyAcademicPeriod($data), 200);
+            return response()->json($message, 200);
         } catch (Exception $e) {
             return response()->json(
                 [
@@ -138,6 +162,11 @@ class AcademicPeriodController extends Controller
         }
     }
 
+    /**
+     * Validate a copy request
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Validation\Validator
+     */
     private function validateCopying(Request $request) 
     {
         return \Validator::make($request->all(), 
@@ -173,7 +202,13 @@ class AcademicPeriodController extends Controller
         ]);
     }
 
-    private function existsNameInAcademicManagement(string $name, $academicManagementId): bool 
+    /**
+     * Retrieve if exists a an academcic period name on a single academic management
+     * @param string $name
+     * @param int $academicManagementId
+     * @return bool
+     */
+    private function existsNameInAcademicManagement(string $name, int $academicManagementId): bool 
     {
         return count(
             $this->academicPeriodService->getAcademicPeriods([
@@ -183,6 +218,11 @@ class AcademicPeriodController extends Controller
         ) != 0;
     }
 
+    /**
+     * Register a new academic period
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function store(Request $request): Response 
     {
         try {
@@ -194,7 +234,7 @@ class AcademicPeriodController extends Controller
                 );
             }
             $data = $validator->validated();
-            if ($this->existsNameInAcademicManagement($data['name'], $data['academic_management'])) {
+            if ($this->existsNameInAcademicManagement($data['name'], $data['academic_management_id'])) {
                 return response()->json([
                     'message' => 'Ya existe un periodo academico con este nombre en esta gestion academica, por favor introduce otro nombre.',
                 ], 400);
@@ -239,6 +279,11 @@ class AcademicPeriodController extends Controller
         }
     }
 
+    /**
+     * Validate a academic period data to register
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Validation\Validator
+     */
     private function validateAcademicPeriodData(Request $request)
     {
         return Validator::make($request->all(), [
@@ -272,6 +317,12 @@ class AcademicPeriodController extends Controller
         ]);
     }
 
+    /**
+     * Update an academic period with a new request
+     * @param \Illuminate\Http\Request $request
+     * @param int $academicPeriodId
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function update(Request $request, int $academicPeriodId): Response 
     {
         try {
@@ -292,7 +343,7 @@ class AcademicPeriodController extends Controller
             }
 
             return response()->json(
-                ['message' => $this->academicPeriodService->update($data, $academicPeriodId)], 
+                $this->academicPeriodService->update($data, $academicPeriodId), 
                 200
             ); 
         } catch (Exception $e) {
@@ -305,6 +356,12 @@ class AcademicPeriodController extends Controller
             );
         }
     }
+
+    /**
+     * Validate update request
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Validation\Validator
+     */
     private function validateAcademicPeriodUpdateData(Request $request)
     {
         return Validator::make($request->all(), [

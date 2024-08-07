@@ -38,6 +38,10 @@ class TeacherSubjectServiceImpl implements TeacherSubjectService
         $this->reservationService = new ReservationServiceImpl();
     }
 
+    /**
+     * Retrieve all teacher subjects 
+     * @return mixed
+     */
     public function getAllTeacherSubjects() {
         return $this->teacherSubjectRepository->getAllTeacherSubjects(); 
     }
@@ -82,13 +86,51 @@ class TeacherSubjectServiceImpl implements TeacherSubjectService
             ->getTeachersBySubject($universitySubjectID)); 
     }
 
+    /**
+     * Retrive all teacher subjects by query params
+     * @param array $data
+     * @return array
+     */
     public function getTeacherSubjectByParams(array $data): array 
     {
         return $this->teacherSubjectRepository->getTeacherSubjects($data); 
     }
 
     /**
-     * 
+     * Special format for teacher subjects by a single academic period
+     * @param array $teacherSubjects
+     * @param int $academicPeriodId
+     * @return array
+     */
+    public function formatByAcademicPeriod(array $teacherSubjects, int $academicPeriodId): array
+    {
+        return array_map(
+            function ($teacherSubject) use ($academicPeriodId) {
+                $reservations = $this->reservationRepository->getReservations([
+                    'academic_period' => $academicPeriodId, 
+                    'teacher_subjects' => [$teacherSubject['group_id']], 
+                    'configuration_flag' => 1,
+                    'repeat' => 7,
+                ]);
+                $result = $teacherSubject; 
+                $result['class_schedules'] = []; 
+                foreach ($reservations as $reservation) {
+                    $item = [
+                        'day' => Carbon::parse($reservation['date'])->dayOfWeek - 1, 
+                        'classroom' => $reservation['classrooms'][0],
+                        'time_slots' => $reservation['time_slot'],
+                    ];
+                    array_push($result['class_schedules'], $item);
+                }
+
+                return $result; 
+            }, 
+            $teacherSubjects
+        );
+    }
+
+    /**
+     * Store a single group - teacher subject
      * @param array $data
      * @return array
      */
@@ -130,11 +172,5 @@ class TeacherSubjectServiceImpl implements TeacherSubjectService
             return ['message' => 'Existe error(es): '.implode(',', $errors)];
         }
         return ['message' => 'Grupo creado con exito'];
-    }
-
-    public function test() {
-        $date = Carbon::parse('2024-08-04');
-        $date->next(Carbon::MONDAY);
-        return Carbon::TUESDAY;
     }
 }

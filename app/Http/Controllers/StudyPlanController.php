@@ -20,6 +20,10 @@ class StudyPlanController extends Controller
         $this->studyPlanService = new StudyPlanServiceImpl();
     }
 
+    /**
+     * Retrieve a list of all study plans
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function list(): Response
     {
         try {
@@ -35,6 +39,11 @@ class StudyPlanController extends Controller
         }
     }
 
+    /**
+     * Retrieve a list of study plans by department
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function getStudyPlansByDepartments(Request $request): Response 
     {
         try {
@@ -58,6 +67,11 @@ class StudyPlanController extends Controller
             );
         }
     }
+    /**
+     * Validate a selection request for study plans
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Validation\Validator
+     */
     private function validateSelectionForDepartments(Request $request)
     {
         return Validator::make($request->all(), 
@@ -72,26 +86,4 @@ class StudyPlanController extends Controller
         ]
         );
     }
-
-    //public function listForAcademicPeriod(int $academicPeriodId): Response 
-    //{
-    //    try {
-    //        return response()->json(
-    //            $this->studyPlanService->getStudyPlans(
-    //                [
-    //                    'academic_period_id' => $academicPeriodId
-    //                ]
-    //            ), 
-    //            200
-    //        );
-    //    } catch (\Exception $e) {
-    //        return response()->json(
-    //            [
-    //                'message' => 'Se ha producido un error en el servidor.',
-    //                'error' => $e->getMessage()
-    //            ],
-    //            500
-    //        );
-    //    }
-    //}
 }

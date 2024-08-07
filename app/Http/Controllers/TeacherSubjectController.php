@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Service\ServiceImplementation\TeacherSubjectServiceImpl;
+use App\Service\ServiceImplementation\{
+    TeacherSubjectServiceImpl,
+    AcademicPeriodServiceImpl
+};
 
 use Illuminate\Http\{
     JsonResponse as Response,
@@ -18,9 +21,11 @@ use Exception;
 class TeacherSubjectController extends Controller
 {
     private $teacherSubjectService; 
+    private $academicPeriodService; 
     public function __construct()
     {
-        $this->teacherSubjectService = new TeacherSubjectServiceImpl(); 
+        $this->teacherSubjectService = new TeacherSubjectServiceImpl();
+        $this->academicPeriodService = new AcademicPeriodServiceImpl(); 
     }
 
     public function list() 
@@ -80,14 +85,22 @@ class TeacherSubjectController extends Controller
         }
     }
 
+    /**
+     * Retrieve all teacher subjects by academic period 
+     * @param int $academicPeriodId
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function getAllTeacherSubjectsByAcademicPeriod(int $academicPeriodId): Response 
     {
         try {
             return response()->json(
-                $this->teacherSubjectService->getTeacherSubjectByParams(
-                    [
-                        'academic_period_id' => $academicPeriodId,
-                    ]
+                $this->teacherSubjectService->formatByAcademicPeriod(
+                    $this->teacherSubjectService->getTeacherSubjectByParams(
+                        [
+                            'academic_period_id' => $academicPeriodId,
+                        ]
+                        ),
+                        $academicPeriodId                    
                 ), 
                 200
             );
@@ -102,22 +115,36 @@ class TeacherSubjectController extends Controller
         }
     }    
 
+    /**
+     * Retrieve a list of all teacher subject by person and faculty, for a simple user its necesary only a token and for a admin its necesary specify which user and which faculty.
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function getAllTeacherSubjectsByPersonAndFaculty(Request $request): Response 
     {
         try {
             $personId = $request['session_id'];
             $facultyId = \JWTAuth::parseToken($request->bearerToken())->getClaim('faculty_id'); 
+            if ($request->has('person_id')) {
+                $personId = $request->input('person_id');
+            }
+            if ($request->has('faculty_id')) {
+                $facultyId = $request['faculty_id'];
+            }
             if ($facultyId == -1) {
                 return response()->json([
                     'message' => 'No existe una facultad seleccionada, por favor intente iniciar sesion nuevamente',
                 ], 400);
             }
             return response()->json(
-                $this->teacherSubjectService->getTeacherSubjectByParams(
-                    [
-                        'person_id' => $personId,
-                        'faculty_id' => $facultyId,
-                    ]
+                $this->teacherSubjectService->formatByAcademicPeriod(
+                    $this->teacherSubjectService->getTeacherSubjectByParams(
+                        [
+                            'person_id' => $personId,
+                            'faculty_id' => $facultyId,
+                        ]
+                    ),
+                    $this->academicPeriodService->getActualAcademicPeriodByFaculty($facultyId)['academic_period_id']
                 ), 
                 200
             );
@@ -133,7 +160,9 @@ class TeacherSubjectController extends Controller
     }
 
     /**
-     * 
+     * Create a request data to a new group.
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
      */
     public function saveGroup(Request $request): Response
     {
@@ -175,7 +204,9 @@ class TeacherSubjectController extends Controller
     }
 
     /**
-     * 
+     * Validate save group requests
+     * @param \Illuminate\Http\Request $request
+     * @return mixed
      */
     private function validateSaveGroupData(Request $request): mixed
     {
@@ -211,8 +242,5 @@ class TeacherSubjectController extends Controller
             'class_schedules.required' => 'El campo de horario de clases es obligatorio.',
             'class_schedules.array' => 'El campo de horario de clases debe ser un arreglo.',
         ]);
-    }
-    public function test() {
-        return response()->json($this->teacherSubjectService->test(), 200);
     }
 }

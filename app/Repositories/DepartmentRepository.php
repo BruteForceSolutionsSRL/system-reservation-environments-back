@@ -12,6 +12,10 @@ class DepartmentRepository
 		$this->model = Department::class;
 	}
 
+	/**
+	 * Retrieve all registered departments
+	 * @return array
+	 */
 	public function getAllDepartments(): array 
 	{
 		return $this->model::all()->map(
@@ -21,6 +25,12 @@ class DepartmentRepository
 			}
 		)->toArray();
 	}
+
+	/**
+	 * Transform Department Model to array
+	 * @param mixed $department
+	 * @return array
+	 */
 	public function formatOutput($department) 
 	{
 		if ($department === null) return  [];

@@ -77,21 +77,27 @@ class AcademicPeriodServiceImpl implements AcademicPeriodService
 		])) !== 0;
 	}
 
-	public function update(array $data, int $academicPeriodId): string
+	public function update(array $data, int $academicPeriodId): array
 	{
 		$academicPeriod = $this->academicPeriodRepository->update($data, $academicPeriodId); 
-		return 'Se actualizo correctamente el periodo academico '.$academicPeriod['name'].'.';
+		return array_merge($academicPeriod, [
+			'message' => 'Se actualizo correctamente el periodo academico '.$academicPeriod['name'].'.'
+		]);
 	}  
-	// en el data debe llevar el nuevo nombre, y fechas, todo completo, lo que no interesa que me da el anterior son: .
+	
 	/**
-	 * 1. reservations de configuracion
-	 * 2. grupos de materias y profesores posibles + carreras (si es que aplica) 
-	 */ 
+	 * Copy an academic period based on its ID, copy: reservations, studyplans, groups of a single academic period
+	 * @param array $data
+	 * @return string
+	 */
 	public function copyAcademicPeriod(array $data): string 
 	{
 		$academicPeriodId = $data['academic_period_id'];
 		$academicPeriodToCopy = $this->academicPeriodRepository->getAcademicPeriod($academicPeriodId);
 		$data['faculty_id'] = $academicPeriodToCopy['faculty_id'];
+		if ($this->existsCollision([$data])) {
+			return 'No se puede copiar el periodo academico, existe un periodo academico previo entre dichas fechas';
+		}
 		$academicPeriod = $this->academicPeriodRepository->store($data);
 
 		$studyPlans = $this->studyPlanService->obtainStudyPlansBySetOfFaculties([

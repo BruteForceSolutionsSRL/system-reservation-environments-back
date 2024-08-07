@@ -28,17 +28,32 @@ class UniversitySubjectRepository
         )->toArray();
     }
 
+    /**
+     * Retrieve a single university subject by its ID
+     * @param int $universitySubjectId
+     * @return array
+     */
     public function getUniversitySubject(int $universitySubjectId): array 
     {
         return $this->formatOutput($this->model::find($universitySubjectId));
     }
 
+    /**
+     * Delete a single university subject 
+     * @param int $universitySubjectId
+     * @return void
+     */
     public function delete(int $universitySubjectId): void 
     {
         $universitySubject = UniversitySubject::find($universitySubjectId); 
         $universitySubject->delete();
     }
 
+    /**
+     * Register a new university subject by array data
+     * @param array $data
+     * @return array
+     */
     public function store(array $data): array 
     {
         $universitySubject = new $this->model();
@@ -63,7 +78,12 @@ class UniversitySubjectRepository
         return $this->formatOutput($universitySubject);
     }
 
-    private function formatOutput($universitySubject)
+    /**
+     * Transform a university subject model to array
+     * @param mixed $universitySubject
+     * @return array
+     */
+    private function formatOutput($universitySubject): array
     {
         return [
             'university_subject_id' => $universitySubject->id,
@@ -97,4 +117,3 @@ class UniversitySubjectRepository
         ];
     }
 }
-

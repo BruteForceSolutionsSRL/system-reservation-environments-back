@@ -13,12 +13,22 @@ class UniversitySubjectImpl implements UniversitySubjectService
         $this->universitySubjectRepository = new UniversitySubjectRepository();
     }
 
+    /**
+     * Retrieve a single university subject by its id
+     * @param int $universitySubjectId
+     * @return array
+     */
     public function getUniversitySubject(int $universitySubjectId): array 
     {
         return $this->universitySubjectRepository
             ->getUniversitySubject($universitySubjectId);
     }
 
+    /**
+     * Delete a university subject 
+     * @param int $universitySubjectId
+     * @return string
+     */
     public function delete(int $universitySubjectId): string 
     {
         $this->universitySubjectRepository->delete($universitySubjectId);
@@ -35,6 +45,11 @@ class UniversitySubjectImpl implements UniversitySubjectService
         return $this->universitySubjectRepository->getAllUniversitySubjects();
     }
 
+    /**
+     * Store a single university subject
+     * @param array $data
+     * @return string
+     */
     public function store(array $data): string 
     {
         $universitySubject = $this->universitySubjectRepository->store($data); 
