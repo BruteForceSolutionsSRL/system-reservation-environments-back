@@ -119,6 +119,11 @@ class ClassroomRepository extends Repository
         )->toArray();
     }
 
+    /**
+     * Retrieve all classrooms who's location is inside a block based on its ID
+     * @param int $blockId
+     * @return array
+     */
     public function getAllClassroomByBlock(int $blockId): array 
     {
         return $this->model::where('block_id', $blockId)

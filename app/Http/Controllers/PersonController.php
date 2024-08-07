@@ -134,6 +134,11 @@ class PersonController extends Controller
         }
     }
     
+    /**
+     * Validate a update request
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Validation\Validator
+     */
     private function validateUpdateInformation(Request $request) 
     {
         return Validator::make($request->all(), [
@@ -162,6 +167,12 @@ class PersonController extends Controller
         ]);
     }
 
+    /**
+     * Update roles for a single person
+     * @param \Illuminate\Http\Request $request
+     * @param int $personId
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function updateRoles(Request $request, int $personId): Response 
     {
         try {
@@ -196,6 +207,11 @@ class PersonController extends Controller
             );
         }
     }
+    /**
+     * Validate an update roles request
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Validation\Validator
+     */
     private function validateUpdateRoleInformation(Request $request) 
     {
         return Validator::make($request->all(), [

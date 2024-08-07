@@ -49,6 +49,11 @@ class BlockServiceImpl implements BlockService
         return $this->blockRepository->getAllBlocks();
     }
 
+    /**
+     * Retrieve blocks by a set of faculties
+     * @param array $faculties
+     * @return array
+     */
     public function getBlocksByFaculties(array $faculties): array 
     {
         return $this->blockRepository->getBlocks([

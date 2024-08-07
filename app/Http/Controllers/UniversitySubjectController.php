@@ -43,6 +43,11 @@ class UniversitySubjectController extends Controller
         }
     }
 
+    /**
+     * Retrieve a single university subject by its ID
+     * @param int $universitySubjectId
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function index(int $universitySubjectId): Response 
     {
         try {
@@ -61,6 +66,11 @@ class UniversitySubjectController extends Controller
         }        
     }
 
+    /**
+     * Function to register a new university subject
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function store(Request $request): Response 
     {
         try {
@@ -95,6 +105,11 @@ class UniversitySubjectController extends Controller
             );
         }
     }
+    /**
+     * Validate a university subject create request
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Validation\Validator
+     */
     private function validateUniversitySubjectData(Request $request) 
     {
         return Validator::make($request->all(), [
@@ -124,6 +139,11 @@ class UniversitySubjectController extends Controller
         ]);
     }
 
+    /**
+     * Delete a single university subject
+     * @param int $universitySubjectId
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function destroy(int $universitySubjectId): Response
     {
         try {

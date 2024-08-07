@@ -12,6 +12,10 @@ class DepartmentServiceImpl
 		$this->departmentRepository = new DepartmentRepository();
 	}
 
+	/**
+	 * Retrieve a list of all departments
+	 * @return mixed
+	 */
 	public function getAllDepartments()
 	{
 		return $this->departmentRepository->getAllDepartments();

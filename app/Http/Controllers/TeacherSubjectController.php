@@ -85,6 +85,11 @@ class TeacherSubjectController extends Controller
         }
     }
 
+    /**
+     * Retrieve all teacher subjects by academic period 
+     * @param int $academicPeriodId
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function getAllTeacherSubjectsByAcademicPeriod(int $academicPeriodId): Response 
     {
         try {
@@ -110,6 +115,11 @@ class TeacherSubjectController extends Controller
         }
     }    
 
+    /**
+     * Retrieve a list of all teacher subject by person and faculty, for a simple user its necesary only a token and for a admin its necesary specify which user and which faculty.
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function getAllTeacherSubjectsByPersonAndFaculty(Request $request): Response 
     {
         try {
@@ -150,7 +160,9 @@ class TeacherSubjectController extends Controller
     }
 
     /**
-     * 
+     * Create a request data to a new group.
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
      */
     public function saveGroup(Request $request): Response
     {
@@ -192,7 +204,9 @@ class TeacherSubjectController extends Controller
     }
 
     /**
-     * 
+     * Validate save group requests
+     * @param \Illuminate\Http\Request $request
+     * @return mixed
      */
     private function validateSaveGroupData(Request $request): mixed
     {
@@ -228,8 +242,5 @@ class TeacherSubjectController extends Controller
             'class_schedules.required' => 'El campo de horario de clases es obligatorio.',
             'class_schedules.array' => 'El campo de horario de clases debe ser un arreglo.',
         ]);
-    }
-    public function test() {
-        return response()->json($this->teacherSubjectService->test(), 200);
     }
 }

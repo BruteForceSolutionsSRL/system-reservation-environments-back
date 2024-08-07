@@ -87,7 +87,6 @@ class ClassroomServiceImpl implements ClassroomService
      * Retrieve a single classroom by its id
      * @param int $id
      * @return array
-     * 
      */
     public function getClassroomByID(int $id): array
     {
@@ -95,7 +94,7 @@ class ClassroomServiceImpl implements ClassroomService
     }
 
     /**
-     * 
+     * Retrieve a boolean if a classroom is deleted
      * @param int $classroomId
      * @return bool
      */

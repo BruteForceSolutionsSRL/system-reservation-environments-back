@@ -13,6 +13,10 @@ class AcademicManagementRepository
         $this->model = AcademicManagement::class;
     }
 
+    /**
+     * Retrieve all Academic Managements registered
+     * @return array
+     */
     public function list(): array 
     {
         return $this->model::all()->map(
@@ -23,11 +27,21 @@ class AcademicManagementRepository
         )->toArray();
     }
 
+    /**
+     * Retrieve a single academic management based on its id
+     * @param int $academicManagementId
+     * @return array
+     */
     public function getAcademicManagement(int $academicManagementId): array 
     {
         return $this->formatOutput($this->model::find($academicManagementId));
     }
 
+    /**
+     * Function to save/register a single Academic Management
+     * @param array $data
+     * @return array
+     */
     public function store(array $data): array 
     {
         $academicManagement = new $this->model(); 
@@ -38,6 +52,12 @@ class AcademicManagementRepository
         return $this->formatOutput($academicManagement);
     }
 
+    /**
+     * Update a single academic management updating only dates 
+     * @param array $data
+     * @param int $academicManagementId
+     * @return array
+     */
     public function update(array $data, int $academicManagementId): array 
     {
         $academicManagement = $this->model::find($academicManagementId);
@@ -49,6 +69,11 @@ class AcademicManagementRepository
         return $this->formatOutput($academicManagement);
     }
 
+    /**
+     * Function to format Academic Management Model to array
+     * @param mixed $academicManagement
+     * @return array
+     */
     public function formatOutput($academicManagement) 
     {
         if ($academicManagement === null) return [];

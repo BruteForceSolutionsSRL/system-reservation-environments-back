@@ -12,6 +12,10 @@ class StudyPlanRepository
         $this->model = StudyPlan::class;
     }
 
+    /**
+     * Retrieve a list of all studyPlans 
+     * @return array
+     */
     public function getAllStudyPlans(): array 
     {
         return $this->model::all()->map(
@@ -22,6 +26,11 @@ class StudyPlanRepository
         )->toArray();
     }
 
+    /**
+     * Retrieve study plans with query params 
+     * @param array $data
+     * @return array
+     */
     public function getStudyPlans(array $data): array  
     {
         $query = StudyPlan::with(['academicPeriods:id,name']);
@@ -42,6 +51,12 @@ class StudyPlanRepository
         )->toArray();
     }
 
+    /**
+     * Add study plan to a academic period 
+     * @param int $studyPlanId
+     * @param int $academicPeriodId
+     * @return array
+     */
     public function addAcademicPeriod(int $studyPlanId, int $academicPeriodId) 
     {
         $studyPlan = $this->model::find($studyPlanId); 
@@ -49,6 +64,11 @@ class StudyPlanRepository
         return $this->formatOutput($studyPlan);
     }
 
+    /**
+     * Transform study plan model to array
+     * @param mixed $studyPlan
+     * @return array
+     */
     private function formatOutput($studyPlan): array 
     {
         if ($studyPlan == null) return [];

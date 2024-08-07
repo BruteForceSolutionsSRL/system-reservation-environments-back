@@ -17,6 +17,10 @@ class TeacherSubjectRepository
         $this->personRepository = new PersonRepository();
     }
 
+    /**
+     * Retrieve a list of all teacher subjects
+     * @return mixed
+     */
     public function getAllTeacherSubjects() {
         return $this->model::all()->map(
             function ($teacherSubject) {
@@ -70,6 +74,11 @@ class TeacherSubjectRepository
             )->toArray();
     }
 
+    /**
+     * Retrieve a list all teacher subject with query params 
+     * @param array $data
+     * @return array
+     */
     public function getTeacherSubjects(array $data): array 
     {
         $query = TeacherSubject::with('person:id,name'); 

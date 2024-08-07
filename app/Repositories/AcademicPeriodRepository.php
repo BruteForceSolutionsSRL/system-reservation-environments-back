@@ -13,11 +13,21 @@ class AcademicPeriodRepository
         $this->model = AcademicPeriod::class;
     }
 
+    /**
+     * Retrieve a single academic period based on its ID
+     * @param int $academicPeriodId
+     * @return array
+     */
     public function getAcademicPeriod(int $academicPeriodId): array 
     {
         return $this->formatOutput($this->model::find($academicPeriodId));
     }
 
+    /**
+     * Retrieve all academic periods of all faculties 'active' by the actual date
+     * @param string $date
+     * @return array
+     */
     public function getActiveAcademicPeriods(string $date): array 
     {
         return $this->model::where('initial_date', '<=', $date)
@@ -30,16 +40,15 @@ class AcademicPeriodRepository
             )->toArray();
     }
 
+    /**
+     * Retrieve a single academic period based on which faculty it belongs
+     * @param int $facultyId
+     * @return array
+     */
     public function getActualAcademicPeriod(int $facultyId): array 
     {
         $now = Carbon::now();
         $now = $now->format('Y-m-d');
-        //dd(
-        //    $this->model::where('faculty_id', $facultyId)
-        //        ->where('initial_date', '<=', $now)
-        //        ->where('end_date', '>=', $now)
-        //        ->get()->first()
-        //)   ;     
         return $this->formatOutput(
             $this->model::where('faculty_id', $facultyId)
                 ->where('initial_date', '<=', $now)
@@ -48,7 +57,11 @@ class AcademicPeriodRepository
         );
     }
 
-
+    /**
+     * Get a single academic period by its ID.
+     * @param int $academicPeriodId
+     * @return array
+     */
     public function getAcademicPeriodById(int $academicPeriodId): array 
     {
         return $this->formatOutput(
@@ -56,6 +69,11 @@ class AcademicPeriodRepository
         );
     }
 
+    /**
+     * Register a new academic period
+     * @param array $data
+     * @return array
+     */
     public function store(array $data): array 
     {
         $academicPeriod = new $this->model(); 
@@ -71,6 +89,12 @@ class AcademicPeriodRepository
         return $this->formatOutput($academicPeriod);
     }
 
+    /**
+     * Update a single academic period with new variables.
+     * @param array $data
+     * @param int $academicPeriodId
+     * @return array
+     */
     public function update(array $data, int $academicPeriodId): array 
     {
         $academicPeriod = $this->model::find($academicPeriodId);
@@ -103,6 +127,11 @@ class AcademicPeriodRepository
         return $this->formatOutput($academicPeriod);
     }
 
+    /**
+     * Get all academic periods based on all query params 
+     * @param array $data
+     * @return array
+     */
     public function getAcademicPeriods(array $data): array 
     {
         $query = AcademicPeriod::with([
@@ -139,6 +168,11 @@ class AcademicPeriodRepository
         )->toArray();
     }
 
+    /**
+     * Transform Academic Period Model to array
+     * @param mixed $academicPeriod
+     * @return array
+     */
     public function formatOutput($academicPeriod) 
     {
         if ($academicPeriod === null) return [];

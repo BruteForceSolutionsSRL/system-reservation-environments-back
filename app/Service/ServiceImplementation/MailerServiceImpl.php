@@ -37,8 +37,7 @@ class MailerServiceImpl implements MailerService
 	 */
 	public function sendMail(Mailable $mail, array $addresses): void
 	{
-		MailSenderJob::dispatch($addresses, $mail);//->withTags(['mail']);
-		//\Mail::to($addresses)->send($mail);	
+		MailSenderJob::dispatch($addresses, $mail);
 	}
 
 	/**
@@ -476,7 +475,10 @@ class MailerServiceImpl implements MailerService
 	}
 
 	/**
-	 * 
+	 * Retrieve a persons formatted by single reservation
+	 * @param array $emailData
+	 * @param array $reservation
+	 * @return void
 	 */
 	private function getPersonsByReservation(array &$emailData, array $reservation): void
 	{
@@ -485,7 +487,10 @@ class MailerServiceImpl implements MailerService
 	}
 
 	/**
-	 * 
+	 * Retrieve a persons formatted for special reservations
+	 * @param array $emailData
+	 * @param array $reservation
+	 * @return void
 	 */
 	private function getPersonsBySpecialReservation(array &$emailData, array $reservation): void
 	{
