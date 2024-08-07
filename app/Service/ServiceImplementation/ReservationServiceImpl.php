@@ -240,7 +240,6 @@ class ReservationServiceImpl implements ReservationService
         $specialReservations = $this->reservationRepository->getSpecialReservations($specialReservationParent->parent_id);
 
         $specialReservationsFormat = [];
-
         foreach ($specialReservations as $specialReservation) {
             $this->reservationRepository->updateReservationStatus($specialReservation->id, ReservationStatuses::cancelled());
             $specialReservationsFormat[] = $this->reservationRepository->formatOutputSpecial($specialReservation);
@@ -248,6 +247,7 @@ class ReservationServiceImpl implements ReservationService
 
         $administratorRol = [$this->roleRepository->administrator()];
         array_merge($specialReservationsFormat[0]['persons'], $this->personRepository->getUsersByRole($administratorRol));
+        echo count($specialReservationsFormat);
         $this->notificationService->store(
             $this->mailService->specialCancelReservation(
                 $specialReservationsFormat[0],
