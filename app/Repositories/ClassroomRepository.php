@@ -351,8 +351,9 @@ class ClassroomRepository extends Repository
      */
     private function getClassroomStatsReason(array $data, array $reasons): array
     {
-        $reasonsIds = array_column($reasons, 'reason_id');
-        $stats = ClassroomReservation::with('')
+        
+        $reasonsIds = array_column($reasons, 'reservation_reason_id');
+        $stats = DB::table('classroom_reservation')
             ->join('reservations', 'classroom_reservation.reservation_id', '=', 'reservations.id')
             ->join('reservation_reasons', 'reservations.reservation_reason_id', '=', 'reservation_reasons.id')  
             ->select(
