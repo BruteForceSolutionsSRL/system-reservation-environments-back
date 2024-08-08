@@ -46,7 +46,7 @@ class NotificationServiceImpl implements NotificationService
      */
     public function store(array $data): array 
     {
-        if ($data['to'][0] == 'TODOS') {
+        if (!empty($data['to']) && $data['to'][0] == 'TODOS') {
             $users = $this->personService->getAllUsers();
             $data['to'] = [];
             foreach ($users as $user)
