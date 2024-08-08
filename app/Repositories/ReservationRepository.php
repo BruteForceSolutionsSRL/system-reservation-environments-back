@@ -675,6 +675,7 @@ class ReservationRepository extends Repository
             'parent_id' => $reservation->parent_id,
             'created_at' => $createdAt,
             'updated_at' => $updatedAt,
+            'verified' => $reservation->verified,
             'academic_period_name' => $reservation->academicPeriod->name, 
             'academic_period_id' => $reservation->academicPeriod->id
         ];

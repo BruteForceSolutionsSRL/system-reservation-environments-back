@@ -15,6 +15,7 @@ use App\Repositories\{
     AcademicPeriodRepository,
     TeacherSubjectRepository
 };
+use App\Jobs\VerifyReservationJob as Verifier;
 use Carbon\Carbon;
 
 class ReservationServiceImpl implements ReservationService
@@ -31,7 +32,7 @@ class ReservationServiceImpl implements ReservationService
     private $classroomService;
     private $reservationAssignerService; 
     private $blockService;
-
+    
     public function __construct()
     {
         $this->personRepository = new PersonRepository();
@@ -430,7 +431,8 @@ class ReservationServiceImpl implements ReservationService
                     $reservation,
                     PersonRepository::system()
                 )
-            );    
+            );
+            \Queue::later(now()->addMinutes(1), new Verifier($reservation['reservation_id']));
             if (ConstantRepository::getAutomaticReservation() == '0') {
                 return 'La solicitud de reserva se encuentra en estado pendiente, le llegara un correo de aceptacion/rechazo por parte del encargado.';
             }
