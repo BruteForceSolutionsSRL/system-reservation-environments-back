@@ -507,9 +507,14 @@ class MailerServiceImpl implements MailerService
 		$addresses = [];
 
 		for ($i = 0; $i<count($data); $i++){
+			if ($this->email($data[$i]['email'])) 
 			array_push($addresses, $data[$i]['email']);
 		}
 
 		return array_unique($addresses);
+	}
+	private function email(string $email) {
+		$regex = "/^([a-z0-9_\.-]+)@([a-z0-9_\.-]+)\.([a-z]{2,})$/i";
+		return preg_match($regex, $email);		
 	}
 }
