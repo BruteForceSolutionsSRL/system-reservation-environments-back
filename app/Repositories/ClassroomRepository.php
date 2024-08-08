@@ -188,11 +188,11 @@ class ClassroomRepository extends Repository
     public function save(array $data): array
     {
         $classroom = new Classroom();
-        $classroom->name = $data['name'];
+        $classroom->name = $data['classroom_name'];
         $classroom->capacity = $data['capacity'];
         $classroom->floor = $data['floor_number'];
         $classroom->block_id = $data['block_id'];
-        $classroom->classroom_type_id = $data['classroom_type_id'];
+        $classroom->classroom_type_id = $data['type_id'];
         $classroom->classroom_status_id = 1;
         $classroom->save();
         return $this->formatOutput($classroom);
@@ -209,8 +209,8 @@ class ClassroomRepository extends Repository
         $classroom->capacity = $data['capacity'];
         $classroom->floor = $data['floor_number'];
         $classroom->block_id = $data['block_id'];
-        $classroom->classroom_type_id = $data['classroom_type_id'];
-        $classroom->classroom_status_id = $data['classroom_status_id'];
+        $classroom->classroom_type_id = $data['type_id'];
+        $classroom->classroom_status_id = $data['status_id'];
         $classroom->save();
         return $this->formatOutput($classroom);
     }

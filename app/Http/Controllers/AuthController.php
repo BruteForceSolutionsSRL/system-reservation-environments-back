@@ -344,7 +344,7 @@ class AuthController extends Controller
             $person = $this->authService->changePassword($data);
             
             $credentials = [
-                'email' => $person['person_email'],
+                'email' => $person['email'],
                 'password' => $data['new_password']
             ]; 
 

@@ -371,7 +371,7 @@ class MailerServiceImpl implements MailerService
             'body' => 'Ingrese al siguiente link, para registrar una nueva contraseña',
 			'url' => $url,
             'type' => NotificationTypeRepository::warning(),
-            'sendBy' => $this->personRepository->getPerson($systemId)['person_name'],
+            'sendBy' => $this->personRepository->getPerson($systemId)['name'],
             'to' => [$data['email']],
 			'sended' => 1,
 		];
