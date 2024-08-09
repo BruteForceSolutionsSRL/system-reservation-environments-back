@@ -2,6 +2,7 @@
 namespace App\Service\ServiceImplementation;
 
 use App\Service\ReservationService;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 use App\Models\{
     Reservation,
@@ -413,10 +414,13 @@ class ReservationServiceImpl implements ReservationService
         if (!$this->isResposible($data['persons'], $data['person_id']) && !$config) {
             return 'No eres responsable de ninguno de los grupos seleccionados, debe seleccionar al menos un grupo a su nombre.';
         }
+        
+        $data['faculty_id'] = 1;
         $data['academic_period'] = $this->academicPeriodRepository
             ->getActualAcademicPeriod($data['faculty_id']);
         $data['academic_period_id'] = $data['academic_period']['academic_period_id'];
 
+        
         if (!$config) {
             $now = Carbon::now()->setTimeZone('America/New_York')->format('Y-m-d');
             if (($data['academic_period']['initial_date_reservations'] > $now) ||
@@ -438,6 +442,14 @@ class ReservationServiceImpl implements ReservationService
             }
         }
         return $this->accept($reservation['reservation_id'], $config);
+    }
+
+    /**
+     * 
+     */
+    public function confirmedParticipation(int $id): bool
+    {
+        return $this->reservationRepository->confirmedParticipation($id);
     }
 
     /**

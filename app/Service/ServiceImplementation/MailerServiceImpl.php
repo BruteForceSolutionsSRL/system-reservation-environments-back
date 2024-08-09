@@ -14,7 +14,8 @@ use App\Mail\{
     ClassroomNotificationMailer,
 	ReservationNotificationMailer,
 	BlockNotificationMailer,
-	SpecialReservationNotificationMailer
+	SpecialReservationNotificationMailer,
+	ConfirmationParticipation
 };
 
 use App\Repositories\{
@@ -22,6 +23,8 @@ use App\Repositories\{
 	NotificationTypeRepository,
 	PersonRepository
 };
+use Tymon\JWTAuth\Facades\JWTAuth;
+use Tymon\JWTAuth\Facades\JWTFactory;
 
 class MailerServiceImpl implements MailerService
 {
@@ -67,7 +70,7 @@ class MailerServiceImpl implements MailerService
 			},
 			$emailData['to']
 		));
-
+		$this->sendConfirmParticipation($emailData, $addresses);
 		$this->sendMail(
 			new ReservationNotificationMailer(
 				$emailData,
@@ -77,6 +80,27 @@ class MailerServiceImpl implements MailerService
 		);
 		$emailData['sendBy'] = $sender;
 		return $emailData;
+	}
+
+	/**
+	 * 
+	 */
+	public function sendConfirmParticipation(array $emailData, array $addresses): void
+	{
+		$claims = [
+			'reservation_id' => $emailData['reservation_id'],
+			'type' => 'access'
+		];
+		foreach ($addresses as $address) {
+			$person = $this->personRepository->getPersonByEmail($address);
+			$token = JWTAuth::claims($claims)->fromUser($person);
+        	$url = "http://localhost:3000/confirm/participation/".$token;
+			$emailData['url'] = $url;
+			$this->sendMail(
+				new ConfirmationParticipation($emailData),
+				[$address]
+			);
+		} 		
 	}
 
 	/**

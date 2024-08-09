@@ -468,6 +468,36 @@ class ReservationController extends Controller
     }
 
     /**
+     * 
+     */
+    public function confirmParticipation(Request $request): Response
+    {
+        try {
+            $token = JWTAuth::parseToken();
+            $reservationId = $token->getClaim('reservation_id');
+            $ans = $this->reservationService->confirmedParticipation($reservationId);
+            if ($ans) {
+                return response()->json(
+                    ['message' => 'Gracias por confirmar su participacion!'],
+                    200
+                );
+            } else {
+                return response()->json(
+                    ['message' => 'No se puedo confirmar su participacion :\'V'],
+                    403
+                );
+            }
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'message' => 'Hubo un error en el servidor',
+                    'error' => $e->getMessage()
+                ],
+                500
+            );
+        }
+    }
+    /**
      * Endpoint to assign reservations if fulfill no overlapping with assigned reservations.
      * @param int $reservationId
      * @param Request $request

@@ -60,6 +60,18 @@ class ReservationRepository extends Repository
     }
 
     /**
+     * 
+     */
+    public function confirmedParticipation(int $id): bool
+    {
+        $reservation = $this->model::find($id);
+        if ($reservation === null) return false; 
+        $reservation->verified = 1;
+        $reservation->save();
+        return true;
+    }
+
+    /**
      * Retrieve a list of all reservations
      * @param none
      * @return array

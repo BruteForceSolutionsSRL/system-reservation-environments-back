@@ -98,14 +98,14 @@ Route::controller(ReservationController::class)->group(function() {
         Route::get('/reservations/{reservationId}', 'show');
         Route::middleware('permissions:reservation_handling')->get('/reservations/{reservationId}/conflicts', 'getConflicts');
         Route::middleware('permissions:environment_remove')->get('/reservations/classroom/{classroomId}','getAllReservationsByClassroom');
+        Route::get('/reservations/confirm/participation','confirmParticipation');
     });
-
     Route::group(['middleware' => ['sanitize:api','jwt.verify']], function () {
         Route::middleware('permissions:reservation_handling')->patch('/reservations/{reservationId}/reject', 'rejectReservation');
         Route::middleware('permissions:reservation_handling')->patch('/reservations/{reservationId}/assign', 'assign');
         Route::middleware('permissions:reservation_cancel')->patch('/reservations/{reservationId}/cancel', 'cancelRequest');
         Route::middleware('permissions:special_reservation')->patch('/reservations/{reservationId}/special/cancel','specialCancel');
-
+        
         Route::middleware('permissions:request_reserve')->post('/reservations', 'store');
         Route::middleware('permissions:special_reservation')->post('/reservations/special', 'storeSpecialRequest');
     }); 
