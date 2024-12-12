@@ -108,8 +108,8 @@
         <div class="status">
             <p><b>Estado:</b> {{ $details['classroom_status_name'] }}</p>
         </div>
-        <p><b>Nombre:</b> {{ $details['classroom_name'] }}</p>
-        <p><b>Tipo:</b> {{ $details['classroom_type_name'] }}</p>
+        <p><b>Nombre:</b> {{ $details['name'] }}</p>
+        <p><b>Tipo:</b> {{ $details['type_name'] }}</p>
         <p><b>Capacidad:</b> {{ $details['capacity'] }}</p>
         <p><b>Piso:</b> {{ $details['floor'] }} </p>
         <p><b>Bloque perteneciente:</b> {{ $details['block_name'] }}</p>
